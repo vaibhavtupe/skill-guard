@@ -2,7 +2,7 @@
 
 **The quality gate for Agent Skills.**
 
-[![PyPI version](https://badge.fury.io/py/skill-gate.svg)](https://badge.fury.io/py/skill-gate)
+[![PyPI version](https://badge.fury.io/py/agentskill-gate.svg)](https://badge.fury.io/py/agentskill-gate)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
@@ -37,7 +37,7 @@ ONGOING (post-merge, scheduled):
 ## Quick Start
 
 ```bash
-pip install skill-gate
+pip install agentskill-gate
 
 # Initialize in your skills repo
 skill-gate init
@@ -59,10 +59,10 @@ skill-gate check ./skills/my-skill/ --against ./skills/
 
 ```bash
 # Core (static analysis — no agent required)
-pip install skill-gate
+pip install agentskill-gate
 
 # With embedding-based conflict detection
-pip install skill-gate[embeddings]
+pip install agentskill-gate[embeddings]
 ```
 
 Requires Python 3.11+.

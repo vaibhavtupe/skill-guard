@@ -3,13 +3,13 @@
 ## Install
 
 ```bash
-pip install skill-gate
+pip install agentskill-gate
 ```
 
 Optional embeddings (Phase 3):
 
 ```bash
-pip install skill-gate[embeddings]
+pip install agentskill-gate[embeddings]
 ```
 
 ## Quick Start
