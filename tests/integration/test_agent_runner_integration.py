@@ -22,6 +22,7 @@ FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
 # Shared live server fixture
 # ---------------------------------------------------------------------------
 
+
 def _build_mock_app() -> FastAPI:
     """Build the mock Responses API app."""
     app = FastAPI()
@@ -53,9 +54,7 @@ def _build_mock_app() -> FastAPI:
                 "output": [
                     {
                         "type": "message",
-                        "content": [
-                            {"type": "output_text", "text": "no active connections found"}
-                        ],
+                        "content": [{"type": "output_text", "text": "no active connections found"}],
                     }
                 ]
             }
@@ -111,12 +110,11 @@ class _LiveServer:
 
     def _wait_ready(self, timeout: float = 5.0) -> None:
         import time
+
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             try:
-                resp = httpx.get(
-                    f"http://{self._host}:{self._port}/health", timeout=1.0
-                )
+                resp = httpx.get(f"http://{self._host}:{self._port}/health", timeout=1.0)
                 if resp.status_code == 200:
                     return
             except httpx.HTTPError:
@@ -146,16 +144,19 @@ def live_server():
 # Tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.integration
 def test_full_eval_suite_passes_against_live_server(live_server: _LiveServer) -> None:
     """All three evals in valid-skill pass when the mock agent returns correct responses."""
     skill_path = FIXTURES / "valid-skill"
     config = TestConfig(endpoint=live_server.base_url, model="mock-model")
 
-    result = asyncio.run(run_agent_tests(
-        __import__("skill_gate.parser", fromlist=["parse_skill"]).parse_skill(skill_path),
-        config,
-    ))
+    result = asyncio.run(
+        run_agent_tests(
+            __import__("skill_gate.parser", fromlist=["parse_skill"]).parse_skill(skill_path),
+            config,
+        )
+    )
 
     assert result.total_tests == 3
     assert result.passed_tests == 3
@@ -201,9 +202,7 @@ def test_not_contains_check_blocks_out_of_scope_response(live_server: _LiveServe
 @pytest.mark.integration
 def test_health_check_passes_for_live_server(live_server: _LiveServer) -> None:
     """wait_for_agent_ready should succeed immediately against the live server."""
-    asyncio.run(
-        wait_for_agent_ready(live_server.base_url, api_key=None, timeout_seconds=3)
-    )
+    asyncio.run(wait_for_agent_ready(live_server.base_url, api_key=None, timeout_seconds=3))
 
 
 @pytest.mark.integration

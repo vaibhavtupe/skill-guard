@@ -59,7 +59,7 @@ def format_as_html(report: MonitorReport) -> str:
       <tr><th>Skill</th><th>Stage</th><th>Healthy</th><th>Findings</th></tr>
     </thead>
     <tbody>
-      {''.join(rows)}
+      {"".join(rows)}
     </tbody>
   </table>
 </body>

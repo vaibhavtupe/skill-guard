@@ -67,14 +67,8 @@ def check_ownership(
 
         if entry.author and entry.author in text:
             return None
-        return (
-            f"{entry.name}: owner '{entry.author}' not found in ownership file "
-            f"'{relative_name}'"
-        )
+        return f"{entry.name}: owner '{entry.author}' not found in ownership file '{relative_name}'"
 
     if fallback == "warn":
-        return (
-            f"{entry.name}: ownership metadata file missing "
-            f"({', '.join(ownership_files)})"
-        )
+        return f"{entry.name}: ownership metadata file missing ({', '.join(ownership_files)})"
     return None
