@@ -134,7 +134,10 @@ class _LiveServer:
 @pytest.fixture(scope="module")
 def live_server():
     srv = _LiveServer(_build_mock_app())
-    srv.start()
+    try:
+        srv.start()
+    except PermissionError:
+        pytest.skip("Socket bind is not permitted in this environment")
     yield srv
     srv.stop()
 
