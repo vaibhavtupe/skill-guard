@@ -65,3 +65,6 @@ ignore = ["E501"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "--cov=skill_gate --cov-report=term-missing --cov-fail-under=80"
+
+[tool.pytest.ini_options.markers]
+integration = "marks tests as integration tests (require live server; deselect with -m 'not integration')"
