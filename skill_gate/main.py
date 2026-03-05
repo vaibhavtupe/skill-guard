@@ -14,15 +14,24 @@ from skill_gate.commands.monitor import monitor_cmd
 app = typer.Typer(name="skill-gate", help="The quality gate for Agent Skills.")
 
 
-@app.callback(invoke_without_command=True)
-def main(
-    ctx: typer.Context,
-    version: bool | None = typer.Option(None, "--version", help="Show version and exit"),
-):
-    if version:
+def _version_callback(value: bool) -> None:
+    if value:
         v = importlib.metadata.version("skill-gate")
         typer.echo(v)
         raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(  # noqa: FBT001
+        False,
+        "--version",
+        callback=_version_callback,
+        is_eager=True,
+        help="Show version and exit.",
+    ),
+) -> None:
+    """The quality gate for Agent Skills."""
 
 
 # Register subcommands

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import re
+import warnings
 from pathlib import Path
 from typing import Any, Literal
 
@@ -14,6 +15,15 @@ from pydantic import BaseModel, Field
 from ruamel.yaml import YAML
 
 from skill_gate.models import ConfigError
+
+# Suppress Pydantic v2 warning for the intentional `validate` field name.
+# The field maps to the `validate:` YAML key; name kept for schema stability.
+warnings.filterwarnings(
+    "ignore",
+    message='Field name "validate".*shadows an attribute',
+    category=UserWarning,
+)
+
 
 # ---------------------------------------------------------------------------
 # Config sub-models
@@ -119,6 +129,8 @@ class CIConfig(BaseModel):
 
 
 class SkillGateConfig(BaseModel):
+    model_config = {"protected_namespaces": ()}
+
     skills_dir: str = "./skills/"
     catalog_path: str = "./skill-catalog.yaml"
     validate: ValidateConfig = Field(default_factory=ValidateConfig)
