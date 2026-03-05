@@ -41,3 +41,13 @@
 - `skill-gate secure` — prompt injection detection, scope violation scanning
 - `skill-gate conflict` — TF-IDF cosine similarity conflict detection
 - `skill-gate init` — project scaffold (skill-gate.yaml + CI workflow)
+
+## v0.3.2 — 2026-03-05
+
+### Bug fixes & docs
+
+- Fix: wrong Anthropic skill-creator URL in README
+- Fix: README Documentation section linked to non-existent files
+- Docs: add `docs/eval-authoring-guide.md` — eval authoring reference
+- Docs: add `docs/hooks-guide.md` — pre/post hook scripts guide
+- Docs: add `docs/integration-guide.md` — end-to-end setup with real Responses API agent
