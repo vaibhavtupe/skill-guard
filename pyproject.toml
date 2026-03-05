@@ -46,9 +46,9 @@ dev = [
 skill-guard = "skill_guard.main:app"
 
 [project.urls]
-Homepage = "https://github.com/vaibhavtupe/skillguard"
-Repository = "https://github.com/vaibhavtupe/skillguard"
-Issues = "https://github.com/vaibhavtupe/skillguard/issues"
+Homepage = "https://github.com/vaibhavtupe/skill-guard"
+Repository = "https://github.com/vaibhavtupe/skill-guard"
+Issues = "https://github.com/vaibhavtupe/skill-guard/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["skill_guard"]

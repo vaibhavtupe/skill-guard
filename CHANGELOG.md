@@ -59,5 +59,5 @@
 - PyPI package: `skill-guard` (was `agentskill-gate`)
 - CLI command: `skill-guard` (was `skill-gate`)
 - Python package: `skill_guard` (was `skill_gate`)
-- GitHub repo: `vaibhavtupe/skillguard` (was `skill-gate`)
+- GitHub repo: `vaibhavtupe/skill-guard` (was `skill-gate`)
 - All functionality unchanged — pure rename
