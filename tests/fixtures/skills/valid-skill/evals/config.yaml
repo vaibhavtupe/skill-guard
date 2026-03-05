@@ -1,0 +1,14 @@
+tests:
+  - name: basic-usage
+    prompt_file: prompts/basic.md
+    expect:
+      contains: ["diagnostic", "latency"]
+      not_contains: ["I cannot", "error"]
+  - name: edge-case
+    prompt_file: prompts/edge-case.md
+    expect:
+      contains: ["no active connections found"]
+  - name: not-my-job
+    prompt_file: prompts/not-my-job.md
+    expect:
+      not_contains: ["diagnostic", "traceroute", "packet loss"]
