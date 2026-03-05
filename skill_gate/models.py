@@ -279,6 +279,32 @@ class Catalog(BaseModel):
     skills: list[CatalogEntry] = Field(default_factory=list)
 
 
+class SkillHealthStatus(BaseModel):
+    """Per-skill health status emitted by monitor runs."""
+
+    skill_name: str
+    stage: str
+    healthy: bool
+    findings: list[str]
+    transitioned: bool
+    old_stage: str | None = None
+    new_stage: str | None = None
+
+
+class MonitorReport(BaseModel):
+    """Aggregate monitor report."""
+
+    generated_at: datetime
+    total_skills: int
+    healthy: int
+    degraded: int
+    failing: int
+    deprecated_skipped: int
+    run_time_seconds: float
+    skills: list[SkillHealthStatus]
+    endpoint: str | None = None
+
+
 # ---------------------------------------------------------------------------
 # Errors
 # ---------------------------------------------------------------------------
