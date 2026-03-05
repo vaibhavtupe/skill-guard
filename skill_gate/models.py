@@ -2,14 +2,14 @@
 Pydantic v2 data models for skill-gate.
 All core types used across the CLI and engine modules.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
-
+from pydantic import BaseModel, Field
 
 # ---------------------------------------------------------------------------
 # Skill parsing models
@@ -21,20 +21,20 @@ class SkillMetadata(BaseModel):
 
     name: str
     description: str
-    license: Optional[str] = None
-    compatibility: Optional[list[str]] = None
-    metadata: Optional[dict[str, Any]] = None
-    allowed_tools: Optional[list[str]] = None
+    license: str | None = None
+    compatibility: list[str] | None = None
+    metadata: dict[str, Any] | None = None
+    allowed_tools: list[str] | None = None
 
     # Derived from metadata dict
     @property
-    def author(self) -> Optional[str]:
+    def author(self) -> str | None:
         if self.metadata:
             return self.metadata.get("author")
         return None
 
     @property
-    def version(self) -> Optional[str]:
+    def version(self) -> str | None:
         if self.metadata:
             return self.metadata.get("version")
         return None
@@ -51,10 +51,10 @@ class EvalExpectation(BaseModel):
 
     contains: list[str] = Field(default_factory=list)
     not_contains: list[str] = Field(default_factory=list)
-    max_latency_ms: Optional[int] = None
-    min_length: Optional[int] = None
-    skill_triggered: Optional[str] = None
-    skill_not_triggered: Optional[str] = None
+    max_latency_ms: int | None = None
+    min_length: int | None = None
+    skill_triggered: str | None = None
+    skill_not_triggered: str | None = None
 
 
 class EvalTest(BaseModel):
@@ -63,7 +63,7 @@ class EvalTest(BaseModel):
     name: str
     prompt_file: str
     expect: EvalExpectation
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class EvalConfig(BaseModel):
@@ -86,7 +86,7 @@ class ParsedSkill(BaseModel):
     references: list[Path] = Field(default_factory=list)
     has_assets: bool
     has_evals: bool
-    evals_config: Optional[EvalConfig] = None
+    evals_config: EvalConfig | None = None
 
     model_config = {"arbitrary_types_allowed": True}
 
@@ -106,7 +106,7 @@ class CheckResult(BaseModel):
     passed: bool
     severity: SeverityLevel
     message: str
-    suggestion: Optional[str] = None
+    suggestion: str | None = None
 
 
 class ValidationResult(BaseModel):
@@ -145,7 +145,7 @@ class SecurityFinding(BaseModel):
     severity: SecuritySeverity
     category: SecurityCategory
     file: str
-    line: Optional[int] = None
+    line: int | None = None
     pattern: str
     matched_text: str
     description: str
@@ -188,7 +188,7 @@ class ConflictResult(BaseModel):
     skill_name: str
     matches: list[ConflictMatch]
     name_collision: bool
-    name_collision_with: Optional[str] = None
+    name_collision_with: str | None = None
     passed: bool
     high_conflicts: int
     medium_conflicts: int
@@ -209,7 +209,7 @@ class EvalTestResult(BaseModel):
     latency_ms: int
     checks_passed: list[str] = Field(default_factory=list)
     checks_failed: list[str] = Field(default_factory=list)
-    skill_triggered: Optional[str] = None
+    skill_triggered: str | None = None
     tool_calls: list[str] = Field(default_factory=list)
 
 
@@ -240,7 +240,7 @@ class CheckPipelineResult(BaseModel):
     validation: ValidationResult
     security: SecurityResult
     conflict: ConflictResult
-    agent_test: Optional[AgentTestResult] = None
+    agent_test: AgentTestResult | None = None
     passed: bool
     summary: str
 
@@ -262,8 +262,8 @@ class CatalogEntry(BaseModel):
     stage: SkillStage
     registered: datetime
     last_updated: datetime
-    last_eval_passed: Optional[datetime] = None
-    last_eval_run: Optional[datetime] = None
+    last_eval_passed: datetime | None = None
+    last_eval_run: datetime | None = None
     quality_score: int = Field(ge=0, le=100)
     path: str
     tags: list[str] = Field(default_factory=list)

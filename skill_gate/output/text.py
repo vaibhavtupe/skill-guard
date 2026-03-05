@@ -1,7 +1,6 @@
 """Text output formatter using rich."""
-from __future__ import annotations
 
-from typing import Any
+from __future__ import annotations
 
 from rich.console import Console
 from rich.table import Table
@@ -11,7 +10,9 @@ from skill_gate.models import ConflictResult, SecurityResult, ValidationResult
 console = Console()
 
 
-def format_validation_result(result: ValidationResult, quiet: bool = False, verbose: bool = False) -> None:
+def format_validation_result(
+    result: ValidationResult, quiet: bool = False, verbose: bool = False
+) -> None:
     table = Table(title=f"skill-gate validate — {result.skill_name}")
     table.add_column("Check")
     table.add_column("Result")

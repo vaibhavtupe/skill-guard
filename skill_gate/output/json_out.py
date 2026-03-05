@@ -1,4 +1,5 @@
 """JSON output formatter."""
+
 from __future__ import annotations
 
 import json

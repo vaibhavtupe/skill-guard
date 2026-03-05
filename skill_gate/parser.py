@@ -1,18 +1,16 @@
 """
 SKILL.md parser — converts a skill directory into a ParsedSkill object.
 """
+
 from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Optional
 
 from ruamel.yaml import YAML
 
 from skill_gate.models import (
     EvalConfig,
-    EvalExpectation,
-    EvalTest,
     ParsedSkill,
     SkillMetadata,
     SkillParseError,
@@ -38,8 +36,7 @@ def parse_skill(skill_path: Path) -> ParsedSkill:
 
     if not skill_path.exists():
         raise SkillParseError(
-            f"Skill directory not found: '{skill_path}'\n"
-            f"  → Check the path and try again"
+            f"Skill directory not found: '{skill_path}'\n  → Check the path and try again"
         )
 
     if not skill_path.is_dir():
@@ -85,7 +82,7 @@ def parse_skill(skill_path: Path) -> ParsedSkill:
     references = [p for p in references if p.is_file()]
 
     # Parse evals if present
-    evals_config: Optional[EvalConfig] = None
+    evals_config: EvalConfig | None = None
     if has_evals:
         evals_config = _parse_evals_config(evals_dir)
 
@@ -97,7 +94,7 @@ def parse_skill(skill_path: Path) -> ParsedSkill:
         skill_md_path=skill_md_path,
         metadata=metadata,
         body=body,
-        body_line_count=len(body_lines),
+        body_line_count=body_line_count,
         has_scripts=has_scripts,
         scripts=scripts,
         has_references=has_references,
@@ -124,7 +121,7 @@ def _parse_frontmatter(content: str, skill_md_path: Path) -> tuple[SkillMetadata
             f"  → Example:\n"
             f"     ---\n"
             f"     name: my-skill\n"
-            f"     description: \"What this skill does. Use when...\"\n"
+            f'     description: "What this skill does. Use when..."\n'
             f"     ---"
         )
 
@@ -153,21 +150,18 @@ def _parse_frontmatter(content: str, skill_md_path: Path) -> tuple[SkillMetadata
     # Validate required fields
     if "name" not in raw_dict:
         raise SkillParseError(
-            f"Missing required field 'name' in '{skill_md_path}'\n"
-            f"  → Add: name: your-skill-name"
+            f"Missing required field 'name' in '{skill_md_path}'\n  → Add: name: your-skill-name"
         )
     if "description" not in raw_dict:
         raise SkillParseError(
             f"Missing required field 'description' in '{skill_md_path}'\n"
-            f"  → Add: description: \"What this skill does. Use when...\""
+            f'  → Add: description: "What this skill does. Use when..."'
         )
 
     try:
         metadata = SkillMetadata.model_validate(raw_dict)
     except Exception as e:
-        raise SkillParseError(
-            f"Invalid frontmatter fields in '{skill_md_path}': {e}"
-        ) from e
+        raise SkillParseError(f"Invalid frontmatter fields in '{skill_md_path}': {e}") from e
 
     return metadata, body.strip()
 
@@ -187,22 +181,16 @@ def _parse_evals_config(evals_dir: Path) -> EvalConfig:
         with open(config_path) as f:
             raw = yaml.load(f)
     except Exception as e:
-        raise SkillParseError(
-            f"Invalid YAML in '{config_path}': {e}"
-        ) from e
+        raise SkillParseError(f"Invalid YAML in '{config_path}': {e}") from e
 
     if not raw or "tests" not in raw:
-        raise SkillParseError(
-            f"'{config_path}' must contain a 'tests' list"
-        )
+        raise SkillParseError(f"'{config_path}' must contain a 'tests' list")
 
     raw_dict = _to_plain_dict(raw)
     try:
         return EvalConfig.model_validate(raw_dict)
     except Exception as e:
-        raise SkillParseError(
-            f"Invalid evals/config.yaml in '{evals_dir.parent}': {e}"
-        ) from e
+        raise SkillParseError(f"Invalid evals/config.yaml in '{evals_dir.parent}': {e}") from e
 
 
 def _to_plain_dict(obj: object) -> object:

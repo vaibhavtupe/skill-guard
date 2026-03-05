@@ -1,12 +1,12 @@
 """
 Security scanner — regex-based pattern matching with suppression support.
 """
+
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 from skill_gate.config import SecureConfig
 from skill_gate.models import ParsedSkill, SecurityFinding, SecurityResult

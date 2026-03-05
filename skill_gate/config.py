@@ -2,12 +2,13 @@
 Config loader for skill-gate.yaml.
 Supports ${ENV_VAR} expansion in all string values.
 """
+
 from __future__ import annotations
 
 import os
 import re
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 from ruamel.yaml import YAML
@@ -24,6 +25,7 @@ _ENV_VAR_PATTERN = re.compile(r"\$\{([^}]+)\}")
 def _expand_env_vars(value: Any) -> Any:
     """Recursively expand ${VAR} patterns in strings."""
     if isinstance(value, str):
+
         def _replace(match: re.Match) -> str:
             var_name = match.group(1)
             env_val = os.environ.get(var_name)
@@ -33,6 +35,7 @@ def _expand_env_vars(value: Any) -> Any:
                     f"  → Set it with: export {var_name}=<value>"
                 )
             return env_val
+
         return _ENV_VAR_PATTERN.sub(_replace, value)
     elif isinstance(value, dict):
         return {k: _expand_env_vars(v) for k, v in value.items()}
@@ -44,7 +47,7 @@ def _expand_env_vars(value: Any) -> Any:
 class AllowListEntry(BaseModel):
     id: str
     reason: str
-    file: Optional[str] = None
+    file: str | None = None
 
 
 class ValidateConfig(BaseModel):
@@ -71,21 +74,21 @@ class ConflictConfig(BaseModel):
     block_on_high_overlap: bool = True
     high_overlap_threshold: float = 0.75
     medium_overlap_threshold: float = 0.55
-    llm_model: Optional[str] = None
+    llm_model: str | None = None
 
 
 class InjectionConfig(BaseModel):
     method: Literal["directory_copy", "git_push", "custom_hook"] = "custom_hook"
-    pre_test_hook: Optional[str] = None
-    post_test_hook: Optional[str] = None
+    pre_test_hook: str | None = None
+    post_test_hook: str | None = None
 
 
 class TestConfig(BaseModel):
-    endpoint: Optional[str] = None
-    api_key: Optional[str] = None
-    model: Optional[str] = None
+    endpoint: str | None = None
+    api_key: str | None = None
+    model: str | None = None
     timeout_seconds: int = 30
-    reload_command: Optional[str] = None
+    reload_command: str | None = None
     reload_wait_seconds: int = 10
     reload_health_check_path: str = "/health"
     reload_timeout_seconds: int = 60
@@ -93,10 +96,10 @@ class TestConfig(BaseModel):
 
 
 class NotifyConfig(BaseModel):
-    slack_webhook: Optional[str] = None
+    slack_webhook: str | None = None
     github_issues: bool = False
-    github_token: Optional[str] = None
-    github_repo: Optional[str] = None
+    github_token: str | None = None
+    github_repo: str | None = None
 
 
 class MonitorConfig(BaseModel):
@@ -133,7 +136,7 @@ class SkillGateConfig(BaseModel):
 _DEFAULT_CONFIG_NAMES = ["skill-gate.yaml", "skill-gate.yml", ".skill-gate.yaml"]
 
 
-def load_config(path: Optional[Path] = None) -> SkillGateConfig:
+def load_config(path: Path | None = None) -> SkillGateConfig:
     """
     Load and validate skill-gate.yaml.
 
@@ -189,7 +192,7 @@ def load_config(path: Optional[Path] = None) -> SkillGateConfig:
         ) from e
 
 
-def _resolve_config_path(path: Optional[Path]) -> Optional[Path]:
+def _resolve_config_path(path: Path | None) -> Path | None:
     """Resolve the config file path."""
     if path is not None:
         if not path.exists():

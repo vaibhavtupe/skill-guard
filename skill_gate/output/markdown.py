@@ -1,4 +1,5 @@
 """Markdown output formatter (Phase 1: basic tables)."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -24,8 +25,9 @@ def _validation_md(result: ValidationResult) -> str:
 
     return (
         f"## skill-gate validate — `{result.skill_name}`\n\n"
-        f"| Check | Result |\n|---|---|\n" + "\n".join(rows) +
-        f"\n\n**Score:** {result.score}/100 (Grade {result.grade}) | "
+        f"| Check | Result |\n|---|---|\n"
+        + "\n".join(rows)
+        + f"\n\n**Score:** {result.score}/100 (Grade {result.grade}) | "
         f"Blockers: {result.blockers} | Warnings: {result.warnings}\n"
     )
 
@@ -51,9 +53,7 @@ def _conflict_md(result: ConflictResult) -> str:
     rows = []
     for m in result.matches:
         status = "❌" if m.severity == "high" else "⚠️"
-        rows.append(
-            f"| {m.existing_skill_name} | {status} {m.severity} | {m.similarity_score} |"
-        )
+        rows.append(f"| {m.existing_skill_name} | {status} {m.severity} | {m.similarity_score} |")
 
     if not rows:
         rows.append("| - | ✅ No conflicts | - |")

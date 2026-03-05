@@ -1,4 +1,5 @@
 """CLI command: skill-gate init"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,10 +8,16 @@ import typer
 
 from skill_gate.config import CONFIG_TEMPLATE
 
+DEFAULT_DIR = Path.cwd()
+DIR_OPT = typer.Option(DEFAULT_DIR, "--dir", help="Directory to initialize")
+NO_CATALOG_OPT = typer.Option(
+    True, "--no-catalog", help="Skip creating skill-catalog.yaml (Phase 1)"
+)
+
 
 def init_cmd(
-    dir_path: Path = typer.Option(Path.cwd(), "--dir", help="Directory to initialize"),
-    no_catalog: bool = typer.Option(True, "--no-catalog", help="Skip creating skill-catalog.yaml (Phase 1)"),
+    dir_path: Path = DIR_OPT,
+    no_catalog: bool = NO_CATALOG_OPT,
 ):
     """Initialize skill-gate in a repository."""
     _ = no_catalog  # reserved for Phase 2+ when catalog creation is supported
@@ -34,6 +41,12 @@ def init_cmd(
 
 
 def _workflow_template() -> str:
-    return """name: skill-gate CI\n\n""" + """
-""" + """on:\n  pull_request:\n    branches: [main]\n\n""" + """
-""" + """jobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'\n      - run: pip install skill-gate\n      - run: skill-gate validate ./skills/example-skill\n"""
+    return (
+        """name: skill-gate CI\n\n"""
+        + """
+"""
+        + """on:\n  pull_request:\n    branches: [main]\n\n"""
+        + """
+"""
+        + """jobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'\n      - run: pip install skill-gate\n      - run: skill-gate validate ./skills/example-skill\n"""
+    )

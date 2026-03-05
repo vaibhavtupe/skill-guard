@@ -1,6 +1,13 @@
 from pathlib import Path
 
-from skill_gate.models import CheckResult, ConflictMatch, ConflictResult, SecurityFinding, SecurityResult, ValidationResult
+from skill_gate.models import (
+    CheckResult,
+    ConflictMatch,
+    ConflictResult,
+    SecurityFinding,
+    SecurityResult,
+    ValidationResult,
+)
 from skill_gate.output.text import (
     format_conflict_result,
     format_security_result,

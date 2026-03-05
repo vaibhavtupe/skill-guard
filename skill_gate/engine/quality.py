@@ -1,13 +1,13 @@
 """
 Quality scorer — runs format compliance and quality checks, produces a 0-100 score.
 """
+
 from __future__ import annotations
 
 import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 from skill_gate.config import ValidateConfig
 from skill_gate.models import CheckResult, Grade, ParsedSkill, ValidationResult
@@ -41,24 +41,24 @@ class _Check:
 
 
 _CHECKS: list[_Check] = [
-    _Check("skill_md_exists",             "blocker", 10),
-    _Check("valid_yaml_frontmatter",      "blocker", 10),
-    _Check("name_field_present",          "blocker", 10),
-    _Check("description_field_present",   "blocker", 10),
-    _Check("directory_name_matches",      "blocker", 8),
-    _Check("name_format_valid",           "blocker", 8),
-    _Check("description_min_length",      "warning", 5),
-    _Check("description_max_length",      "warning", 3),
-    _Check("description_trigger_hint",    "warning", 5),
-    _Check("description_not_generic",     "warning", 6),
-    _Check("body_not_empty",              "warning", 5),
-    _Check("body_under_max_lines",        "warning", 3),
-    _Check("scripts_executable",          "warning", 7),
-    _Check("references_exist",            "blocker", 8),
-    _Check("no_broken_body_paths",        "blocker", 8),
-    _Check("evals_directory_exists",      "warning", 4),
-    _Check("metadata_has_author",         "warning", 4),
-    _Check("metadata_has_version",        "warning", 4),
+    _Check("skill_md_exists", "blocker", 10),
+    _Check("valid_yaml_frontmatter", "blocker", 10),
+    _Check("name_field_present", "blocker", 10),
+    _Check("description_field_present", "blocker", 10),
+    _Check("directory_name_matches", "blocker", 8),
+    _Check("name_format_valid", "blocker", 8),
+    _Check("description_min_length", "warning", 5),
+    _Check("description_max_length", "warning", 3),
+    _Check("description_trigger_hint", "warning", 5),
+    _Check("description_not_generic", "warning", 6),
+    _Check("body_not_empty", "warning", 5),
+    _Check("body_under_max_lines", "warning", 3),
+    _Check("scripts_executable", "warning", 7),
+    _Check("references_exist", "blocker", 8),
+    _Check("no_broken_body_paths", "blocker", 8),
+    _Check("evals_directory_exists", "warning", 4),
+    _Check("metadata_has_author", "warning", 4),
+    _Check("metadata_has_version", "warning", 4),
 ]
 
 _TOTAL_WEIGHT = sum(c.weight for c in _CHECKS)
@@ -80,6 +80,7 @@ def _grade_from_score(score: int) -> Grade:
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
+
 
 def run_validation(skill: ParsedSkill, config: ValidateConfig) -> ValidationResult:
     """
@@ -107,34 +108,50 @@ def run_validation(skill: ParsedSkill, config: ValidateConfig) -> ValidationResu
     if skill.metadata.name:
         checks.append(_pass("name_field_present", f"name: {skill.metadata.name}"))
     else:
-        checks.append(_fail("name_field_present", "Missing 'name' field", "Add: name: your-skill-name"))
+        checks.append(
+            _fail("name_field_present", "Missing 'name' field", "Add: name: your-skill-name")
+        )
 
     # description_field_present
     if skill.metadata.description:
         checks.append(_pass("description_field_present", "description field present"))
     else:
-        checks.append(_fail("description_field_present", "Missing 'description' field",
-                             "Add: description: \"What this skill does. Use when...\""))
+        checks.append(
+            _fail(
+                "description_field_present",
+                "Missing 'description' field",
+                'Add: description: "What this skill does. Use when..."',
+            )
+        )
 
     # directory_name_matches
     dir_name = skill.path.name
     skill_name = skill.metadata.name
     if dir_name == skill_name:
-        checks.append(_pass("directory_name_matches",
-                             f"Directory name '{dir_name}' matches skill name"))
+        checks.append(
+            _pass("directory_name_matches", f"Directory name '{dir_name}' matches skill name")
+        )
     else:
-        checks.append(_fail("directory_name_matches",
-                             f"Directory name '{dir_name}' does not match skill name '{skill_name}'",
-                             f"Rename the directory to '{skill_name}' or update the name field"))
+        checks.append(
+            _fail(
+                "directory_name_matches",
+                f"Directory name '{dir_name}' does not match skill name '{skill_name}'",
+                f"Rename the directory to '{skill_name}' or update the name field",
+            )
+        )
 
     # name_format_valid
     if _NAME_FORMAT_RE.match(skill_name or ""):
         checks.append(_pass("name_format_valid", f"Name '{skill_name}' uses valid characters"))
     else:
-        checks.append(_fail("name_format_valid",
-                             f"Name '{skill_name}' contains invalid characters",
-                             "Use only lowercase letters (a-z), digits (0-9), and hyphens. "
-                             "Must start and end with alphanumeric character."))
+        checks.append(
+            _fail(
+                "name_format_valid",
+                f"Name '{skill_name}' contains invalid characters",
+                "Use only lowercase letters (a-z), digits (0-9), and hyphens. "
+                "Must start and end with alphanumeric character.",
+            )
+        )
 
     # ── QUALITY CHECKS (warnings, configurable) ─────────────────────────────
 
@@ -142,30 +159,51 @@ def run_validation(skill: ParsedSkill, config: ValidateConfig) -> ValidationResu
 
     # description_min_length
     if len(desc) >= config.min_description_length:
-        checks.append(_pass("description_min_length",
-                             f"Description length {len(desc)} chars >= {config.min_description_length}"))
+        checks.append(
+            _pass(
+                "description_min_length",
+                f"Description length {len(desc)} chars >= {config.min_description_length}",
+            )
+        )
     else:
-        checks.append(_warn("description_min_length",
-                             f"Description too short ({len(desc)} chars, minimum {config.min_description_length})",
-                             "Expand the description to clearly explain when this skill should be used"))
+        checks.append(
+            _warn(
+                "description_min_length",
+                f"Description too short ({len(desc)} chars, minimum {config.min_description_length})",
+                "Expand the description to clearly explain when this skill should be used",
+            )
+        )
 
     # description_max_length
     if len(desc) <= config.max_description_length:
-        checks.append(_pass("description_max_length",
-                             f"Description length {len(desc)} chars <= {config.max_description_length}"))
+        checks.append(
+            _pass(
+                "description_max_length",
+                f"Description length {len(desc)} chars <= {config.max_description_length}",
+            )
+        )
     else:
-        checks.append(_warn("description_max_length",
-                             f"Description too long ({len(desc)} chars, maximum {config.max_description_length})",
-                             "Shorten the description. Move detailed content to references/ or the body"))
+        checks.append(
+            _warn(
+                "description_max_length",
+                f"Description too long ({len(desc)} chars, maximum {config.max_description_length})",
+                "Shorten the description. Move detailed content to references/ or the body",
+            )
+        )
 
     # description_trigger_hint
     if not config.require_trigger_hint or _TRIGGER_HINT_RE.search(desc):
-        checks.append(_pass("description_trigger_hint",
-                             "Description contains trigger hint ('Use when')"))
+        checks.append(
+            _pass("description_trigger_hint", "Description contains trigger hint ('Use when')")
+        )
     else:
-        checks.append(_warn("description_trigger_hint",
-                             "Description missing trigger hint",
-                             "Add a 'Use when...' phrase to help the agent know when to activate this skill"))
+        checks.append(
+            _warn(
+                "description_trigger_hint",
+                "Description missing trigger hint",
+                "Add a 'Use when...' phrase to help the agent know when to activate this skill",
+            )
+        )
 
     # description_not_generic
     desc_lower = desc.lower()
@@ -173,136 +211,185 @@ def run_validation(skill: ParsedSkill, config: ValidateConfig) -> ValidationResu
     if not found_vague:
         checks.append(_pass("description_not_generic", "Description is specific and informative"))
     else:
-        checks.append(_warn("description_not_generic",
-                             f"Description contains generic phrases: {', '.join(repr(p) for p in found_vague)}",
-                             "Be specific about what this skill does and when to use it"))
+        checks.append(
+            _warn(
+                "description_not_generic",
+                f"Description contains generic phrases: {', '.join(repr(p) for p in found_vague)}",
+                "Be specific about what this skill does and when to use it",
+            )
+        )
 
     # body_not_empty
     if skill.body.strip():
         checks.append(_pass("body_not_empty", "SKILL.md body has content"))
     else:
-        checks.append(_warn("body_not_empty", "SKILL.md body is empty",
-                             "Add instructions that tell the agent how to use this skill"))
+        checks.append(
+            _warn(
+                "body_not_empty",
+                "SKILL.md body is empty",
+                "Add instructions that tell the agent how to use this skill",
+            )
+        )
 
     # body_under_max_lines
     if skill.body_line_count <= config.max_body_lines:
-        checks.append(_pass("body_under_max_lines",
-                             f"Body length {skill.body_line_count} lines <= {config.max_body_lines}"))
+        checks.append(
+            _pass(
+                "body_under_max_lines",
+                f"Body length {skill.body_line_count} lines <= {config.max_body_lines}",
+            )
+        )
     else:
-        checks.append(_warn("body_under_max_lines",
-                             f"Body is {skill.body_line_count} lines (exceeds {config.max_body_lines} recommendation)",
-                             "Move detailed reference content to references/ directory"))
+        checks.append(
+            _warn(
+                "body_under_max_lines",
+                f"Body is {skill.body_line_count} lines (exceeds {config.max_body_lines} recommendation)",
+                "Move detailed reference content to references/ directory",
+            )
+        )
 
     # scripts_executable
     non_exec = _find_non_executable_scripts(skill.scripts)
     if not skill.has_scripts or not non_exec:
-        checks.append(_pass("scripts_executable",
-                             f"{len(skill.scripts)} script(s) all executable" if skill.has_scripts else "No scripts"))
+        checks.append(
+            _pass(
+                "scripts_executable",
+                f"{len(skill.scripts)} script(s) all executable"
+                if skill.has_scripts
+                else "No scripts",
+            )
+        )
     else:
-        checks.append(_warn("scripts_executable",
-                             f"{len(non_exec)} script(s) not executable: {', '.join(p.name for p in non_exec)}",
-                             f"Run: chmod +x {' '.join(str(p) for p in non_exec)}"))
+        checks.append(
+            _warn(
+                "scripts_executable",
+                f"{len(non_exec)} script(s) not executable: {', '.join(p.name for p in non_exec)}",
+                f"Run: chmod +x {' '.join(str(p) for p in non_exec)}",
+            )
+        )
 
     # references_exist (BLOCKER)
     missing_refs = _find_missing_references(skill.references)
     if not skill.has_references or not missing_refs:
-        checks.append(CheckResult(
-            check_name="references_exist",
-            passed=True,
-            severity="blocker",
-            message=f"{len(skill.references)} reference file(s) all exist" if skill.has_references else "No references directory",
-        ))
+        checks.append(
+            CheckResult(
+                check_name="references_exist",
+                passed=True,
+                severity="blocker",
+                message=f"{len(skill.references)} reference file(s) all exist"
+                if skill.has_references
+                else "No references directory",
+            )
+        )
     else:
-        checks.append(CheckResult(
-            check_name="references_exist",
-            passed=False,
-            severity="blocker",
-            message=f"Missing reference files: {', '.join(p.name for p in missing_refs)}",
-            suggestion="Create the missing files or remove the references from SKILL.md",
-        ))
+        checks.append(
+            CheckResult(
+                check_name="references_exist",
+                passed=False,
+                severity="blocker",
+                message=f"Missing reference files: {', '.join(p.name for p in missing_refs)}",
+                suggestion="Create the missing files or remove the references from SKILL.md",
+            )
+        )
 
     # no_broken_body_paths (BLOCKER)
     broken_paths = _find_broken_body_paths(skill.body, skill.path)
     if not broken_paths:
-        checks.append(CheckResult(
-            check_name="no_broken_body_paths",
-            passed=True,
-            severity="blocker",
-            message="No broken relative paths in SKILL.md body",
-        ))
+        checks.append(
+            CheckResult(
+                check_name="no_broken_body_paths",
+                passed=True,
+                severity="blocker",
+                message="No broken relative paths in SKILL.md body",
+            )
+        )
     else:
-        checks.append(CheckResult(
-            check_name="no_broken_body_paths",
-            passed=False,
-            severity="blocker",
-            message=f"Broken relative paths in body: {', '.join(broken_paths)}",
-            suggestion="Fix the paths or remove the references",
-        ))
+        checks.append(
+            CheckResult(
+                check_name="no_broken_body_paths",
+                passed=False,
+                severity="blocker",
+                message=f"Broken relative paths in body: {', '.join(broken_paths)}",
+                suggestion="Fix the paths or remove the references",
+            )
+        )
 
     # evals_directory_exists
     evals_severity = "blocker" if config.require_evals else "warning"
     if skill.has_evals:
-        checks.append(CheckResult(
-            check_name="evals_directory_exists",
-            passed=True,
-            severity=evals_severity,
-            message=f"evals/ directory found with {len(skill.evals_config.tests) if skill.evals_config else 0} test(s)",
-        ))
+        checks.append(
+            CheckResult(
+                check_name="evals_directory_exists",
+                passed=True,
+                severity=evals_severity,
+                message=f"evals/ directory found with {len(skill.evals_config.tests) if skill.evals_config else 0} test(s)",
+            )
+        )
     else:
-        checks.append(CheckResult(
-            check_name="evals_directory_exists",
-            passed=False,
-            severity=evals_severity,
-            message="No evals/ directory found",
-            suggestion=(
-                "Create evals/config.yaml with test cases. "
-                "Required for integration testing (skill-gate test). "
-                "See docs/eval-authoring-guide.md"
-            ),
-        ))
+        checks.append(
+            CheckResult(
+                check_name="evals_directory_exists",
+                passed=False,
+                severity=evals_severity,
+                message="No evals/ directory found",
+                suggestion=(
+                    "Create evals/config.yaml with test cases. "
+                    "Required for integration testing (skill-gate test). "
+                    "See docs/eval-authoring-guide.md"
+                ),
+            )
+        )
 
     # metadata_has_author
     author_severity = "blocker" if config.require_author_in_metadata else "warning"
     if skill.metadata.author:
-        checks.append(CheckResult(
-            check_name="metadata_has_author",
-            passed=True,
-            severity=author_severity,
-            message=f"author: {skill.metadata.author}",
-        ))
+        checks.append(
+            CheckResult(
+                check_name="metadata_has_author",
+                passed=True,
+                severity=author_severity,
+                message=f"author: {skill.metadata.author}",
+            )
+        )
     else:
-        checks.append(CheckResult(
-            check_name="metadata_has_author",
-            passed=False,
-            severity=author_severity,
-            message="Missing 'author' in metadata",
-            suggestion="Add metadata:\\n  author: your-team-name",
-        ))
+        checks.append(
+            CheckResult(
+                check_name="metadata_has_author",
+                passed=False,
+                severity=author_severity,
+                message="Missing 'author' in metadata",
+                suggestion="Add metadata:\\n  author: your-team-name",
+            )
+        )
 
     # metadata_has_version
     version_severity = "blocker" if config.require_version_in_metadata else "warning"
     if skill.metadata.version:
-        checks.append(CheckResult(
-            check_name="metadata_has_version",
-            passed=True,
-            severity=version_severity,
-            message=f"version: {skill.metadata.version}",
-        ))
+        checks.append(
+            CheckResult(
+                check_name="metadata_has_version",
+                passed=True,
+                severity=version_severity,
+                message=f"version: {skill.metadata.version}",
+            )
+        )
     else:
-        checks.append(CheckResult(
-            check_name="metadata_has_version",
-            passed=False,
-            severity=version_severity,
-            message="Missing 'version' in metadata",
-            suggestion="Add metadata:\\n  version: \"1.0\"",
-        ))
+        checks.append(
+            CheckResult(
+                check_name="metadata_has_version",
+                passed=False,
+                severity=version_severity,
+                message="Missing 'version' in metadata",
+                suggestion='Add metadata:\\n  version: "1.0"',
+            )
+        )
 
     # ── Compute score ───────────────────────────────────────────────────────
     check_result_map = {c.check_name: c for c in checks}
     passed_weight = sum(
         _CHECK_MAP[c.name].weight
         for c in _CHECKS
-        if check_result_map.get(c.name, None) and check_result_map[c.name].passed
+        if check_result_map.get(c.name) and check_result_map[c.name].passed
     )
     score = round((passed_weight / _TOTAL_WEIGHT) * 100)
     grade = _grade_from_score(score)
@@ -327,6 +414,7 @@ def run_validation(skill: ParsedSkill, config: ValidateConfig) -> ValidationResu
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _pass(check_name: str, message: str) -> CheckResult:
     return CheckResult(
         check_name=check_name,
@@ -336,7 +424,7 @@ def _pass(check_name: str, message: str) -> CheckResult:
     )
 
 
-def _fail(check_name: str, message: str, suggestion: Optional[str] = None) -> CheckResult:
+def _fail(check_name: str, message: str, suggestion: str | None = None) -> CheckResult:
     return CheckResult(
         check_name=check_name,
         passed=False,
@@ -346,7 +434,7 @@ def _fail(check_name: str, message: str, suggestion: Optional[str] = None) -> Ch
     )
 
 
-def _warn(check_name: str, message: str, suggestion: Optional[str] = None) -> CheckResult:
+def _warn(check_name: str, message: str, suggestion: str | None = None) -> CheckResult:
     return CheckResult(
         check_name=check_name,
         passed=False,

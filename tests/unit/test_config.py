@@ -11,6 +11,7 @@ def test_load_config_defaults(tmp_path: Path):
     try:
         # change to empty dir, no config
         import os
+
         os.chdir(tmp_path)
         cfg = load_config()
         assert cfg.validate.min_description_length == 20

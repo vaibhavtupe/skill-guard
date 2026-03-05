@@ -1,16 +1,17 @@
 """
 Conflict detection — TF-IDF similarity engine (Phase 1).
 """
+
 from __future__ import annotations
 
 import difflib
 import re
 from pathlib import Path
-from typing import Iterable, Literal
+from typing import Literal
 
+from ruamel.yaml import YAML
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from ruamel.yaml import YAML
 
 from skill_gate.config import ConflictConfig
 from skill_gate.models import ConflictMatch, ConflictResult, ParsedSkill, SkillParseError
@@ -33,12 +34,11 @@ def compute_similarity(
     if method == "embeddings":
         raise NotImplementedError(
             "Embeddings method is not available in Phase 1. "
-            "Install skill-gate[embeddings] and use Phase 3." 
+            "Install skill-gate[embeddings] and use Phase 3."
         )
     if method == "llm":
         raise NotImplementedError(
-            "LLM-based conflict detection is planned for Phase 3. "
-            "Use method=tfidf in Phase 1."
+            "LLM-based conflict detection is planned for Phase 3. Use method=tfidf in Phase 1."
         )
 
     # Apply threshold override (treat as medium threshold)
@@ -110,6 +110,7 @@ def compute_similarity(
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _tfidf_similarity(text_a: str, text_b: str) -> float:
     vectorizer = TfidfVectorizer(ngram_range=(1, 2), stop_words="english")
     tfidf = vectorizer.fit_transform([text_a, text_b])
@@ -122,8 +123,8 @@ def _extract_overlap_phrases(text_a: str, text_b: str) -> list[str]:
     tokens_a = _tokenize(text_a)
     tokens_b = _tokenize(text_b)
 
-    bigrams_a = set(zip(tokens_a, tokens_a[1:]))
-    bigrams_b = set(zip(tokens_b, tokens_b[1:]))
+    bigrams_a = set(zip(tokens_a, tokens_a[1:], strict=False))
+    bigrams_b = set(zip(tokens_b, tokens_b[1:], strict=False))
 
     overlap = bigrams_a.intersection(bigrams_b)
     phrases = [" ".join(b) for b in overlap]
