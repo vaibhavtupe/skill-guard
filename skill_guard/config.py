@@ -14,7 +14,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 from ruamel.yaml import YAML
 
-from skill_gate.models import ConfigError
+from skill_guard.models import ConfigError
 
 # Suppress Pydantic v2 warning for the intentional `validate` field name.
 # The field maps to the `validate:` YAML key; name kept for schema stability.

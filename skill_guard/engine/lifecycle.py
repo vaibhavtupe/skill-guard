@@ -5,8 +5,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-from skill_gate.config import MonitorConfig
-from skill_gate.models import CatalogEntry
+from skill_guard.config import MonitorConfig
+from skill_guard.models import CatalogEntry
 
 
 def apply_stage_transitions(

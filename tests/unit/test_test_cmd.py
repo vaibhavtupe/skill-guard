@@ -4,8 +4,8 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from skill_gate.main import app
-from skill_gate.models import AgentTestResult, EvalTestResult, HookError
+from skill_guard.main import app
+from skill_guard.models import AgentTestResult, EvalTestResult, HookError
 
 runner = CliRunner()
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
@@ -38,7 +38,7 @@ def test_test_cmd_exits_zero_when_all_tests_pass(monkeypatch) -> None:
             passed=True,
         )
 
-    monkeypatch.setattr("skill_gate.commands.test.run_agent_tests", fake_run_agent_tests)
+    monkeypatch.setattr("skill_guard.commands.test.run_agent_tests", fake_run_agent_tests)
     result = runner.invoke(
         app,
         [
@@ -81,7 +81,7 @@ def test_test_cmd_exits_one_when_pass_rate_below_one(monkeypatch) -> None:
             passed=False,
         )
 
-    monkeypatch.setattr("skill_gate.commands.test.run_agent_tests", fake_run_agent_tests)
+    monkeypatch.setattr("skill_guard.commands.test.run_agent_tests", fake_run_agent_tests)
     result = runner.invoke(
         app,
         [
@@ -112,7 +112,7 @@ def test_test_cmd_json_output(monkeypatch) -> None:
             passed=True,
         )
 
-    monkeypatch.setattr("skill_gate.commands.test.run_agent_tests", fake_run_agent_tests)
+    monkeypatch.setattr("skill_guard.commands.test.run_agent_tests", fake_run_agent_tests)
     result = runner.invoke(
         app,
         [
@@ -145,7 +145,7 @@ def test_test_cmd_markdown_output(monkeypatch) -> None:
             passed=True,
         )
 
-    monkeypatch.setattr("skill_gate.commands.test.run_agent_tests", fake_run_agent_tests)
+    monkeypatch.setattr("skill_guard.commands.test.run_agent_tests", fake_run_agent_tests)
     result = runner.invoke(
         app,
         [
@@ -167,7 +167,7 @@ def test_test_cmd_exits_five_on_hook_error(monkeypatch) -> None:
     async def fake_run_agent_tests(skill, config):  # noqa: ARG001
         raise HookError("pre-test hook failed")
 
-    monkeypatch.setattr("skill_gate.commands.test.run_agent_tests", fake_run_agent_tests)
+    monkeypatch.setattr("skill_guard.commands.test.run_agent_tests", fake_run_agent_tests)
     result = runner.invoke(
         app,
         [

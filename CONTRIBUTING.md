@@ -1,13 +1,13 @@
-# Contributing to skill-gate
+# Contributing to skill-guard
 
-Thank you for your interest in contributing! skill-gate is an open source project and we welcome contributions of all kinds.
+Thank you for your interest in contributing! skill-guard is an open source project and we welcome contributions of all kinds.
 
 ## Getting Started
 
 ```bash
 # Clone the repo
-git clone https://github.com/vaibhavtupe/skill-gate.git
-cd skill-gate
+git clone https://github.com/vaibhavtupe/skill-guard.git
+cd skill-guard
 
 # Create a virtual environment
 python -m venv .venv
@@ -62,4 +62,4 @@ Look for issues labeled `good first issue` — these are well-scoped and a great
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/vaibhavtupe/skill-gate/discussions) for questions, ideas, or feedback.
+Open a [GitHub Discussion](https://github.com/vaibhavtupe/skill-guard/discussions) for questions, ideas, or feedback.

@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from skill_gate.config import ValidateConfig
-from skill_gate.engine.quality import run_validation
-from skill_gate.parser import parse_skill
+from skill_guard.config import ValidateConfig
+from skill_guard.engine.quality import run_validation
+from skill_guard.parser import parse_skill
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
 

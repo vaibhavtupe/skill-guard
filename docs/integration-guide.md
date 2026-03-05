@@ -1,6 +1,6 @@
 # End-to-End Integration Guide
 
-How to integrate skill-gate into an existing skills repo and test against a real OpenAI Responses API-compatible agent.
+How to integrate skill-guard into an existing skills repo and test against a real OpenAI Responses API-compatible agent.
 
 ---
 
@@ -13,27 +13,27 @@ Your skills repo
 │   │   ├── SKILL.md
 │   │   └── evals/
 │   ├── another-skill/
-│   └── skill-catalog.yaml     ← managed by skill-gate catalog
-├── skill-gate.yaml            ← skill-gate config
+│   └── skill-catalog.yaml     ← managed by skill-guard catalog
+├── skill-guard.yaml            ← skill-guard config
 └── .github/workflows/
-    ├── skill-gate-ci.yml      ← PR gate (validate+secure+conflict+test)
-    └── skill-gate-monitor.yml ← weekly health check
+    ├── skill-guard-ci.yml      ← PR gate (validate+secure+conflict+test)
+    └── skill-guard-monitor.yml ← weekly health check
 ```
 
 ---
 
-## Step 1: Initialize skill-gate in your repo
+## Step 1: Initialize skill-guard in your repo
 
 ```bash
-pip install agentskill-gate
+pip install agentskill-guard
 cd your-skills-repo
-skill-gate init
+skill-guard init
 ```
 
-This creates `skill-gate.yaml` with commented defaults. Edit it:
+This creates `skill-guard.yaml` with commented defaults. Edit it:
 
 ```yaml
-# skill-gate.yaml
+# skill-guard.yaml
 skills_dir: ./skills/
 catalog_path: ./skill-catalog.yaml
 
@@ -57,7 +57,7 @@ monitor:
 
 ## Step 2: Add evals to your skills
 
-Each skill needs an `evals/` directory for `skill-gate test` to work. See [Writing Evals](eval-authoring-guide.md) for full details.
+Each skill needs an `evals/` directory for `skill-guard test` to work. See [Writing Evals](eval-authoring-guide.md) for full details.
 
 Minimum structure:
 
@@ -90,7 +90,7 @@ tests:
 
 ## Step 3: What your agent needs to expose
 
-skill-gate communicates with your agent via the **OpenAI Responses API** format. Your agent needs two endpoints:
+skill-guard communicates with your agent via the **OpenAI Responses API** format. Your agent needs two endpoints:
 
 ### `GET /health` → 200 OK
 ```json
@@ -107,7 +107,7 @@ Request format (OpenAI Responses API):
 }
 ```
 
-Response format skill-gate parses:
+Response format skill-guard parses:
 ```json
 {
   "output": [
@@ -128,7 +128,7 @@ Response format skill-gate parses:
 }
 ```
 
-skill-gate extracts:
+skill-guard extracts:
 - **Tool calls** from `output[].type == "tool_call"` → `output[].name`
 - **Response text** from `output[].type == "message"` → `output[].content[].text`
 
@@ -144,22 +144,22 @@ export AGENT_API_ENDPOINT=http://localhost:8000
 export AGENT_API_KEY=your-key   # omit if no auth
 
 # 1. Validate skill format
-skill-gate validate skills/my-skill/
+skill-guard validate skills/my-skill/
 
 # 2. Scan for security issues
-skill-gate secure skills/my-skill/
+skill-guard secure skills/my-skill/
 
 # 3. Check for conflicts with other skills
-skill-gate conflict skills/my-skill/ --against skills/
+skill-guard conflict skills/my-skill/ --against skills/
 
 # 4. Run evals against your agent
-skill-gate test skills/my-skill/ \
+skill-guard test skills/my-skill/ \
   --endpoint $AGENT_API_ENDPOINT \
   --api-key $AGENT_API_KEY \
   --model gpt-4.1
 
 # 5. Run everything in one command
-skill-gate check skills/my-skill/ \
+skill-guard check skills/my-skill/ \
   --against skills/ \
   --endpoint $AGENT_API_ENDPOINT
 ```
@@ -173,14 +173,14 @@ All commands exit 0 on pass, 1 on failure — scriptable in any CI system.
 After a skill passes all checks, register it:
 
 ```bash
-skill-gate catalog register skills/my-skill/ --catalog skill-catalog.yaml
+skill-guard catalog register skills/my-skill/ --catalog skill-catalog.yaml
 ```
 
 This creates/updates `skill-catalog.yaml` with the skill's metadata, quality score, and stage (`staging` by default).
 
 ```bash
 # View catalog
-skill-gate catalog list
+skill-guard catalog list
 
 # Promote to production (manual, after your review process)
 # Edit skill-catalog.yaml: change stage: staging → stage: production
@@ -192,10 +192,10 @@ Commit `skill-catalog.yaml` to your repo — it's the source of truth for deploy
 
 ## Step 6: Set up CI (GitHub Actions)
 
-Create `.github/workflows/skill-gate-ci.yml`:
+Create `.github/workflows/skill-guard-ci.yml`:
 
 ```yaml
-name: skill-gate CI
+name: skill-guard CI
 
 on:
   pull_request:
@@ -203,7 +203,7 @@ on:
       - 'skills/**'
 
 jobs:
-  skill-gate:
+  skill-guard:
     runs-on: ubuntu-latest
     env:
       AGENT_API_ENDPOINT: ${{ secrets.AGENT_API_ENDPOINT }}
@@ -216,8 +216,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install skill-gate
-        run: pip install agentskill-gate
+      - name: Install skill-guard
+        run: pip install agentskill-guard
 
       - name: Detect changed skill
         id: changed
@@ -225,9 +225,9 @@ jobs:
           SKILL=$(git diff --name-only origin/main...HEAD | grep '^skills/' | head -1 | cut -d/ -f1-2)
           echo "skill=$SKILL" >> $GITHUB_OUTPUT
 
-      - name: skill-gate check
+      - name: skill-guard check
         run: |
-          skill-gate check ${{ steps.changed.outputs.skill }} \
+          skill-guard check ${{ steps.changed.outputs.skill }} \
             --against skills/ \
             --endpoint $AGENT_API_ENDPOINT \
             --format md > sg-report.md
@@ -244,7 +244,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '## skill-gate report\n\n' + body
+              body: '## skill-guard report\n\n' + body
             });
 ```
 
@@ -254,10 +254,10 @@ Add secrets to your repo: `Settings → Secrets → AGENT_API_ENDPOINT`, `AGENT_
 
 ## Step 7: Set up weekly monitoring
 
-Create `.github/workflows/skill-gate-monitor.yml`:
+Create `.github/workflows/skill-guard-monitor.yml`:
 
 ```yaml
-name: skill-gate Monitor
+name: skill-guard Monitor
 
 on:
   schedule:
@@ -277,9 +277,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install agentskill-gate
+      - run: pip install agentskill-guard
       - run: |
-          skill-gate monitor \
+          skill-guard monitor \
             --catalog skill-catalog.yaml \
             --endpoint $AGENT_API_ENDPOINT \
             --format md
@@ -289,23 +289,23 @@ jobs:
 
 ## Step 8: Verify the Anthropic skills repo format
 
-If you're using the [Anthropic skills repo](https://github.com/anthropics/skills), skill-gate is compatible out of the box — the SKILL.md format is the same. Run from the repo root:
+If you're using the [Anthropic skills repo](https://github.com/anthropics/skills), skill-guard is compatible out of the box — the SKILL.md format is the same. Run from the repo root:
 
 ```bash
 # Clone the skills repo
 git clone https://github.com/anthropics/skills
 cd skills
 
-pip install agentskill-gate
-skill-gate init
+pip install agentskill-guard
+skill-guard init
 
 # Validate an existing skill
-skill-gate validate skills/skill-creator/
+skill-guard validate skills/skill-creator/
 
 # Check all skills for conflicts
 for skill in skills/*/; do
   echo "=== $skill ==="
-  skill-gate conflict "$skill" --against skills/
+  skill-guard conflict "$skill" --against skills/
 done
 ```
 
@@ -313,11 +313,11 @@ done
 
 ## Troubleshooting
 
-**`skill-gate test` fails: "Agent endpoint is required"**
-→ Pass `--endpoint` or set `test.endpoint` in `skill-gate.yaml`
+**`skill-guard test` fails: "Agent endpoint is required"**
+→ Pass `--endpoint` or set `test.endpoint` in `skill-guard.yaml`
 
 **Evals fail: response text doesn't contain expected strings**
-→ Check what your agent actually returns: `skill-gate test ... --format json | jq '.result.results[].response_text'`
+→ Check what your agent actually returns: `skill-guard test ... --format json | jq '.result.results[].response_text'`
 
 **Conflict score 1.0 with existing skill**
 → Your skill description overlaps too much. Narrow the trigger: add "Use when X but NOT when Y" to the description.

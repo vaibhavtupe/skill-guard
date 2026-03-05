@@ -1,4 +1,4 @@
-name: skill-gate Monitor
+name: skill-guard Monitor
 
 on:
   schedule:
@@ -16,5 +16,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install skill-gate
-      - run: skill-gate monitor --catalog skill-catalog.yaml --format md
+      - run: pip install skill-guard
+      - run: skill-guard monitor --catalog skill-catalog.yaml --format md

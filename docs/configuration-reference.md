@@ -1,6 +1,6 @@
 # Configuration Reference
 
-`skill-gate.yaml` controls all behavior. All string values support `${ENV_VAR}` expansion.
+`skill-guard.yaml` controls all behavior. All string values support `${ENV_VAR}` expansion.
 
 ## Example
 
@@ -83,4 +83,4 @@ Use `${VAR_NAME}` in any string value. Example:
 skills_dir: ${SKILLS_DIR}
 ```
 
-If the environment variable is not set, skill-gate raises a `ConfigError`.
+If the environment variable is not set, skill-guard raises a `ConfigError`.

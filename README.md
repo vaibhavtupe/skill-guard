@@ -1,12 +1,12 @@
-# skill-gate
+# skill-guard
 
 **The quality gate for Agent Skills.**
 
-[![PyPI version](https://badge.fury.io/py/agentskill-gate.svg)](https://badge.fury.io/py/agentskill-gate)
+[![PyPI version](https://badge.fury.io/py/agentskill-guard.svg)](https://badge.fury.io/py/agentskill-guard)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-skill-gate is a CLI tool that validates, secures, and governs [Agent Skills](https://agentskills.io) across their full lifecycle — from contribution to production monitoring.
+skill-guard is a CLI tool that validates, secures, and governs [Agent Skills](https://agentskills.io) across their full lifecycle — from contribution to production monitoring.
 
 ## The Problem
 
@@ -17,52 +17,52 @@ Agent Skills are powerful. They're also ungoverned. As soon as more than one per
 - Nobody knows what skills are installed, who owns them, or whether they still work
 - A skill passes every test in isolation but fails when the real agent uses it with 25 other skills loaded
 
-skill-gate is the quality gate that catches these problems before they reach production.
+skill-guard is the quality gate that catches these problems before they reach production.
 
 ## What It Does
 
 ```
 ONBOARDING (pre-merge, in CI):
-  skill-gate validate   → format compliance + quality scoring
-  skill-gate secure     → scan for dangerous patterns  
-  skill-gate conflict   → detect trigger overlap with existing skills
-  skill-gate test       → inject into staging agent, run evals
-  skill-gate check      → run all four as a single gate
+  skill-guard validate   → format compliance + quality scoring
+  skill-guard secure     → scan for dangerous patterns  
+  skill-guard conflict   → detect trigger overlap with existing skills
+  skill-guard test       → inject into staging agent, run evals
+  skill-guard check      → run all four as a single gate
 
 ONGOING (post-merge, scheduled):
-  skill-gate monitor    → re-run evals, detect drift, manage lifecycle
-  skill-gate catalog    → searchable registry of approved skills
+  skill-guard monitor    → re-run evals, detect drift, manage lifecycle
+  skill-guard catalog    → searchable registry of approved skills
 ```
 
 ## Quick Start
 
 ```bash
-pip install agentskill-gate
+pip install agentskill-guard
 
 # Initialize in your skills repo
-skill-gate init
+skill-guard init
 
 # Validate a skill
-skill-gate validate ./skills/my-skill/
+skill-guard validate ./skills/my-skill/
 
 # Check for security issues
-skill-gate secure ./skills/my-skill/
+skill-guard secure ./skills/my-skill/
 
 # Check for conflicts with existing skills
-skill-gate conflict ./skills/my-skill/ --against ./skills/
+skill-guard conflict ./skills/my-skill/ --against ./skills/
 
 # Run the full gate (validate + secure + conflict)
-skill-gate check ./skills/my-skill/ --against ./skills/
+skill-guard check ./skills/my-skill/ --against ./skills/
 ```
 
 ## Installation
 
 ```bash
 # Core (static analysis — no agent required)
-pip install agentskill-gate
+pip install agentskill-guard
 
 # With embedding-based conflict detection
-pip install agentskill-gate[embeddings]
+pip install agentskill-guard[embeddings]
 ```
 
 Requires Python 3.11+.
@@ -76,7 +76,7 @@ Requires Python 3.11+.
 - [CI/CD Integration](docs/ci-integration.md)
 - [Configuration Reference](docs/configuration-reference.md)
 
-## What skill-gate Does NOT Do
+## What skill-guard Does NOT Do
 
 - Does **not** replace [Anthropic's skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md) for writing skills
 - Does **not** host or serve skills — skills live in your repo

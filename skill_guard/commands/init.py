@@ -6,7 +6,7 @@ from pathlib import Path
 
 import typer
 
-from skill_gate.config import CONFIG_TEMPLATE
+from skill_guard.config import CONFIG_TEMPLATE
 
 DEFAULT_DIR = Path.cwd()
 DIR_OPT = typer.Option(DEFAULT_DIR, "--dir", help="Directory to initialize")

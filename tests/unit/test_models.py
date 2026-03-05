@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
-from skill_gate.models import (
+from skill_guard.models import (
     Catalog,
     CatalogEntry,
     CheckResult,

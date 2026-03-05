@@ -5,8 +5,8 @@ from datetime import UTC, datetime
 import httpx
 import pytest
 
-from skill_gate.engine.notifier import create_github_issue, send_slack_notification
-from skill_gate.models import MonitorReport, SkillHealthStatus
+from skill_guard.engine.notifier import create_github_issue, send_slack_notification
+from skill_guard.models import MonitorReport, SkillHealthStatus
 
 
 class _DummyResponse:

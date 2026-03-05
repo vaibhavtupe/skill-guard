@@ -30,7 +30,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
-      - run: pytest tests/unit/ -v --cov=skill_gate --cov-report=xml
+      - run: pytest tests/unit/ -v --cov=skill_guard --cov-report=xml
 
   integration-tests:
     runs-on: ubuntu-latest

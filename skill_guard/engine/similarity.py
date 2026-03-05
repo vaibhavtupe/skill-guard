@@ -13,9 +13,9 @@ from ruamel.yaml import YAML
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from skill_gate.config import ConflictConfig
-from skill_gate.models import ConflictMatch, ConflictResult, ParsedSkill, SkillParseError
-from skill_gate.parser import parse_skill
+from skill_guard.config import ConflictConfig
+from skill_guard.models import ConflictMatch, ConflictResult, ParsedSkill, SkillParseError
+from skill_guard.parser import parse_skill
 
 _TRIGGER_RE = re.compile(r"use when[^.]+\.?", re.IGNORECASE)
 

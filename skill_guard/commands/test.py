@@ -8,11 +8,11 @@ from typing import Any
 
 import typer
 
-from skill_gate.config import ConfigError, TestConfig, load_config
-from skill_gate.engine.agent_runner import run_agent_tests
-from skill_gate.models import HookError, SkillParseError
-from skill_gate.output.json_out import format_as_json
-from skill_gate.parser import parse_skill
+from skill_guard.config import ConfigError, TestConfig, load_config
+from skill_guard.engine.agent_runner import run_agent_tests
+from skill_guard.models import HookError, SkillParseError
+from skill_guard.output.json_out import format_as_json
+from skill_guard.parser import parse_skill
 
 SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
 ENDPOINT_OPT = typer.Option(None, "--endpoint", help="Agent endpoint URL")

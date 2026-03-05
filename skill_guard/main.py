@@ -6,10 +6,10 @@ import importlib.metadata
 
 import typer
 
-from skill_gate.commands import conflict, init, secure, test, validate
-from skill_gate.commands.catalog import catalog_app
-from skill_gate.commands.check import check_cmd
-from skill_gate.commands.monitor import monitor_cmd
+from skill_guard.commands import conflict, init, secure, test, validate
+from skill_guard.commands.catalog import catalog_app
+from skill_guard.commands.check import check_cmd
+from skill_guard.commands.monitor import monitor_cmd
 
 app = typer.Typer(name="skill-gate", help="The quality gate for Agent Skills.")
 

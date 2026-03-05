@@ -1,6 +1,6 @@
 from typer.testing import CliRunner
 
-from skill_gate.main import app
+from skill_guard.main import app
 
 runner = CliRunner()
 

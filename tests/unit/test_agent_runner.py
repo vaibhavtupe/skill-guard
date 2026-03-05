@@ -5,11 +5,11 @@ from pathlib import Path
 import httpx
 import pytest
 
-from skill_gate.config import TestConfig as RunnerConfig
-from skill_gate.engine import agent_runner
-from skill_gate.engine.agent_runner import run_agent_tests, run_hook, wait_for_agent_ready
-from skill_gate.models import HookError
-from skill_gate.parser import parse_skill
+from skill_guard.config import TestConfig as RunnerConfig
+from skill_guard.engine import agent_runner
+from skill_guard.engine.agent_runner import run_agent_tests, run_hook, wait_for_agent_ready
+from skill_guard.models import HookError
+from skill_guard.parser import parse_skill
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
 

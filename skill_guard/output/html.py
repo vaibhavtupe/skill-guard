@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from skill_gate.models import MonitorReport
+from skill_guard.models import MonitorReport
 
 
 def format_as_html(report: MonitorReport) -> str:

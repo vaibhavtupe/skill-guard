@@ -7,11 +7,11 @@ from typing import Any
 
 import typer
 
-from skill_gate.config import load_config
-from skill_gate.engine.catalog_manager import CatalogManager
-from skill_gate.engine.quality import run_validation
-from skill_gate.output.json_out import format_as_json
-from skill_gate.parser import parse_skill
+from skill_guard.config import load_config
+from skill_guard.engine.catalog_manager import CatalogManager
+from skill_guard.engine.quality import run_validation
+from skill_guard.output.json_out import format_as_json
+from skill_guard.parser import parse_skill
 
 catalog_app = typer.Typer(name="catalog", help="Manage the skill catalog.")
 _manager = CatalogManager()
