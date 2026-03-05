@@ -7,7 +7,6 @@ import os
 import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 import typer
 from ruamel.yaml import YAML
@@ -266,8 +265,7 @@ def _format_markdown(report: MonitorReport) -> str:
         f"- degraded: {report.degraded}\n"
         f"- failing: {report.failing}\n"
         f"- deprecated_skipped: {report.deprecated_skipped}\n\n"
-        "| Skill | Stage | Healthy | Findings |\n|---|---|---|---|\n"
-        + "\n".join(rows)
+        "| Skill | Stage | Healthy | Findings |\n|---|---|---|---|\n" + "\n".join(rows)
     )
 
 
