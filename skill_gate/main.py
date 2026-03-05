@@ -9,6 +9,7 @@ import typer
 from skill_gate.commands import conflict, init, secure, test, validate
 from skill_gate.commands.catalog import catalog_app
 from skill_gate.commands.check import check_cmd
+from skill_gate.commands.monitor import monitor_cmd
 
 app = typer.Typer(name="skill-gate", help="The quality gate for Agent Skills.")
 
@@ -30,6 +31,7 @@ app.command("secure")(secure.secure_cmd)
 app.command("conflict")(conflict.conflict_cmd)
 app.command("init")(init.init_cmd)
 app.command("test")(test.test_cmd)
+app.command("monitor")(monitor_cmd)
 app.add_typer(catalog_app, name="catalog")
 app.command("check")(check_cmd)
 
