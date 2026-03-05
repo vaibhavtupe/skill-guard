@@ -9,7 +9,7 @@ description = "The quality gate for Agent Skills — validate, secure, conflict-
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.11"
-authors = [{ name = "Vaibhav Tupe", email = "vaibhav@example.com" }]
+authors = [{ name = "Vaibhav Tupe", email = "8600448+vaibhavtupe@users.noreply.github.com" }]
 keywords = ["agent-skills", "ai-agents", "cli", "quality-gate", "llm"]
 classifiers = [
     "Development Status :: 3 - Alpha",
