@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "skill-gate"
+name = "agentskill-gate"
 version = "0.3.2"
 description = "The quality gate for Agent Skills — validate, secure, conflict-detect, and test skills across their full lifecycle"
 readme = "README.md"

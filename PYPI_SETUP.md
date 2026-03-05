@@ -7,7 +7,7 @@ skill-gate uses **Trusted Publishing (OIDC)** — no API token needed. One-time 
 1. **Create the PyPI project**
    - Go to https://pypi.org/manage/account/publishing/
    - Add a new Trusted Publisher:
-     - PyPI project name: `skill-gate`
+     - PyPI project name: `agentskill-gate`
      - GitHub owner: `vaibhavtupe`
      - GitHub repo: `skill-gate`
      - Workflow filename: `publish.yml`

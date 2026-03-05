@@ -43,7 +43,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install skill-gate
-        run: pip install skill-gate
+        run: pip install agentskill-gate
 
       - name: Validate skill
         run: skill-gate validate skills/my-skill --format json
@@ -80,7 +80,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install skill-gate
-        run: pip install skill-gate
+        run: pip install agentskill-gate
 
       # Run the full pipeline in one command
       - name: skill-gate check

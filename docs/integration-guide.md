@@ -25,7 +25,7 @@ Your skills repo
 ## Step 1: Initialize skill-gate in your repo
 
 ```bash
-pip install skill-gate
+pip install agentskill-gate
 cd your-skills-repo
 skill-gate init
 ```
@@ -217,7 +217,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install skill-gate
-        run: pip install skill-gate
+        run: pip install agentskill-gate
 
       - name: Detect changed skill
         id: changed
@@ -277,7 +277,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install skill-gate
+      - run: pip install agentskill-gate
       - run: |
           skill-gate monitor \
             --catalog skill-catalog.yaml \
@@ -296,7 +296,7 @@ If you're using the [Anthropic skills repo](https://github.com/anthropics/skills
 git clone https://github.com/anthropics/skills
 cd skills
 
-pip install skill-gate
+pip install agentskill-gate
 skill-gate init
 
 # Validate an existing skill
