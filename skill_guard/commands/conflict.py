@@ -6,13 +6,13 @@ from pathlib import Path
 
 import typer
 
-from skill_gate.config import load_config
-from skill_gate.engine.similarity import compute_similarity
-from skill_gate.models import ConfigError, SkillParseError
-from skill_gate.output.json_out import format_as_json
-from skill_gate.output.markdown import format_as_markdown
-from skill_gate.output.text import format_conflict_result
-from skill_gate.parser import parse_skill
+from skill_guard.config import load_config
+from skill_guard.engine.similarity import compute_similarity
+from skill_guard.models import ConfigError, SkillParseError
+from skill_guard.output.json_out import format_as_json
+from skill_guard.output.markdown import format_as_markdown
+from skill_guard.output.text import format_conflict_result
+from skill_guard.parser import parse_skill
 
 SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
 AGAINST_OPT = typer.Option(..., "--against", help="Skills dir or catalog YAML")

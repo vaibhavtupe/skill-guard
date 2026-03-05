@@ -3,9 +3,9 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-from skill_gate.engine.catalog_manager import CatalogManager
-from skill_gate.models import Catalog, CatalogEntry, CheckResult, ValidationResult
-from skill_gate.parser import parse_skill
+from skill_guard.engine.catalog_manager import CatalogManager
+from skill_guard.models import Catalog, CatalogEntry, CheckResult, ValidationResult
+from skill_guard.parser import parse_skill
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
 

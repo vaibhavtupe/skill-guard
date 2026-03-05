@@ -10,8 +10,8 @@ from typing import Any
 
 import httpx
 
-from skill_gate.config import TestConfig
-from skill_gate.models import (
+from skill_guard.config import TestConfig
+from skill_guard.models import (
     AgentTestResult,
     EvalExpectation,
     EvalTestResult,

@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from skill_gate.config import load_config
-from skill_gate.models import ConfigError
+from skill_guard.config import load_config
+from skill_guard.models import ConfigError
 
 
 def test_load_config_defaults(tmp_path: Path):

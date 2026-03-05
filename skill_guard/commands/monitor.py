@@ -11,18 +11,18 @@ from pathlib import Path
 import typer
 from ruamel.yaml import YAML
 
-from skill_gate.config import ConfigError, TestConfig, load_config
-from skill_gate.engine.agent_runner import run_agent_tests
-from skill_gate.engine.catalog_manager import CatalogManager
-from skill_gate.engine.lifecycle import apply_stage_transitions, check_ownership, check_staleness
-from skill_gate.engine.notifier import create_github_issue, send_slack_notification
-from skill_gate.engine.quality import run_validation
-from skill_gate.engine.security import run_security_scan
-from skill_gate.engine.similarity import compute_similarity
-from skill_gate.models import Catalog, MonitorReport, SkillHealthStatus, SkillParseError
-from skill_gate.output.html import format_as_html
-from skill_gate.output.json_out import format_as_json
-from skill_gate.parser import parse_skill
+from skill_guard.config import ConfigError, TestConfig, load_config
+from skill_guard.engine.agent_runner import run_agent_tests
+from skill_guard.engine.catalog_manager import CatalogManager
+from skill_guard.engine.lifecycle import apply_stage_transitions, check_ownership, check_staleness
+from skill_guard.engine.notifier import create_github_issue, send_slack_notification
+from skill_guard.engine.quality import run_validation
+from skill_guard.engine.security import run_security_scan
+from skill_guard.engine.similarity import compute_similarity
+from skill_guard.models import Catalog, MonitorReport, SkillHealthStatus, SkillParseError
+from skill_guard.output.html import format_as_html
+from skill_guard.output.json_out import format_as_json
+from skill_guard.parser import parse_skill
 
 CATALOG_OPT = typer.Option(..., "--catalog", help="Path to skill catalog YAML")
 ENDPOINT_OPT = typer.Option(None, "--endpoint", help="Agent endpoint URL")

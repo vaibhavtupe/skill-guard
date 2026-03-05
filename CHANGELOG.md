@@ -5,11 +5,11 @@
 ### Phase 3: Monitoring + Lifecycle
 
 **New:**
-- `skill-gate monitor` — full health check pipeline across all catalog skills
+- `skill-guard monitor` — full health check pipeline across all catalog skills
 - `lifecycle.py` — automated stage transitions (production → degraded → deprecated), staleness checks, CODEOWNERS/MAINTAINERS ownership validation
 - `notifier.py` — Slack webhook alerts + GitHub Issues creation (deduplicates open issues)
 - `output/html.py` — HTML health report with inline CSS, color-coded status cards
-- `.github/workflows/skill-gate-monitor.yml` — weekly scheduled monitoring (Monday 9am UTC)
+- `.github/workflows/skill-guard-monitor.yml` — weekly scheduled monitoring (Monday 9am UTC)
 
 **Tests:** 64 passing, 81.57% coverage
 
@@ -20,9 +20,9 @@
 ### Phase 2: Integration Testing + Catalog
 
 **New:**
-- `skill-gate test` — runs evals against real agent via OpenAI Responses API
-- `skill-gate catalog` — register, list, search, stats subcommands
-- `skill-gate check` — full pipeline: validate → secure → conflict → test in one pass
+- `skill-guard test` — runs evals against real agent via OpenAI Responses API
+- `skill-guard catalog` — register, list, search, stats subcommands
+- `skill-guard check` — full pipeline: validate → secure → conflict → test in one pass
 - `agent_runner.py` — async eval execution, pre/post hook support, health polling
 - `catalog_manager.py` — atomic YAML catalog read/write, stage management
 - `docs/ci-integration.md` — full GitHub Actions integration guide
@@ -37,10 +37,10 @@
 ### Phase 1: Static Analysis Foundation
 
 **New:**
-- `skill-gate validate` — schema validation, description quality, eval presence checks
-- `skill-gate secure` — prompt injection detection, scope violation scanning
-- `skill-gate conflict` — TF-IDF cosine similarity conflict detection
-- `skill-gate init` — project scaffold (skill-gate.yaml + CI workflow)
+- `skill-guard validate` — schema validation, description quality, eval presence checks
+- `skill-guard secure` — prompt injection detection, scope violation scanning
+- `skill-guard conflict` — TF-IDF cosine similarity conflict detection
+- `skill-guard init` — project scaffold (skill-guard.yaml + CI workflow)
 
 ## v0.3.2 — 2026-03-05
 
@@ -51,3 +51,13 @@
 - Docs: add `docs/eval-authoring-guide.md` — eval authoring reference
 - Docs: add `docs/hooks-guide.md` — pre/post hook scripts guide
 - Docs: add `docs/integration-guide.md` — end-to-end setup with real Responses API agent
+
+## v0.4.0 — 2026-03-05
+
+### Project rename: skill-gate → skill-guard
+
+- PyPI package: `skill-guard` (was `agentskill-gate`)
+- CLI command: `skill-guard` (was `skill-gate`)
+- Python package: `skill_guard` (was `skill_gate`)
+- GitHub repo: `vaibhavtupe/skillguard` (was `skill-gate`)
+- All functionality unchanged — pure rename

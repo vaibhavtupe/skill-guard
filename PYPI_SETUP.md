@@ -1,20 +1,20 @@
 # PyPI Publishing Setup
 
-skill-gate uses **Trusted Publishing (OIDC)** — no API token needed. One-time setup:
+skill-guard uses **Trusted Publishing (OIDC)** — no API token needed. One-time setup:
 
 ## Steps
 
 1. **Create the PyPI project**
    - Go to https://pypi.org/manage/account/publishing/
    - Add a new Trusted Publisher:
-     - PyPI project name: `agentskill-gate`
+     - PyPI project name: `agentskill-guard`
      - GitHub owner: `vaibhavtupe`
-     - GitHub repo: `skill-gate`
+     - GitHub repo: `skill-guard`
      - Workflow filename: `publish.yml`
      - Environment name: `pypi`
 
 2. **Create the GitHub environment**
-   - Go to https://github.com/vaibhavtupe/skill-gate/settings/environments
+   - Go to https://github.com/vaibhavtupe/skill-guard/settings/environments
    - Create environment named `pypi`
    - Optional: add protection rules (required reviewers)
 

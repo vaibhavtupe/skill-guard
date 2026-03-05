@@ -1,12 +1,12 @@
-# Writing Evals for skill-gate
+# Writing Evals for skill-guard
 
-Evals are prompt/response test cases that verify your skill behaves correctly when loaded into a real agent. `skill-gate test` runs them against any OpenAI Responses API-compatible endpoint.
+Evals are prompt/response test cases that verify your skill behaves correctly when loaded into a real agent. `skill-guard test` runs them against any OpenAI Responses API-compatible endpoint.
 
 ---
 
 ## Directory structure
 
-Every skill that supports `skill-gate test` needs an `evals/` directory:
+Every skill that supports `skill-guard test` needs an `evals/` directory:
 
 ```
 my-skill/
@@ -98,7 +98,7 @@ Edge cases test boundary conditions — low-signal inputs, ambiguous requests, i
 | Negative (skill doesn't trigger) | 1–2 | Skill doesn't over-trigger |
 | Edge case | 1–2 | Boundary conditions handled |
 
-A skill with only positive tests will pass `skill-gate test` but may cause conflicts with other skills in production. Always include at least one out-of-scope prompt.
+A skill with only positive tests will pass `skill-guard test` but may cause conflicts with other skills in production. Always include at least one out-of-scope prompt.
 
 ---
 
@@ -106,19 +106,19 @@ A skill with only positive tests will pass `skill-gate test` but may cause confl
 
 ```bash
 # Against a local agent
-skill-gate test ./skills/my-skill/ \
+skill-guard test ./skills/my-skill/ \
   --endpoint http://localhost:8000 \
   --model gpt-4.1
 
 # Against a staging agent with API key
-skill-gate test ./skills/my-skill/ \
+skill-guard test ./skills/my-skill/ \
   --endpoint https://staging-agent.example.com \
   --api-key $AGENT_API_KEY \
   --model gpt-4.1 \
   --format json
 
 # As part of the full gate
-skill-gate check ./skills/my-skill/ \
+skill-guard check ./skills/my-skill/ \
   --against ./skills/ \
   --endpoint http://localhost:8000
 ```
@@ -130,7 +130,7 @@ skill-gate check ./skills/my-skill/ \
 Use `--format json` to get full response details:
 
 ```bash
-skill-gate test ./skills/my-skill/ --endpoint http://localhost:8000 --format json | jq '.result.results[] | select(.passed == false)'
+skill-guard test ./skills/my-skill/ --endpoint http://localhost:8000 --format json | jq '.result.results[] | select(.passed == false)'
 ```
 
 This shows the exact response text, tool calls, and which checks failed for each failing test.

@@ -6,9 +6,9 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from skill_gate.engine.catalog_manager import CatalogManager
-from skill_gate.main import app
-from skill_gate.models import Catalog, CatalogEntry
+from skill_guard.engine.catalog_manager import CatalogManager
+from skill_guard.main import app
+from skill_guard.models import Catalog, CatalogEntry
 
 runner = CliRunner()
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"

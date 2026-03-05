@@ -3,9 +3,9 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from skill_gate.config import MonitorConfig
-from skill_gate.engine.lifecycle import apply_stage_transitions, check_ownership, check_staleness
-from skill_gate.models import CatalogEntry
+from skill_guard.config import MonitorConfig
+from skill_guard.engine.lifecycle import apply_stage_transitions, check_ownership, check_staleness
+from skill_guard.models import CatalogEntry
 
 
 def _entry(stage: str = "production", failures: int = 0) -> CatalogEntry:

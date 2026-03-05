@@ -11,9 +11,9 @@ import pytest
 import uvicorn
 from fastapi import FastAPI, Request
 
-from skill_gate.config import TestConfig
-from skill_gate.engine.agent_runner import run_agent_tests, wait_for_agent_ready
-from skill_gate.models import HookError
+from skill_guard.config import TestConfig
+from skill_guard.engine.agent_runner import run_agent_tests, wait_for_agent_ready
+from skill_guard.models import HookError
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
 
@@ -153,7 +153,7 @@ def test_full_eval_suite_passes_against_live_server(live_server: _LiveServer) ->
 
     result = asyncio.run(
         run_agent_tests(
-            __import__("skill_gate.parser", fromlist=["parse_skill"]).parse_skill(skill_path),
+            __import__("skill_guard.parser", fromlist=["parse_skill"]).parse_skill(skill_path),
             config,
         )
     )
@@ -167,7 +167,7 @@ def test_full_eval_suite_passes_against_live_server(live_server: _LiveServer) ->
 @pytest.mark.integration
 def test_skill_triggered_check_via_live_server(live_server: _LiveServer) -> None:
     """skill_triggered expectation resolves correctly when tool_call name matches."""
-    from skill_gate.parser import parse_skill
+    from skill_guard.parser import parse_skill
 
     skill = parse_skill(FIXTURES / "valid-skill")
     # Limit to first test and add skill_triggered expectation
@@ -185,7 +185,7 @@ def test_skill_triggered_check_via_live_server(live_server: _LiveServer) -> None
 @pytest.mark.integration
 def test_not_contains_check_blocks_out_of_scope_response(live_server: _LiveServer) -> None:
     """not-my-job eval: response must not contain diagnostic/packet keywords."""
-    from skill_gate.parser import parse_skill
+    from skill_guard.parser import parse_skill
 
     skill = parse_skill(FIXTURES / "valid-skill")
     not_my_job = skill.evals_config.tests[2]  # "not-my-job"
@@ -208,7 +208,7 @@ def test_health_check_passes_for_live_server(live_server: _LiveServer) -> None:
 @pytest.mark.integration
 def test_eval_fails_when_expected_text_missing(live_server: _LiveServer) -> None:
     """Inject an impossible contains expectation; test should fail with checks_failed populated."""
-    from skill_gate.parser import parse_skill
+    from skill_guard.parser import parse_skill
 
     skill = parse_skill(FIXTURES / "valid-skill")
     first = skill.evals_config.tests[0]
@@ -225,7 +225,7 @@ def test_eval_fails_when_expected_text_missing(live_server: _LiveServer) -> None
 @pytest.mark.integration
 def test_no_evals_raises_hook_error(live_server: _LiveServer) -> None:
     """Skills without evals should raise HookError, not crash silently."""
-    from skill_gate.parser import parse_skill
+    from skill_guard.parser import parse_skill
 
     skill = parse_skill(FIXTURES / "valid-skill")
     skill.evals_config = None  # simulate missing evals

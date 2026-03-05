@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from skill_gate.models import SkillParseError
-from skill_gate.parser import parse_skill
+from skill_guard.models import SkillParseError
+from skill_guard.parser import parse_skill
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
 

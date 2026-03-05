@@ -7,13 +7,13 @@ from typing import Any
 
 import typer
 
-from skill_gate.config import ConfigError, load_config
-from skill_gate.engine.quality import run_validation
-from skill_gate.engine.security import run_security_scan
-from skill_gate.engine.similarity import compute_similarity
-from skill_gate.models import SkillParseError
-from skill_gate.output.json_out import format_as_json
-from skill_gate.parser import parse_skill
+from skill_guard.config import ConfigError, load_config
+from skill_guard.engine.quality import run_validation
+from skill_guard.engine.security import run_security_scan
+from skill_guard.engine.similarity import compute_similarity
+from skill_guard.models import SkillParseError
+from skill_guard.output.json_out import format_as_json
+from skill_guard.parser import parse_skill
 
 SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
 AGAINST_OPT = typer.Option(..., "--against", help="Skills dir or catalog YAML")

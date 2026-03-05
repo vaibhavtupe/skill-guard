@@ -6,7 +6,7 @@ Hook scripts let you prepare your agent before evals run and clean up after. Com
 
 ## When you need hooks
 
-`skill-gate test` sends prompts directly to your agent endpoint — it does not deploy the skill for you. If your agent needs to load the skill before it can use it, you need a pre-test hook to do that deployment.
+`skill-guard test` sends prompts directly to your agent endpoint — it does not deploy the skill for you. If your agent needs to load the skill before it can use it, you need a pre-test hook to do that deployment.
 
 If your agent loads skills at startup from a directory, hooks are the way to inject the skill under test before evals run.
 
@@ -15,7 +15,7 @@ If your agent loads skills at startup from a directory, hooks are the way to inj
 ## Configuration
 
 ```yaml
-# skill-gate.yaml
+# skill-guard.yaml
 test:
   endpoint: http://localhost:8000
   model: gpt-4.1
@@ -112,7 +112,7 @@ echo "Restarted $CONTAINER with $(basename "$SKILL_PATH")"
 
 ## Health check after hook
 
-After the pre-test hook runs, skill-gate polls `GET {endpoint}/health` until it returns 200 or `reload_timeout_seconds` is exceeded. Your agent should expose a `/health` endpoint that returns `{"status": "ok"}` when ready.
+After the pre-test hook runs, skill-guard polls `GET {endpoint}/health` until it returns 200 or `reload_timeout_seconds` is exceeded. Your agent should expose a `/health` endpoint that returns `{"status": "ok"}` when ready.
 
 ```python
 # FastAPI example
@@ -136,7 +136,7 @@ async def health():
 
 ## Debugging hooks
 
-Run hooks manually to verify they work before wiring into skill-gate:
+Run hooks manually to verify they work before wiring into skill-guard:
 
 ```bash
 chmod +x hooks/deploy-skill.sh

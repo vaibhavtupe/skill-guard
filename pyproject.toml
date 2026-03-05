@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agentskill-gate"
-version = "0.3.2"
+name = "skill-guard"
+version = "0.4.0"
 description = "The quality gate for Agent Skills — validate, secure, conflict-detect, and test skills across their full lifecycle"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -43,15 +43,15 @@ dev = [
 ]
 
 [project.scripts]
-skill-gate = "skill_gate.main:app"
+skill-guard = "skill_guard.main:app"
 
 [project.urls]
-Homepage = "https://github.com/vaibhavtupe/skill-gate"
-Repository = "https://github.com/vaibhavtupe/skill-gate"
-Issues = "https://github.com/vaibhavtupe/skill-gate/issues"
+Homepage = "https://github.com/vaibhavtupe/skillguard"
+Repository = "https://github.com/vaibhavtupe/skillguard"
+Issues = "https://github.com/vaibhavtupe/skillguard/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["skill_gate"]
+packages = ["skill_guard"]
 
 [tool.ruff]
 line-length = 100
@@ -64,7 +64,7 @@ ignore = ["E501"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "--cov=skill_gate --cov-report=term-missing --cov-fail-under=80"
+addopts = "--cov=skill_guard --cov-report=term-missing --cov-fail-under=80"
 
 [tool.pytest.ini_options.markers]
 integration = "marks tests as integration tests (require live server; deselect with -m 'not integration')"

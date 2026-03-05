@@ -9,7 +9,7 @@ from typing import Any
 
 from ruamel.yaml import YAML
 
-from skill_gate.models import Catalog, CatalogEntry, ParsedSkill, ValidationResult
+from skill_guard.models import Catalog, CatalogEntry, ParsedSkill, ValidationResult
 
 
 class CatalogManager:

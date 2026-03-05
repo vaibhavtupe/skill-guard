@@ -2,7 +2,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from skill_gate.main import app
+from skill_guard.main import app
 
 runner = CliRunner()
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"

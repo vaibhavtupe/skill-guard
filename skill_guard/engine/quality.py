@@ -9,8 +9,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from skill_gate.config import ValidateConfig
-from skill_gate.models import CheckResult, Grade, ParsedSkill, ValidationResult
+from skill_guard.config import ValidateConfig
+from skill_guard.models import CheckResult, Grade, ParsedSkill, ValidationResult
 
 # ---------------------------------------------------------------------------
 # Check registry

@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from skill_gate.config import SecureConfig
-from skill_gate.engine.security import run_security_scan
-from skill_gate.parser import parse_skill
+from skill_guard.config import SecureConfig
+from skill_guard.engine.security import run_security_scan
+from skill_guard.parser import parse_skill
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
 

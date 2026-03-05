@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from skill_gate.config import ConflictConfig
-from skill_gate.engine.similarity import compute_similarity
-from skill_gate.parser import parse_skill
+from skill_guard.config import ConflictConfig
+from skill_guard.engine.similarity import compute_similarity
+from skill_guard.parser import parse_skill
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
 

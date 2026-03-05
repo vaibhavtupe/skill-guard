@@ -6,7 +6,7 @@ from typing import Any
 
 import httpx
 
-from skill_gate.models import MonitorReport
+from skill_guard.models import MonitorReport
 
 
 def send_slack_notification(webhook_url: str, report: MonitorReport) -> None:

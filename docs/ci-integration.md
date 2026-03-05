@@ -1,20 +1,20 @@
 # CI Integration Guide
 
-This guide covers integrating `skill-gate` into your CI/CD pipeline for automated skill quality enforcement, security scanning, conflict detection, and agent eval testing.
+This guide covers integrating `skill-guard` into your CI/CD pipeline for automated skill quality enforcement, security scanning, conflict detection, and agent eval testing.
 
 ---
 
 ## Overview
 
-`skill-gate` exposes four composable commands you can chain in CI:
+`skill-guard` exposes four composable commands you can chain in CI:
 
 | Command | What it checks |
 |---|---|
-| `skill-gate validate` | Schema, required fields, description quality, eval presence |
-| `skill-gate secure` | Prompt injection patterns, scope violations, banned phrases |
-| `skill-gate conflict` | Semantic overlap with existing skills (TF-IDF cosine similarity) |
-| `skill-gate test` | Live evals against your agent via the OpenAI Responses API |
-| `skill-gate check` | Runs validate → secure → conflict → test in one pass |
+| `skill-guard validate` | Schema, required fields, description quality, eval presence |
+| `skill-guard secure` | Prompt injection patterns, scope violations, banned phrases |
+| `skill-guard conflict` | Semantic overlap with existing skills (TF-IDF cosine similarity) |
+| `skill-guard test` | Live evals against your agent via the OpenAI Responses API |
+| `skill-guard check` | Runs validate → secure → conflict → test in one pass |
 
 ---
 
@@ -23,8 +23,8 @@ This guide covers integrating `skill-gate` into your CI/CD pipeline for automate
 ### Minimal CI workflow (validate + secure + conflict)
 
 ```yaml
-# .github/workflows/skill-gate-ci.yml
-name: skill-gate CI
+# .github/workflows/skill-guard-ci.yml
+name: skill-guard CI
 
 on:
   pull_request:
@@ -32,7 +32,7 @@ on:
       - 'skills/**'
 
 jobs:
-  skill-gate:
+  skill-guard:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,23 +42,23 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install skill-gate
-        run: pip install agentskill-gate
+      - name: Install skill-guard
+        run: pip install agentskill-guard
 
       - name: Validate skill
-        run: skill-gate validate skills/my-skill --format json
+        run: skill-guard validate skills/my-skill --format json
 
       - name: Security scan
-        run: skill-gate secure skills/my-skill --format json
+        run: skill-guard secure skills/my-skill --format json
 
       - name: Conflict check
-        run: skill-gate conflict skills/my-skill --against skills/ --format json
+        run: skill-guard conflict skills/my-skill --against skills/ --format json
 ```
 
 ### Full pipeline with agent eval testing
 
 ```yaml
-name: skill-gate Full CI
+name: skill-guard Full CI
 
 on:
   pull_request:
@@ -66,7 +66,7 @@ on:
       - 'skills/**'
 
 jobs:
-  skill-gate:
+  skill-guard:
     runs-on: ubuntu-latest
     env:
       AGENT_ENDPOINT: ${{ secrets.AGENT_ENDPOINT }}
@@ -79,19 +79,19 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install skill-gate
-        run: pip install agentskill-gate
+      - name: Install skill-guard
+        run: pip install agentskill-guard
 
       # Run the full pipeline in one command
-      - name: skill-gate check
+      - name: skill-guard check
         run: |
-          skill-gate check skills/my-skill \
+          skill-guard check skills/my-skill \
             --against skills/ \
             --endpoint $AGENT_ENDPOINT \
             --format json
 ```
 
-Exit codes from `skill-gate check`:
+Exit codes from `skill-guard check`:
 - `0` — all checks passed
 - `1` — a blocking check failed (validation, security, or conflict)
 - `2` — blocking checks passed but warnings present
@@ -100,9 +100,9 @@ Exit codes from `skill-gate check`:
 
 ---
 
-## Running `skill-gate test` in CI
+## Running `skill-guard test` in CI
 
-`skill-gate test` sends eval prompts from your skill's `evals/` directory to your agent and validates the responses.
+`skill-guard test` sends eval prompts from your skill's `evals/` directory to your agent and validates the responses.
 
 ### Prerequisites
 
@@ -140,7 +140,7 @@ tests:
 ### Running the eval
 
 ```bash
-skill-gate test skills/my-skill \
+skill-guard test skills/my-skill \
   --endpoint https://your-agent.example.com \
   --api-key $AGENT_API_KEY \
   --model gpt-4.1 \
@@ -168,10 +168,10 @@ For large repos, scanning a skills directory on every PR is slow. Use a pre-buil
 
 ```bash
 # Build the catalog once (e.g., on merge to main)
-skill-gate catalog register skills/my-skill --catalog skill-catalog.yaml
+skill-guard catalog register skills/my-skill --catalog skill-catalog.yaml
 
 # Use catalog in CI (fast, no filesystem scan of all skills)
-skill-gate conflict skills/pr-skill --against skill-catalog.yaml
+skill-guard conflict skills/pr-skill --against skill-catalog.yaml
 ```
 
 ### Maintaining the catalog in CI
@@ -180,7 +180,7 @@ skill-gate conflict skills/pr-skill --against skill-catalog.yaml
 - name: Update catalog on merge
   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
   run: |
-    skill-gate catalog register skills/my-skill --catalog skill-catalog.yaml
+    skill-guard catalog register skills/my-skill --catalog skill-catalog.yaml
     git add skill-catalog.yaml
     git commit -m "chore: update skill catalog" || true
     git push
@@ -195,10 +195,10 @@ All commands support `--format text|json|md`. Use `json` in CI for structured pa
 ### Posting results as a PR comment (GitHub Actions)
 
 ```yaml
-- name: Run skill-gate check (JSON)
+- name: Run skill-guard check (JSON)
   id: sg
   run: |
-    skill-gate check skills/my-skill --against skills/ --format md > sg-report.md
+    skill-guard check skills/my-skill --against skills/ --format md > sg-report.md
     echo "exit_code=$?" >> $GITHUB_OUTPUT
 
 - name: Comment on PR
@@ -222,7 +222,7 @@ All commands support `--format text|json|md`. Use `json` in CI for structured pa
 For skills that need agent state setup before evals run (e.g., loading fixtures, resetting DB), use hook scripts:
 
 ```yaml
-# skill-gate.yaml
+# skill-guard.yaml
 test:
   endpoint: https://your-agent.example.com
   injection:
@@ -237,7 +237,7 @@ Hook scripts receive two arguments: `<skill_path> <endpoint_url>`. Exit non-zero
 
 ## Configuration reference
 
-See [configuration-reference.md](configuration-reference.md) for all `skill-gate.yaml` options.
+See [configuration-reference.md](configuration-reference.md) for all `skill-guard.yaml` options.
 
 ---
 

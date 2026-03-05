@@ -8,8 +8,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from skill_gate.config import SecureConfig
-from skill_gate.models import ParsedSkill, SecurityFinding, SecurityResult
+from skill_guard.config import SecureConfig
+from skill_guard.models import ParsedSkill, SecurityFinding, SecurityResult
 
 # ---------------------------------------------------------------------------
 # Pattern registry

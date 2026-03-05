@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from skill_gate.models import ConflictResult, SecurityResult, ValidationResult
+from skill_guard.models import ConflictResult, SecurityResult, ValidationResult
 
 
 def format_as_markdown(result: Any, command: str = "") -> str:

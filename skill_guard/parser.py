@@ -9,7 +9,7 @@ from pathlib import Path
 
 from ruamel.yaml import YAML
 
-from skill_gate.models import (
+from skill_guard.models import (
     EvalConfig,
     ParsedSkill,
     SkillMetadata,

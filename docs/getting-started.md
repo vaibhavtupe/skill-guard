@@ -3,32 +3,32 @@
 ## Install
 
 ```bash
-pip install agentskill-gate
+pip install agentskill-guard
 ```
 
 Optional embeddings (Phase 3):
 
 ```bash
-pip install agentskill-gate[embeddings]
+pip install agentskill-guard[embeddings]
 ```
 
 ## Quick Start
 
 ```bash
 # Initialize config
-skill-gate init
+skill-guard init
 
 # Validate a skill
-skill-gate validate ./skills/my-skill/
+skill-guard validate ./skills/my-skill/
 
 # Scan for security issues
-skill-gate secure ./skills/my-skill/
+skill-guard secure ./skills/my-skill/
 
 # Check conflicts
-skill-gate conflict ./skills/my-skill/ --against ./skills/
+skill-guard conflict ./skills/my-skill/ --against ./skills/
 
 # Run the full gate (validate + secure + conflict)
-skill-gate check ./skills/my-skill/ --against ./skills/
+skill-guard check ./skills/my-skill/ --against ./skills/
 ```
 
 ## Example Output

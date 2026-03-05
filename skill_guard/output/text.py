@@ -5,7 +5,7 @@ from __future__ import annotations
 from rich.console import Console
 from rich.table import Table
 
-from skill_gate.models import ConflictResult, SecurityResult, ValidationResult
+from skill_guard.models import ConflictResult, SecurityResult, ValidationResult
 
 console = Console()
 
