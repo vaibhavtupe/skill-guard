@@ -6,7 +6,7 @@ import importlib.metadata
 
 import typer
 
-from skill_gate.commands import conflict, init, secure, validate
+from skill_gate.commands import conflict, init, secure, test, validate
 from skill_gate.commands.catalog import catalog_app
 from skill_gate.commands.check import check_cmd
 
@@ -29,6 +29,7 @@ app.command("validate")(validate.validate_cmd)
 app.command("secure")(secure.secure_cmd)
 app.command("conflict")(conflict.conflict_cmd)
 app.command("init")(init.init_cmd)
+app.command("test")(test.test_cmd)
 app.add_typer(catalog_app, name="catalog")
 app.command("check")(check_cmd)
 
