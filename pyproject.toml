@@ -1,0 +1,67 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "skill-gate"
+version = "0.1.0"
+description = "The quality gate for Agent Skills — validate, secure, conflict-detect, and test skills across their full lifecycle"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11"
+authors = [{ name = "Vaibhav Tupe", email = "vaibhav@example.com" }]
+keywords = ["agent-skills", "ai-agents", "cli", "quality-gate", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+    "typer>=0.12",
+    "ruamel.yaml>=0.18",
+    "scikit-learn>=1.4",
+    "httpx>=0.27",
+    "pydantic>=2.0",
+    "rich>=13.0",
+    "python-levenshtein>=0.25",
+]
+
+[project.optional-dependencies]
+embeddings = ["sentence-transformers>=2.7"]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "fastapi>=0.111",
+    "uvicorn>=0.29",
+    "httpx>=0.27",
+]
+
+[project.scripts]
+skill-gate = "skill_gate.main:app"
+
+[project.urls]
+Homepage = "https://github.com/vaibhavtupe/skill-gate"
+Repository = "https://github.com/vaibhavtupe/skill-gate"
+Issues = "https://github.com/vaibhavtupe/skill-gate/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["skill_gate"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--cov=skill_gate --cov-report=term-missing --cov-fail-under=80"
