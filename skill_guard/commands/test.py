@@ -1,4 +1,4 @@
-"""CLI command: skill-gate test."""
+"""CLI command: skill-guard test."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
 ENDPOINT_OPT = typer.Option(None, "--endpoint", help="Agent endpoint URL")
 API_KEY_OPT = typer.Option(None, "--api-key", help="Agent API key")
 MODEL_OPT = typer.Option(None, "--model", help="Model name for /v1/responses")
-CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-gate.yaml")
+CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")
 
 
@@ -29,7 +29,7 @@ def _emit(payload: dict[str, Any], output_format: str) -> None:
 
     if output_format in ("md", "markdown"):
         lines = [
-            "## skill-gate test",
+            "## skill-guard test",
             "",
             f"- skill: {payload['skill_name']}",
             f"- endpoint: {payload['endpoint']}",

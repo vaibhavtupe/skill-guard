@@ -1,4 +1,4 @@
-"""CLI command: skill-gate validate"""
+"""CLI command: skill-guard validate"""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from skill_guard.output.text import format_validation_result
 from skill_guard.parser import parse_skill
 
 SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
-CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-gate.yaml")
+CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")
 QUIET_OPT = typer.Option(False, "--quiet", help="Suppress non-essential output")
 VERBOSE_OPT = typer.Option(False, "--verbose", help="Show all check details")

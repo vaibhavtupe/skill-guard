@@ -1,4 +1,4 @@
-"""skill-gate CLI entrypoint."""
+"""skill-guard CLI entrypoint."""
 
 from __future__ import annotations
 
@@ -11,12 +11,12 @@ from skill_guard.commands.catalog import catalog_app
 from skill_guard.commands.check import check_cmd
 from skill_guard.commands.monitor import monitor_cmd
 
-app = typer.Typer(name="skill-gate", help="The quality gate for Agent Skills.")
+app = typer.Typer(name="skill-guard", help="The quality gate for Agent Skills.")
 
 
 def _version_callback(value: bool) -> None:
     if value:
-        v = importlib.metadata.version("skill-gate")
+        v = importlib.metadata.version("skill-guard")
         typer.echo(v)
         raise typer.Exit()
 

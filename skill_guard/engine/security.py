@@ -122,7 +122,7 @@ SECURITY_PATTERNS: list[SecurityPattern] = [
     ),
 ]
 
-_SUPPRESSION_RE = re.compile(r"skill-gate:\s*ignore\s+([A-Z]+-\d+)")
+_SUPPRESSION_RE = re.compile(r"skill-guard:\s*ignore\s+([A-Z]+-\d+)")
 
 
 # ---------------------------------------------------------------------------

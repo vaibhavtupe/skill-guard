@@ -29,7 +29,7 @@ def format_as_html(report: MonitorReport) -> str:
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>skill-gate monitor report</title>
+  <title>skill-guard monitor report</title>
   <style>
     body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 24px; background: #f8fafc; color: #0f172a; }}
     .cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }}
@@ -47,7 +47,7 @@ def format_as_html(report: MonitorReport) -> str:
   </style>
 </head>
 <body>
-  <h1>skill-gate monitor report</h1>
+  <h1>skill-guard monitor report</h1>
   <p class="muted">Generated at {report.generated_at.isoformat()} | Runtime {report.run_time_seconds:.2f}s</p>
   <div class="cards">
     <div class="card healthy-card"><h3>Healthy</h3><p>{report.healthy}</p></div>

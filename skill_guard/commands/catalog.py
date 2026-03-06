@@ -23,7 +23,7 @@ TAG_OPT = typer.Option(None, "--tag", help="Filter by tag")
 CATALOG_OPT = typer.Option(None, "--catalog", help="Catalog YAML path")
 SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
 QUERY_ARG = typer.Argument(..., help="Search query")
-CONFIG_OPT = typer.Option(None, "--config", help="Path to skill-gate.yaml")
+CONFIG_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 
 
 def _resolve_catalog_path(catalog_path: Path | None, config_path: Path | None = None) -> Path:
@@ -52,7 +52,7 @@ def _render_entries(entries: list[Any], output_format: str) -> None:
         if not rows:
             rows = ["| - | - | - | - | - |"]
         typer.echo(
-            "## skill-gate catalog list\n\n"
+            "## skill-guard catalog list\n\n"
             "| Name | Stage | Author | Version | Score |\n"
             "|---|---|---|---|---|\n" + "\n".join(rows)
         )
@@ -120,7 +120,7 @@ def stats_cmd(
         typer.echo(format_as_json(stats, command="catalog stats"))
     elif output_format in ("md", "markdown"):
         typer.echo(
-            "## skill-gate catalog stats\n\n"
+            "## skill-guard catalog stats\n\n"
             f"- total: {stats['total']}\n"
             f"- staging: {stats['staging']}\n"
             f"- production: {stats['production']}\n"

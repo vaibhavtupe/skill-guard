@@ -45,7 +45,7 @@ def _write_config(path: Path, degrade_after: int = 7) -> None:
 
 def test_monitor_cmd_success_json_output(tmp_path: Path) -> None:
     catalog_path = tmp_path / "catalog.yaml"
-    config_path = tmp_path / "skill-gate.yaml"
+    config_path = tmp_path / "skill-guard.yaml"
     manager = CatalogManager()
     skill_path = str((FIXTURES / "valid-skill").resolve())
     catalog = Catalog(
@@ -79,7 +79,7 @@ def test_monitor_cmd_success_json_output(tmp_path: Path) -> None:
 
 def test_monitor_cmd_transitions_to_degraded_and_fails(tmp_path: Path) -> None:
     catalog_path = tmp_path / "catalog.yaml"
-    config_path = tmp_path / "skill-gate.yaml"
+    config_path = tmp_path / "skill-guard.yaml"
     manager = CatalogManager()
     catalog = Catalog(
         updated=datetime.now(UTC),
@@ -108,7 +108,7 @@ def test_monitor_cmd_transitions_to_degraded_and_fails(tmp_path: Path) -> None:
 
 def test_monitor_cmd_html_output(tmp_path: Path) -> None:
     catalog_path = tmp_path / "catalog.yaml"
-    config_path = tmp_path / "skill-gate.yaml"
+    config_path = tmp_path / "skill-guard.yaml"
     manager = CatalogManager()
     skill_path = str((FIXTURES / "valid-skill").resolve())
     catalog = Catalog(
@@ -135,4 +135,4 @@ def test_monitor_cmd_html_output(tmp_path: Path) -> None:
     )
     assert result.exit_code == 0
     assert "<html" in result.stdout
-    assert "skill-gate monitor report" in result.stdout
+    assert "skill-guard monitor report" in result.stdout

@@ -1,4 +1,4 @@
-"""CLI command: skill-gate monitor."""
+"""CLI command: skill-guard monitor."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ STATIC_ONLY_OPT = typer.Option(
     "--static-only",
     help="Run only static checks (validate, secure, conflict), skip agent tests.",
 )
-CONFIG_OPT = typer.Option(None, "--config", help="Path to skill-gate.yaml")
+CONFIG_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md|html")
 REPO_ROOT_OPT = typer.Option(".", "--repo-root", help="Repository root for ownership checks")
 
@@ -228,7 +228,7 @@ def _emit_report(report: MonitorReport, output_format: str) -> None:
 
 def _format_text(report: MonitorReport) -> str:
     lines = [
-        "skill-gate monitor",
+        "skill-guard monitor",
         f"generated_at={report.generated_at.isoformat()} runtime={report.run_time_seconds:.2f}s",
         (
             f"total={report.total_skills} healthy={report.healthy} degraded={report.degraded} "
@@ -257,7 +257,7 @@ def _format_markdown(report: MonitorReport) -> str:
         rows.append("| - | - | - | - |")
 
     return (
-        "## skill-gate monitor\n\n"
+        "## skill-guard monitor\n\n"
         f"- generated_at: {report.generated_at.isoformat()}\n"
         f"- runtime_seconds: {report.run_time_seconds:.2f}\n"
         f"- total_skills: {report.total_skills}\n"

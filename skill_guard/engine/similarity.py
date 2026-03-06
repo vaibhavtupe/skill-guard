@@ -34,7 +34,7 @@ def compute_similarity(
     if method == "embeddings":
         raise NotImplementedError(
             "Embeddings method is not available in Phase 1. "
-            "Install skill-gate[embeddings] and use Phase 3."
+            "Install skill-guard[embeddings] and use Phase 3."
         )
     if method == "llm":
         raise NotImplementedError(

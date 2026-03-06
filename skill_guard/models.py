@@ -1,5 +1,5 @@
 """
-Pydantic v2 data models for skill-gate.
+Pydantic v2 data models for skill-guard.
 All core types used across the CLI and engine modules.
 """
 
@@ -110,7 +110,7 @@ class CheckResult(BaseModel):
 
 
 class ValidationResult(BaseModel):
-    """Aggregate output of skill-gate validate."""
+    """Aggregate output of skill-guard validate."""
 
     skill_name: str
     skill_path: Path
@@ -154,7 +154,7 @@ class SecurityFinding(BaseModel):
 
 
 class SecurityResult(BaseModel):
-    """Aggregate output of skill-gate secure."""
+    """Aggregate output of skill-guard secure."""
 
     skill_name: str
     findings: list[SecurityFinding]
@@ -183,7 +183,7 @@ class ConflictMatch(BaseModel):
 
 
 class ConflictResult(BaseModel):
-    """Aggregate output of skill-gate conflict."""
+    """Aggregate output of skill-guard conflict."""
 
     skill_name: str
     matches: list[ConflictMatch]
@@ -214,7 +214,7 @@ class EvalTestResult(BaseModel):
 
 
 class AgentTestResult(BaseModel):
-    """Aggregate output of skill-gate test."""
+    """Aggregate output of skill-guard test."""
 
     skill_name: str
     endpoint: str
@@ -234,7 +234,7 @@ class AgentTestResult(BaseModel):
 
 
 class CheckPipelineResult(BaseModel):
-    """Result of the unified skill-gate check command."""
+    """Result of the unified skill-guard check command."""
 
     skill_name: str
     validation: ValidationResult
@@ -311,7 +311,7 @@ class MonitorReport(BaseModel):
 
 
 class SkillGateError(Exception):
-    """Base error for skill-gate."""
+    """Base error for skill-guard."""
 
 
 class SkillParseError(SkillGateError):
@@ -319,7 +319,7 @@ class SkillParseError(SkillGateError):
 
 
 class ConfigError(SkillGateError):
-    """Raised when skill-gate.yaml is invalid or missing."""
+    """Raised when skill-guard.yaml is invalid or missing."""
 
 
 class HookError(SkillGateError):
