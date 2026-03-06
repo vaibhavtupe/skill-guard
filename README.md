@@ -81,15 +81,27 @@ Score: 97/100 | Grade: A | Blockers: 0 | Warnings: 1
 
 ## Installation
 
+## Prerequisites
+
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| Python | 3.11+ | Required. 3.12 and 3.13 tested. |
+| pip | any recent | Bundled with Python |
+| typer | ≥0.13.0 | Installed automatically |
+| git | any | Required only if using `skill-guard test` or `skill-guard monitor` with a repo |
+| Agent endpoint | — | Required only for `skill-guard test` (OpenAI-compatible API) |
+
+> **Note:** `skill-guard validate`, `secure`, `conflict`, `init`, `catalog`, and `check` work fully offline — no agent or API key needed.
+
+## Installation
+
 ```bash
 # Core (static analysis — no agent required)
 pip install skill-guard
 
-# With embedding-based conflict detection
+# With embedding-based conflict detection (sentence-transformers)
 pip install skill-guard[embeddings]
 ```
-
-Requires Python 3.11+.
 
 ## Documentation
 
