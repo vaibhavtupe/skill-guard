@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4.3 — 2026-03-06
+
+### Bug Fixes
+
+- **Fix crash on startup with typer <0.13** — `Path | None` union type not supported by typer 0.9.x; tightened minimum to `typer>=0.13.0` (closes #47)
+- **Fix all `skill-gate` → `skill-guard` naming** throughout Python source, config, init, tests, and output headers (closes #44)
+- **Fix example command syntax** — examples used non-existent `--dir` flag; corrected to positional `SKILL_PATH` with multi-skill loop pattern (closes #45)
+- **Add `examples/` directory** — `validate-anthropic-skills/` and `basic-quickstart/` with accurate working commands (closes #42)
+- **Fix README naming** — removed stale `agentskill-guard` references; updated example output to match actual table format (closes #41)
+
+---
+
 ## v0.3.0 — 2026-03-05
 
 ### Phase 3: Monitoring + Lifecycle
