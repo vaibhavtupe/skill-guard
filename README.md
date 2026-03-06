@@ -2,7 +2,7 @@
 
 **The quality gate for Agent Skills.**
 
-[![PyPI version](https://badge.fury.io/py/agentskill-guard.svg)](https://badge.fury.io/py/agentskill-guard)
+[![PyPI version](https://badge.fury.io/py/skill-guard.svg)](https://badge.fury.io/py/skill-guard)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
@@ -26,7 +26,7 @@ ONBOARDING (pre-merge, in CI):
   skill-guard validate   → format compliance + quality scoring
   skill-guard secure     → scan for dangerous patterns  
   skill-guard conflict   → detect trigger overlap with existing skills
-  skill-guard test       → inject into staging agent, run evals
+  skill-guard test       → inject into staging agent, run evals [requires --agent-url]
   skill-guard check      → run all four as a single gate
 
 ONGOING (post-merge, scheduled):
@@ -37,7 +37,7 @@ ONGOING (post-merge, scheduled):
 ## Quick Start
 
 ```bash
-pip install agentskill-guard
+pip install skill-guard
 
 # Initialize in your skills repo
 skill-guard init
@@ -55,14 +55,28 @@ skill-guard conflict ./skills/my-skill/ --against ./skills/
 skill-guard check ./skills/my-skill/ --against ./skills/
 ```
 
+### Example Output
+
+```bash
+$ skill-guard validate ./skills/pdf/
+✔  SKILL.md found
+✔  Required fields present (name, description)
+✔  Description length: 156 chars (good)
+✔  No disallowed fields
+⚠  No evals/ directory found (recommended for testability)
+⚠  No scripts/ directory found
+
+Quality score: 78/100  Grade: B
+```
+
 ## Installation
 
 ```bash
 # Core (static analysis — no agent required)
-pip install agentskill-guard
+pip install skill-guard
 
 # With embedding-based conflict detection
-pip install agentskill-guard[embeddings]
+pip install skill-guard[embeddings]
 ```
 
 Requires Python 3.11+.

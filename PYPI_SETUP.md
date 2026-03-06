@@ -7,7 +7,7 @@ skill-guard uses **Trusted Publishing (OIDC)** — no API token needed. One-time
 1. **Create the PyPI project**
    - Go to https://pypi.org/manage/account/publishing/
    - Add a new Trusted Publisher:
-     - PyPI project name: `agentskill-guard`
+     - PyPI project name: `skill-guard`
      - GitHub owner: `vaibhavtupe`
      - GitHub repo: `skill-guard`
      - Workflow filename: `publish.yml`

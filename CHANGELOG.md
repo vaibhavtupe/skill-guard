@@ -54,10 +54,10 @@
 
 ## v0.4.0 — 2026-03-05
 
-### Project rename: skill-gate → skill-guard
+### Project rename finalized
 
-- PyPI package: `skill-guard` (was `agentskill-gate`)
-- CLI command: `skill-guard` (was `skill-gate`)
-- Python package: `skill_guard` (was `skill_gate`)
-- GitHub repo: `vaibhavtupe/skill-guard` (was `skill-gate`)
+- PyPI package: `skill-guard`
+- CLI command: `skill-guard`
+- Python package: `skill_guard`
+- GitHub repo: `vaibhavtupe/skill-guard`
 - All functionality unchanged — pure rename

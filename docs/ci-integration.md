@@ -43,7 +43,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install skill-guard
-        run: pip install agentskill-guard
+        run: pip install skill-guard
 
       - name: Validate skill
         run: skill-guard validate skills/my-skill --format json
@@ -80,7 +80,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install skill-guard
-        run: pip install agentskill-guard
+        run: pip install skill-guard
 
       # Run the full pipeline in one command
       - name: skill-guard check
