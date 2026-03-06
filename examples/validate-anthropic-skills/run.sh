@@ -11,8 +11,17 @@ else
   git clone https://github.com/anthropics/skills "$REPO_DIR"
 fi
 
-skill-guard validate --dir "$SKILLS_DIR"
+echo "Validating each skill in $SKILLS_DIR ..."
+for skill_dir in "$SKILLS_DIR"/*/; do
+  echo ""
+  echo "── $(basename "$skill_dir") ──"
+  skill-guard validate "$skill_dir"
+done
 
 if [ "${1:-}" = "--with-conflict" ]; then
-  skill-guard conflict --dir "$SKILLS_DIR"
+  echo ""
+  echo "── Conflict detection ──"
+  for skill_dir in "$SKILLS_DIR"/*/; do
+    skill-guard conflict "$skill_dir" --against "$SKILLS_DIR"
+  done
 fi

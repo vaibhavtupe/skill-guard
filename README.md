@@ -57,16 +57,26 @@ skill-guard check ./skills/my-skill/ --against ./skills/
 
 ### Example Output
 
-```bash
-$ skill-guard validate ./skills/pdf/
-✔  SKILL.md found
-✔  Required fields present (name, description)
-✔  Description length: 156 chars (good)
-✔  No disallowed fields
-⚠  No evals/ directory found (recommended for testability)
-⚠  No scripts/ directory found
+```
+$ skill-guard validate ./skills/my-skill/
 
-Quality score: 78/100  Grade: B
+ skill-guard validate — my-skill
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Check                     ┃ Result                                           ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ skill_md_exists           │ ✅ SKILL.md found                                │
+│ valid_yaml_frontmatter    │ ✅ Valid YAML frontmatter                        │
+│ name_field_present        │ ✅ name: my-skill                                │
+│ description_field_present │ ✅ description field present                     │
+│ directory_name_matches    │ ✅ Directory name matches skill name             │
+│ description_trigger_hint  │ ✅ Description contains trigger hint ('Use when')│
+│ no_broken_body_paths      │ ✅ No broken relative paths in SKILL.md body     │
+│ evals_directory_exists    │ ⚠️ No evals/ directory found                     │
+│                           │ → Create evals/config.yaml with test cases       │
+│ metadata_has_author       │ ✅ author: my-team                               │
+│ metadata_has_version      │ ✅ version: 1.0                                  │
+└───────────────────────────┴──────────────────────────────────────────────────┘
+Score: 97/100 | Grade: A | Blockers: 0 | Warnings: 1
 ```
 
 ## Installation
