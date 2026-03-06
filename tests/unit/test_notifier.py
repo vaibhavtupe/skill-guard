@@ -65,18 +65,18 @@ def test_send_slack_notification_posts_when_failing(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(httpx, "post", _post)
     send_slack_notification("https://hooks.slack.test", _report(healthy=False))
     assert captured["json"] is not None
-    assert "skill-gate monitor" in captured["json"]["text"]
+    assert "skill-guard monitor" in captured["json"]["text"]
 
 
 def test_create_github_issue_returns_existing_issue(monkeypatch: pytest.MonkeyPatch) -> None:
     def _get(url: str, headers: dict, timeout: float):
-        assert "labels=skill-gate" in url
+        assert "labels=skill-guard" in url
         assert headers["Authorization"].startswith("Bearer ")
         assert timeout == 15.0
         return _DummyResponse(
             [
                 {
-                    "title": "skill-gate: alpha health check failing",
+                    "title": "skill-guard: alpha health check failing",
                     "html_url": "https://github.com/org/repo/issues/10",
                 }
             ]
@@ -99,8 +99,8 @@ def test_create_github_issue_creates_new_issue(monkeypatch: pytest.MonkeyPatch) 
     def _post(url: str, headers: dict, json: dict, timeout: float):  # noqa: A002
         assert url.endswith("/issues")
         assert headers["Authorization"] == "Bearer token"
-        assert json["title"] == "skill-gate: alpha health check failing"
-        assert json["labels"] == ["skill-gate"]
+        assert json["title"] == "skill-guard: alpha health check failing"
+        assert json["labels"] == ["skill-guard"]
         assert "- finding-a" in json["body"]
         assert timeout == 15.0
         return _DummyResponse({"html_url": "https://github.com/org/repo/issues/20"})

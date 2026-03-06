@@ -16,7 +16,7 @@ def send_slack_notification(webhook_url: str, report: MonitorReport) -> None:
         return
 
     summary = (
-        f"skill-gate monitor: {report.failing} failing, {report.degraded} degraded, "
+        f"skill-guard monitor: {report.failing} failing, {report.degraded} degraded, "
         f"{report.healthy} healthy ({report.total_skills} total)"
     )
     fields = []
@@ -38,15 +38,15 @@ def send_slack_notification(webhook_url: str, report: MonitorReport) -> None:
 
 
 def create_github_issue(token: str, repo: str, skill_name: str, findings: list[str]) -> str:
-    """Create a skill-gate issue if one doesn't already exist for the skill."""
+    """Create a skill-guard issue if one doesn't already exist for the skill."""
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
     }
-    issue_title = f"skill-gate: {skill_name} health check failing"
+    issue_title = f"skill-guard: {skill_name} health check failing"
     issues_url = f"https://api.github.com/repos/{repo}/issues"
     list_response = httpx.get(
-        f"{issues_url}?state=open&labels=skill-gate",
+        f"{issues_url}?state=open&labels=skill-guard",
         headers=headers,
         timeout=15.0,
     )
@@ -65,7 +65,7 @@ def create_github_issue(token: str, repo: str, skill_name: str, findings: list[s
     create_response = httpx.post(
         issues_url,
         headers=headers,
-        json={"title": issue_title, "body": body, "labels": ["skill-gate"]},
+        json={"title": issue_title, "body": body, "labels": ["skill-guard"]},
         timeout=15.0,
     )
     create_response.raise_for_status()

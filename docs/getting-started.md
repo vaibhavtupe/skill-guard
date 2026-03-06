@@ -3,13 +3,13 @@
 ## Install
 
 ```bash
-pip install agentskill-guard
+pip install skill-guard
 ```
 
 Optional embeddings (Phase 3):
 
 ```bash
-pip install agentskill-guard[embeddings]
+pip install skill-guard[embeddings]
 ```
 
 ## Quick Start

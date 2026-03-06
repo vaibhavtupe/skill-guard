@@ -13,7 +13,7 @@ console = Console()
 def format_validation_result(
     result: ValidationResult, quiet: bool = False, verbose: bool = False
 ) -> None:
-    table = Table(title=f"skill-gate validate — {result.skill_name}")
+    table = Table(title=f"skill-guard validate — {result.skill_name}")
     table.add_column("Check")
     table.add_column("Result")
 
@@ -37,7 +37,7 @@ def format_validation_result(
 
 
 def format_security_result(result: SecurityResult, quiet: bool = False) -> None:
-    table = Table(title=f"skill-gate secure — {result.skill_name}")
+    table = Table(title=f"skill-guard secure — {result.skill_name}")
     table.add_column("Severity")
     table.add_column("Finding")
 
@@ -56,7 +56,7 @@ def format_security_result(result: SecurityResult, quiet: bool = False) -> None:
 
 
 def format_conflict_result(result: ConflictResult, quiet: bool = False) -> None:
-    table = Table(title=f"skill-gate conflict — {result.skill_name}")
+    table = Table(title=f"skill-guard conflict — {result.skill_name}")
     table.add_column("Match")
     table.add_column("Details")
 

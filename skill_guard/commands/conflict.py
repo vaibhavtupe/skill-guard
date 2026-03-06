@@ -1,4 +1,4 @@
-"""CLI command: skill-gate conflict"""
+"""CLI command: skill-guard conflict"""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from skill_guard.parser import parse_skill
 
 SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
 AGAINST_OPT = typer.Option(..., "--against", help="Skills dir or catalog YAML")
-CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-gate.yaml")
+CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 METHOD_OPT = typer.Option(None, "--method", help="tfidf|embeddings|llm")
 THRESHOLD_OPT = typer.Option(None, "--threshold", help="Similarity threshold")
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")

@@ -1,4 +1,4 @@
-"""CLI command: skill-gate check."""
+"""CLI command: skill-guard check."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from skill_guard.parser import parse_skill
 SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
 AGAINST_OPT = typer.Option(..., "--against", help="Skills dir or catalog YAML")
 ENDPOINT_OPT = typer.Option(None, "--endpoint", help="Agent endpoint URL")
-CONFIG_OPT = typer.Option(None, "--config", help="Path to skill-gate.yaml")
+CONFIG_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")
 
 
@@ -28,7 +28,7 @@ def _emit(payload: dict[str, Any], output_format: str) -> None:
         return
     if output_format in ("md", "markdown"):
         typer.echo(
-            "## skill-gate check\n\n"
+            "## skill-guard check\n\n"
             f"- skill: {payload['skill_name']}\n"
             f"- validation: {payload['validation']}\n"
             f"- security: {payload['security']}\n"

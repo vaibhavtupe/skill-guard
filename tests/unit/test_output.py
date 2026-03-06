@@ -30,4 +30,4 @@ def test_markdown_output():
         medium_conflicts=0,
     )
     md = format_as_markdown(conflict, command="conflict")
-    assert "skill-gate conflict" in md
+    assert "skill-guard conflict" in md

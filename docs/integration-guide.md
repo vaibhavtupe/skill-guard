@@ -25,7 +25,7 @@ Your skills repo
 ## Step 1: Initialize skill-guard in your repo
 
 ```bash
-pip install agentskill-guard
+pip install skill-guard
 cd your-skills-repo
 skill-guard init
 ```
@@ -217,7 +217,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install skill-guard
-        run: pip install agentskill-guard
+        run: pip install skill-guard
 
       - name: Detect changed skill
         id: changed
@@ -277,7 +277,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install agentskill-guard
+      - run: pip install skill-guard
       - run: |
           skill-guard monitor \
             --catalog skill-catalog.yaml \
@@ -296,7 +296,7 @@ If you're using the [Anthropic skills repo](https://github.com/anthropics/skills
 git clone https://github.com/anthropics/skills
 cd skills
 
-pip install agentskill-guard
+pip install skill-guard
 skill-guard init
 
 # Validate an existing skill

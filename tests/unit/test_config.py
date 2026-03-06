@@ -27,14 +27,14 @@ def test_load_config_missing_file(tmp_path: Path):
 
 def test_env_var_expansion(tmp_path: Path, monkeypatch):
     monkeypatch.setenv("FOO", "bar")
-    config_file = tmp_path / "skill-gate.yaml"
+    config_file = tmp_path / "skill-guard.yaml"
     config_file.write_text("""\nskills_dir: ${FOO}\n""", encoding="utf-8")
     cfg = load_config(config_file)
     assert cfg.skills_dir == "bar"
 
 
 def test_missing_env_var(tmp_path: Path):
-    config_file = tmp_path / "skill-gate.yaml"
+    config_file = tmp_path / "skill-guard.yaml"
     config_file.write_text("""\nskills_dir: ${NOT_SET}\n""", encoding="utf-8")
     with pytest.raises(ConfigError):
         load_config(config_file)

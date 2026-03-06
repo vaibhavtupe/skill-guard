@@ -160,7 +160,7 @@ def test_test_cmd_markdown_output(monkeypatch) -> None:
         ],
     )
     assert result.exit_code == 0
-    assert "## skill-gate test" in result.stdout
+    assert "## skill-guard test" in result.stdout
 
 
 def test_test_cmd_exits_five_on_hook_error(monkeypatch) -> None:

@@ -1,5 +1,5 @@
 """
-Config loader for skill-gate.yaml.
+Config loader for skill-guard.yaml.
 Supports ${ENV_VAR} expansion in all string values.
 """
 
@@ -145,12 +145,12 @@ class SkillGateConfig(BaseModel):
 # Loader
 # ---------------------------------------------------------------------------
 
-_DEFAULT_CONFIG_NAMES = ["skill-gate.yaml", "skill-gate.yml", ".skill-gate.yaml"]
+_DEFAULT_CONFIG_NAMES = ["skill-guard.yaml", "skill-guard.yml", ".skill-guard.yaml"]
 
 
 def load_config(path: Path | None = None) -> SkillGateConfig:
     """
-    Load and validate skill-gate.yaml.
+    Load and validate skill-guard.yaml.
 
     Args:
         path: Explicit path to config file. If None, searches for default names
@@ -200,7 +200,7 @@ def load_config(path: Path | None = None) -> SkillGateConfig:
     except Exception as e:
         raise ConfigError(
             f"Invalid config in '{config_path}': {e}\n"
-            f"  → Run 'skill-gate init' to see the full config template"
+            f"  → Run 'skill-guard init' to see the full config template"
         ) from e
 
 
@@ -210,7 +210,7 @@ def _resolve_config_path(path: Path | None) -> Path | None:
         if not path.exists():
             raise ConfigError(
                 f"Config file not found: '{path}'\n"
-                f"  → Run 'skill-gate init' to create a config file"
+                f"  → Run 'skill-guard init' to create a config file"
             )
         return path
 
@@ -233,15 +233,15 @@ def _to_plain_dict(obj: Any) -> Any:
 
 
 # ---------------------------------------------------------------------------
-# Config template for `skill-gate init`
+# Config template for `skill-guard init`
 # ---------------------------------------------------------------------------
 
 CONFIG_TEMPLATE = """\
-# skill-gate.yaml — Configuration for skill-gate
-# Run 'skill-gate init' to regenerate this file.
+# skill-guard.yaml — Configuration for skill-guard
+# Run 'skill-guard init' to regenerate this file.
 # All string values support ${ENV_VAR} expansion.
 #
-# Full reference: https://github.com/vaibhavtupe/skill-gate/docs/configuration-reference.md
+# Full reference: https://github.com/vaibhavtupe/skill-guard/docs/configuration-reference.md
 
 # ─────────────────────────────────────────────
 # Paths
@@ -250,7 +250,7 @@ skills_dir: ./skills/
 catalog_path: ./skill-catalog.yaml
 
 # ─────────────────────────────────────────────
-# Validation rules (skill-gate validate)
+# Validation rules (skill-guard validate)
 # ─────────────────────────────────────────────
 validate:
   min_description_length: 20       # Minimum chars in description
@@ -264,7 +264,7 @@ validate:
   #   - "a useful skill"
 
 # ─────────────────────────────────────────────
-# Security rules (skill-gate secure)
+# Security rules (skill-guard secure)
 # ─────────────────────────────────────────────
 secure:
   block_on: [critical, high]       # Severities that cause a blocking failure
@@ -276,7 +276,7 @@ secure:
   #     file: scripts/setup.sh
 
 # ─────────────────────────────────────────────
-# Conflict detection (skill-gate conflict)
+# Conflict detection (skill-guard conflict)
 # ─────────────────────────────────────────────
 conflict:
   method: tfidf                    # tfidf | embeddings | llm
@@ -285,7 +285,7 @@ conflict:
   block_on_high_overlap: true
 
 # ─────────────────────────────────────────────
-# Integration testing (skill-gate test) — Phase 2
+# Integration testing (skill-guard test) — Phase 2
 # ─────────────────────────────────────────────
 # test:
 #   endpoint: ${AGENT_API_ENDPOINT}

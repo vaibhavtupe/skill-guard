@@ -334,7 +334,7 @@ def run_validation(skill: ParsedSkill, config: ValidateConfig) -> ValidationResu
                 message="No evals/ directory found",
                 suggestion=(
                     "Create evals/config.yaml with test cases. "
-                    "Required for integration testing (skill-gate test). "
+                    "Required for integration testing (skill-guard test). "
                     "See docs/eval-authoring-guide.md"
                 ),
             )
