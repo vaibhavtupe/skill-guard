@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Any
 
 import typer
 
 from skill_guard.config import ConfigError, load_config
+from skill_guard.engine.agent_runner import run_agent_tests
 from skill_guard.engine.quality import run_validation
 from skill_guard.engine.security import run_security_scan
 from skill_guard.engine.similarity import compute_similarity
@@ -125,34 +127,65 @@ def check_cmd(
         raise typer.Exit(code=1)
 
     resolved_endpoint = endpoint or config.test.endpoint
+    validation_status = "passed" if validation.warnings == 0 else "warning"
     test_status = "skipped"
-    warnings_only = validation.warnings > 0
+    test_result = None
     if resolved_endpoint:
-        test_status = "warning"
-        warnings_only = True
+        config.test.endpoint = resolved_endpoint
+        test_result = asyncio.run(run_agent_tests(skill, config.test))
+        if test_result.passed:
+            test_status = "passed"
+        elif test_result.failed_tests > 0:
+            _emit(
+                {
+                    "skill_name": skill.metadata.name,
+                    "validation": validation_status,
+                    "security": "passed",
+                    "conflict": "passed",
+                    "test": "failed",
+                    "status": "failed",
+                    "summary": "Agent evals failed with blocking failures.",
+                    "result": {
+                        "validation": validation.model_dump(mode="json"),
+                        "security": security.model_dump(mode="json"),
+                        "conflict": conflict.model_dump(mode="json"),
+                        "test": test_result.model_dump(mode="json"),
+                    },
+                },
+                output_format,
+            )
+            raise typer.Exit(code=1)
+        else:
+            test_status = "warning"
 
-    final_status = "warning" if warnings_only else "passed"
+    has_warning = validation_status == "warning" or test_status == "warning"
+    final_status = "warning" if has_warning else "passed"
     _emit(
         {
             "skill_name": skill.metadata.name,
-            "validation": "passed" if validation.warnings == 0 else "warning",
+            "validation": validation_status,
             "security": "passed",
             "conflict": "passed",
             "test": test_status,
             "status": final_status,
             "summary": (
                 "All blocking checks passed."
-                if not warnings_only
+                if not has_warning
                 else "Blocking checks passed with warnings."
             ),
             "result": {
                 "validation": validation.model_dump(mode="json"),
                 "security": security.model_dump(mode="json"),
                 "conflict": conflict.model_dump(mode="json"),
+                **(
+                    {"test": test_result.model_dump(mode="json")}
+                    if test_result is not None
+                    else {}
+                ),
             },
         },
         output_format,
     )
 
-    if warnings_only:
+    if has_warning:
         raise typer.Exit(code=2)

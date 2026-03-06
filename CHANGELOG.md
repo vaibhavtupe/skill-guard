@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.4 — 2026-03-06
+
+### Bug Fixes
+- **fix(#51): wire agent evals into check command** — `skill-guard check --endpoint <url>` now actually runs OpenAI Responses API evals instead of silently skipping them. Test result included in output payload. Exit code 1 on eval failure.
+
+---
+
 ## v0.4.3 — 2026-03-06
 
 ### Bug Fixes
