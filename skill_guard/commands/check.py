@@ -178,9 +178,7 @@ def check_cmd(
                 "security": security.model_dump(mode="json"),
                 "conflict": conflict.model_dump(mode="json"),
                 **(
-                    {"test": test_result.model_dump(mode="json")}
-                    if test_result is not None
-                    else {}
+                    {"test": test_result.model_dump(mode="json")} if test_result is not None else {}
                 ),
             },
         },

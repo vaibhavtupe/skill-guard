@@ -59,9 +59,7 @@ def test_check_with_format_json(tmp_path: Path) -> None:
     assert payload["result"]["status"] == "passed"
 
 
-def test_check_runs_agent_evals_when_endpoint_provided(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_check_runs_agent_evals_when_endpoint_provided(tmp_path: Path, monkeypatch) -> None:
     against_dir = tmp_path / "against"
     shutil.copytree(FIXTURES / "valid-skill", against_dir / "valid-skill")
     calls = {"count": 0}
