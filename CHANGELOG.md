@@ -1,3 +1,18 @@
+## v0.5.0 — 2026-03-16
+
+### New Features & Fixes
+
+- **feat(#65): pre-commit hooks** — `.pre-commit-hooks.yaml` ships with the package. Three hooks: `skill-guard-validate`, `skill-guard-secure`, `skill-guard-check`. One paste into `.pre-commit-config.yaml` enforces validation at every commit.
+- **feat(#69): Anthropic AgentSkills spec compliance validator** — `skill-guard validate` now checks 8 spec rules: required frontmatter fields, 500-line body limit, description quality + trigger keywords, evals.json schema, binary reference existence. Opt-out via `validate.anthropic_spec: false`.
+- **feat(#66): `skill-guard fix`** — auto-repairs deterministic validation issues (missing frontmatter stubs, trailing whitespace, tabs → spaces). `--check` mode for dry-run in CI (exits 1 when fixes are available).
+- **feat(#67): `skill-guard init --template`** — scaffolds Anthropic-spec compliant skills from named templates: `base`, `weather-tool`, `search-tool`. Generated skills pass `validate` at 100/100 out of the box. `--list-templates` to enumerate.
+- **docs(#64): GitHub Action usage** — README now documents `vaibhavtupe/skill-guard-action@v1` with full input/output reference.
+- **fix(#70): README honesty** — corrected `--agent-url` → `--endpoint`, removed overstatements on `check`/`test`/`monitor`/`catalog`, documented all 6 exit codes, noted embeddings/LLM as planned features.
+
+**Stats:** 103 tests passing | 82.80% coverage | 48 files changed | 1,355 insertions
+
+---
+
 # Changelog
 
 ## v0.4.4 — 2026-03-06
