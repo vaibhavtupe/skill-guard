@@ -29,7 +29,7 @@ def test_conflict_self_excluded():
     [
         (
             "embeddings",
-            "Embeddings conflict detection is not yet implemented. Use method: tfidf (default).",
+            "sentence-transformers is required for embeddings conflict detection.",
         ),
         (
             "llm",

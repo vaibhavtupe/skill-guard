@@ -38,9 +38,7 @@ def compute_similarity(
     threshold = threshold or config.similarity_threshold
 
     if method == "embeddings":
-        raise ConfigError(
-            "Embeddings conflict detection is not yet implemented. Use method: tfidf (default)."
-        )
+        return _compute_embeddings_similarity(new_skill, existing_source, config, threshold)
     if method == "llm":
         raise ConfigError(
             "LLM conflict detection is not yet implemented. Use method: tfidf (default)."
@@ -114,6 +112,84 @@ def compute_similarity(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _compute_embeddings_similarity(
+    new_skill: ParsedSkill,
+    existing_source: Path,
+    config: ConflictConfig,
+    threshold: float | None = None,
+) -> ConflictResult:
+    """Embeddings-based conflict detection using sentence-transformers."""
+    try:
+        from sentence_transformers import SentenceTransformer  # type: ignore[import]
+        from sklearn.metrics.pairwise import cosine_similarity as cos_sim
+    except ImportError as exc:
+        raise ConfigError(
+            "sentence-transformers is required for embeddings conflict detection.\n"
+            "Install with: pip install skill-guard[embeddings]"
+        ) from exc
+
+    medium_threshold = threshold if threshold is not None else config.medium_overlap_threshold
+    existing_skills = _load_existing_skills(existing_source)
+    existing_skills = [s for s in existing_skills if s.metadata.name != new_skill.metadata.name]
+
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    new_text = new_skill.metadata.description
+    new_emb = model.encode([new_text])
+
+    matches: list[ConflictMatch] = []
+    name_collision = False
+    name_collision_with = None
+
+    for existing in existing_skills:
+        if existing.metadata.name == new_skill.metadata.name:
+            name_collision = True
+            name_collision_with = existing.metadata.name
+        else:
+            ratio = _levenshtein_ratio(existing.metadata.name, new_skill.metadata.name)
+            if ratio >= 0.8:
+                name_collision = True
+                name_collision_with = existing.metadata.name
+
+        existing_emb = model.encode([existing.metadata.description])
+        score = float(cos_sim(new_emb, existing_emb)[0][0])
+
+        if score < medium_threshold:
+            continue
+
+        severity = "high" if score >= config.high_overlap_threshold else "medium"
+        overlap_phrases = _extract_overlap_phrases(
+            new_skill.metadata.description, existing.metadata.description
+        )
+        matches.append(
+            ConflictMatch(
+                existing_skill_name=existing.metadata.name,
+                similarity_score=round(score, 2),
+                severity=severity,  # type: ignore
+                overlapping_phrases=overlap_phrases,
+                suggestions=[
+                    "Merge into a single skill with broader scope",
+                    "Narrow descriptions to distinguish triggers",
+                    "Add exclusion hints (e.g., 'Do NOT use for ...')",
+                ],
+            )
+        )
+
+    high_conflicts = sum(1 for m in matches if m.severity == "high")
+    medium_conflicts = sum(1 for m in matches if m.severity == "medium")
+    passed = not (config.block_on_high_overlap and high_conflicts > 0)
+
+    return ConflictResult(
+        skill_name=new_skill.metadata.name,
+        matches=matches,
+        name_collision=name_collision,
+        name_collision_with=name_collision_with,
+        passed=passed,
+        high_conflicts=high_conflicts,
+        medium_conflicts=medium_conflicts,
+    )
 
 
 def _tfidf_similarity(text_a: str, text_b: str) -> float:

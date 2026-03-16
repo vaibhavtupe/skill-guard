@@ -17,6 +17,7 @@ from skill_guard.commands import conflict, fix, init, secure, test, validate
 from skill_guard.commands.catalog import catalog_app
 from skill_guard.commands.check import check_cmd
 from skill_guard.commands.monitor import monitor_cmd
+from skill_guard.commands.suppress import suppress_cmd
 
 app = typer.Typer(name="skill-guard", help="The quality gate for Agent Skills.")
 _VERSION_CHECK_CACHE_PATH = Path.home() / ".cache" / "skill-guard" / "version-check"
@@ -122,6 +123,7 @@ app.command("test")(test.test_cmd)
 app.command("monitor")(monitor_cmd)
 app.add_typer(catalog_app, name="catalog")
 app.command("check")(check_cmd)
+app.command("suppress")(suppress_cmd)
 
 
 if __name__ == "__main__":
