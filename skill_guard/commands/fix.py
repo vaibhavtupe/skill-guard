@@ -32,12 +32,22 @@ def fix_cmd(skill_path: Path = SKILL_PATH_ARG, check: bool = CHECK_OPT) -> None:
     manual_fixes = sum(1 for plan in fix_plans if plan.reason_if_not is not None)
 
     if check:
-        typer.echo(f"0 fixes applied, {manual_fixes} manual fixes required")
-        for plan in fix_plans:
-            if plan.reason_if_not is not None:
-                typer.echo(plan.reason_if_not)
-            else:
-                typer.echo(f"Available fix: {plan.description}")
+        if available_fixes == 0 and manual_fixes == 0:
+            typer.echo("No fixes needed.")
+            return
+        if available_fixes > 0:
+            typer.echo(
+                f"{available_fixes} fix{'es' if available_fixes != 1 else ''} would be applied"
+                f" (dry run — rerun without --check to apply):"
+            )
+            for plan in fix_plans:
+                if plan.reason_if_not is None:
+                    typer.echo(f"  • {plan.description}")
+        if manual_fixes > 0:
+            typer.echo(f"{manual_fixes} manual fix{'es' if manual_fixes != 1 else ''} required:")
+            for plan in fix_plans:
+                if plan.reason_if_not is not None:
+                    typer.echo(f"  • {plan.reason_if_not}")
         if available_fixes > 0:
             raise typer.Exit(code=1)
         return

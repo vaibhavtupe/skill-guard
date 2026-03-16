@@ -47,7 +47,7 @@ def test_fix_command_skips_ambiguous_link_and_warns(tmp_path: Path) -> None:
     result = runner.invoke(app, ["fix", str(skill_dir)])
 
     assert result.exit_code == 0
-    assert "manual fixes required" in result.stdout
+    assert "manual fix" in result.stdout
     assert "broken relative links with multiple candidates are not auto-fixed" in result.stdout
     assert "[guide](guide.md)" in (skill_dir / "SKILL.md").read_text(encoding="utf-8")
 
@@ -60,5 +60,6 @@ def test_fix_command_check_mode_is_non_destructive_and_non_zero(tmp_path: Path) 
     result = runner.invoke(app, ["fix", str(skill_dir), "--check"])
 
     assert result.exit_code == 1
-    assert "0 fixes applied, 1 manual fixes required" not in result.stdout
+    assert "would be applied" in result.stdout
+    assert "0 fixes applied" not in result.stdout
     assert (skill_dir / "SKILL.md").read_text(encoding="utf-8") == before
