@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel
@@ -12,7 +12,7 @@ from pydantic import BaseModel
 def format_as_json(result: Any, command: str | None = None) -> str:
     payload = {
         "command": command,
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
     if isinstance(result, BaseModel):
