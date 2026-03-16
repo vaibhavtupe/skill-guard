@@ -108,6 +108,7 @@ def monitor_cmd(
                     }
                 )
                 test_result = asyncio.run(run_agent_tests(skill, test_cfg))
+                manager.increment_eval_count(updated_entry)
                 if not test_result.passed:
                     healthy_checks = False
                     findings.append(

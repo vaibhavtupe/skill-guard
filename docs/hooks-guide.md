@@ -112,7 +112,7 @@ echo "Restarted $CONTAINER with $(basename "$SKILL_PATH")"
 
 ## Health check after hook
 
-After the pre-test hook runs, skill-guard polls `GET {endpoint}/health` until it returns 200 or `reload_timeout_seconds` is exceeded. Your agent should expose a `/health` endpoint that returns `{"status": "ok"}` when ready.
+After the pre-test hook runs, skill-guard can optionally execute `test.reload_command`, wait `reload_wait_seconds`, then poll `GET {endpoint}{reload_health_check_path}` until it returns 200 or `reload_timeout_seconds` is exceeded. The default health path is `/health`.
 
 ```python
 # FastAPI example

@@ -11,7 +11,7 @@ import warnings
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field, model_validator
 from ruamel.yaml import YAML
 
 from skill_guard.models import ConfigError
@@ -74,12 +74,14 @@ class ValidateConfig(BaseModel):
 class SecureConfig(BaseModel):
     block_on: list[str] = Field(default_factory=lambda: ["critical", "high"])
     allow_external_urls_in_scripts: bool = False
+    # Reserved for future integration with the snyk CLI.
     use_snyk_scan: bool = False
     allow_list: list[AllowListEntry] = Field(default_factory=list)
 
 
 class ConflictConfig(BaseModel):
     similarity_threshold: float = 0.70
+    # Future note: tfidf is the only supported conflict detection method today.
     method: Literal["tfidf", "embeddings", "llm"] = "tfidf"
     block_on_high_overlap: bool = True
     high_overlap_threshold: float = 0.75
@@ -114,17 +116,35 @@ class NotifyConfig(BaseModel):
 
 class MonitorConfig(BaseModel):
     stale_threshold_days: int = 180
-    degrade_after_days: int = 7
-    deprecate_after_days: int = 30
+    degrade_after_failures: int = Field(
+        7,
+        validation_alias=AliasChoices("degrade_after_failures", "degrade_after_days"),
+        description="Move a production skill to degraded after this many consecutive eval failures.",
+    )
+    deprecate_after_failures: int = Field(
+        30,
+        validation_alias=AliasChoices("deprecate_after_failures", "deprecate_after_days"),
+        description="Move a degraded skill to deprecated after this many consecutive eval failures.",
+    )
     check_ownership: bool = True
     ownership_files: list[str] = Field(default_factory=lambda: ["CODEOWNERS", "MAINTAINERS"])
     ownership_fallback: Literal["warn", "skip"] = "warn"
     notify: NotifyConfig = Field(default_factory=NotifyConfig)
 
+    @model_validator(mode="before")
+    @classmethod
+    def _warn_on_deprecated_day_keys(cls, value: Any) -> Any:
+        if isinstance(value, dict) and (
+            "degrade_after_days" in value or "deprecate_after_days" in value
+        ):
+            value = dict(value)
+        return value
+
 
 class CIConfig(BaseModel):
     fail_on_warning: bool = False
-    post_pr_comment: bool = True
+    # Reserved for future GitHub API integration.
+    post_pr_comment: bool = False
     output_format: Literal["text", "json", "markdown"] = "markdown"
 
 
@@ -269,7 +289,7 @@ validate:
 secure:
   block_on: [critical, high]       # Severities that cause a blocking failure
   allow_external_urls_in_scripts: false
-  use_snyk_scan: false             # Requires snyk CLI (future feature)
+  use_snyk_scan: false             # Reserved for future snyk CLI integration
   # allow_list:                    # Suppress specific findings
   #   - id: EXEC-001
   #     reason: "Standard install pattern"
@@ -279,7 +299,7 @@ secure:
 # Conflict detection (skill-guard conflict)
 # ─────────────────────────────────────────────
 conflict:
-  method: tfidf                    # tfidf | embeddings | llm
+  method: tfidf                    # Only supported today; embeddings/llm are future modes
   high_overlap_threshold: 0.75    # >= this = HIGH conflict
   medium_overlap_threshold: 0.55  # >= this = MEDIUM conflict
   block_on_high_overlap: true
@@ -304,8 +324,8 @@ conflict:
 # ─────────────────────────────────────────────
 # monitor:
 #   stale_threshold_days: 180
-#   degrade_after_days: 7
-#   deprecate_after_days: 30
+#   degrade_after_failures: 7
+#   deprecate_after_failures: 30
 #   notify:
 #     slack_webhook: ${SLACK_WEBHOOK_URL}
 
@@ -314,6 +334,6 @@ conflict:
 # ─────────────────────────────────────────────
 ci:
   fail_on_warning: false
-  post_pr_comment: true
+  post_pr_comment: false           # Reserved for future GitHub PR comment support
   output_format: markdown
 """

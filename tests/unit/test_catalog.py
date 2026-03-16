@@ -130,3 +130,12 @@ def test_atomic_save_file_exists_after_save(tmp_path: Path) -> None:
     manager.save_catalog(catalog, catalog_path)
 
     assert catalog_path.exists()
+
+
+def test_increment_eval_count_updates_entry() -> None:
+    manager = CatalogManager()
+    entry = _entry("alpha", "production")
+
+    manager.increment_eval_count(entry)
+
+    assert entry.eval_count == 1

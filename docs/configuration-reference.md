@@ -22,21 +22,26 @@ validate:
 secure:
   block_on: [critical, high]
   allow_external_urls_in_scripts: false
-  use_snyk_scan: false
+  use_snyk_scan: false  # reserved for future integration
   allow_list:
     - id: EXEC-001
       reason: "Standard install pattern"
       file: scripts/setup.sh
 
 conflict:
-  method: tfidf
+  method: tfidf  # the only supported method today
   high_overlap_threshold: 0.75
   medium_overlap_threshold: 0.55
   block_on_high_overlap: true
 
+monitor:
+  stale_threshold_days: 180
+  degrade_after_failures: 7
+  deprecate_after_failures: 30
+
 ci:
   fail_on_warning: false
-  post_pr_comment: true
+  post_pr_comment: false  # reserved for future GitHub integration
   output_format: markdown
 ```
 
@@ -61,18 +66,23 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 ### `secure.*`
 - `block_on` (list[str]) severities that cause failure (critical/high/medium/low)
 - `allow_external_urls_in_scripts` (bool)
-- `use_snyk_scan` (bool, Phase 3+)
+- `use_snyk_scan` (bool, reserved for future integration)
 - `allow_list` (list) suppress specific findings
 
 ### `conflict.*`
-- `method` (tfidf|embeddings|llm)
+- `method` (tfidf|embeddings|llm, but only `tfidf` is currently supported)
 - `high_overlap_threshold` (float)
 - `medium_overlap_threshold` (float)
 - `block_on_high_overlap` (bool)
 
+### `monitor.*`
+- `stale_threshold_days` (int)
+- `degrade_after_failures` (int; `degrade_after_days` still loads as a deprecated alias)
+- `deprecate_after_failures` (int; `deprecate_after_days` still loads as a deprecated alias)
+
 ### `ci.*`
 - `fail_on_warning` (bool)
-- `post_pr_comment` (bool)
+- `post_pr_comment` (bool, reserved for future integration)
 - `output_format` (text|json|markdown)
 
 ## Environment Variables

@@ -19,18 +19,20 @@ def apply_stage_transitions(
     original_stage = updated.stage
     failures = updated.consecutive_eval_failures
 
-    if original_stage == "production" and failures >= config.degrade_after_days:
+    if original_stage == "production" and failures >= config.degrade_after_failures:
         updated.stage = "degraded"
         messages.append(
             f"{updated.name}: stage transitioned production -> degraded "
-            f"(consecutive_eval_failures={failures})"
+            f"(consecutive_eval_failures={failures}, "
+            f"degrade_after_failures={config.degrade_after_failures})"
         )
 
-    if updated.stage == "degraded" and failures >= config.deprecate_after_days:
+    if updated.stage == "degraded" and failures >= config.deprecate_after_failures:
         updated.stage = "deprecated"
         messages.append(
             f"{updated.name}: stage transitioned degraded -> deprecated "
-            f"(consecutive_eval_failures={failures})"
+            f"(consecutive_eval_failures={failures}, "
+            f"deprecate_after_failures={config.deprecate_after_failures})"
         )
 
     return updated, messages

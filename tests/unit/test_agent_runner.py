@@ -8,7 +8,7 @@ import pytest
 from skill_guard.config import TestConfig as RunnerConfig
 from skill_guard.engine import agent_runner
 from skill_guard.engine.agent_runner import run_agent_tests, run_hook, wait_for_agent_ready
-from skill_guard.models import HookError
+from skill_guard.models import HealthCheckTimeoutError, HookError
 from skill_guard.parser import parse_skill
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
@@ -202,5 +202,106 @@ async def test_wait_for_agent_ready_timeout(monkeypatch: pytest.MonkeyPatch) -> 
         return httpx.Response(503)
 
     _patch_async_client(monkeypatch, handler)
-    with pytest.raises(HookError):
+    with pytest.raises(HealthCheckTimeoutError):
         await wait_for_agent_ready("https://mock-agent.test", None, timeout_seconds=0)
+
+
+@pytest.mark.asyncio
+async def test_wait_for_agent_ready_uses_custom_health_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen = {"path": ""}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["path"] = request.url.path
+        return httpx.Response(200)
+
+    _patch_async_client(monkeypatch, handler)
+    await wait_for_agent_ready(
+        "https://mock-agent.test",
+        None,
+        timeout_seconds=1,
+        health_check_path="/readyz",
+    )
+
+    assert seen["path"] == "/readyz"
+
+
+@pytest.mark.asyncio
+async def test_run_agent_tests_runs_post_hook_after_pre_hook_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    skill = parse_skill(FIXTURES / "valid-skill")
+    calls: list[tuple[str, str]] = []
+
+    def fake_run_hook(hook_script: Path, skill_path: Path, endpoint: str) -> None:
+        calls.append((hook_script.name, endpoint))
+        if hook_script.name == "pre.sh":
+            raise HookError("pre hook failed")
+
+    monkeypatch.setattr(agent_runner, "run_hook", fake_run_hook)
+
+    config = RunnerConfig(
+        endpoint="https://mock-agent.test",
+        model="gpt-4.1",
+        injection={
+            "pre_test_hook": str(skill.path / "pre.sh"),
+            "post_test_hook": str(skill.path / "post.sh"),
+        },
+    )
+
+    with pytest.raises(HookError, match="pre hook failed"):
+        await run_agent_tests(skill, config)
+
+    assert calls == [("pre.sh", "https://mock-agent.test"), ("post.sh", "https://mock-agent.test")]
+
+
+@pytest.mark.asyncio
+async def test_run_agent_tests_runs_reload_command_and_waits_for_custom_health_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    skill = parse_skill(FIXTURES / "valid-skill")
+    calls: list[str] = []
+
+    def fake_reload_command(command: str) -> None:
+        calls.append(f"reload:{command}")
+
+    async def fake_wait_for_agent_ready(endpoint: str, api_key, timeout_seconds: int, health_check_path: str = "/health") -> None:  # noqa: ANN001
+        calls.append(f"health:{endpoint}:{timeout_seconds}:{health_check_path}")
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "output": [
+                    {
+                        "type": "message",
+                        "content": [{"type": "output_text", "text": "diagnostic latency"}],
+                    }
+                ]
+            },
+        )
+
+    _patch_async_client(monkeypatch, handler)
+    monkeypatch.setattr(agent_runner, "_run_reload_command", fake_reload_command)
+    monkeypatch.setattr(agent_runner, "wait_for_agent_ready", fake_wait_for_agent_ready)
+
+    sleep_calls: list[int] = []
+
+    async def fake_sleep(seconds: int) -> None:
+        sleep_calls.append(seconds)
+
+    monkeypatch.setattr(agent_runner.asyncio, "sleep", fake_sleep)
+
+    config = RunnerConfig(
+        endpoint="https://mock-agent.test",
+        model="gpt-4.1",
+        reload_command="echo reload",
+        reload_wait_seconds=2,
+        reload_health_check_path="/readyz",
+    )
+    await run_agent_tests(skill, config)
+
+    assert calls[0] == "reload:echo reload"
+    assert calls[1] == "health:https://mock-agent.test:60:/readyz"
+    assert sleep_calls == [2]

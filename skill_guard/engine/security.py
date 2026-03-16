@@ -5,8 +5,10 @@ Security scanner — regex-based pattern matching with suppression support.
 from __future__ import annotations
 
 import re
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
 
 from skill_guard.config import SecureConfig
 from skill_guard.models import ParsedSkill, SecurityFinding, SecurityResult
@@ -132,6 +134,9 @@ _SUPPRESSION_RE = re.compile(r"skill-guard:\s*ignore\s+([A-Z]+-\d+)")
 
 def run_security_scan(skill: ParsedSkill, config: SecureConfig) -> SecurityResult:
     """Scan skill files for dangerous patterns and return SecurityResult."""
+    if config.use_snyk_scan:
+        warnings.warn("use_snyk_scan is not yet implemented.", stacklevel=2)
+
     findings: list[SecurityFinding] = []
 
     files_to_scan = _gather_files(skill)
@@ -185,6 +190,9 @@ def run_security_scan(skill: ParsedSkill, config: SecureConfig) -> SecurityResul
                         suppressed=suppressed,
                     )
                 )
+
+        if not config.allow_external_urls_in_scripts and file_path in skill.scripts:
+            findings.extend(_scan_external_urls(file_path, text))
 
     # Counts (excluding suppressed for pass/fail logic)
     crit = sum(1 for f in findings if f.severity == "critical" and not f.suppressed)
@@ -250,3 +258,35 @@ def _redact_if_credential(pattern_id: str, matched_text: str) -> str:
             return "****"
         return matched_text[:4] + "****"
     return matched_text
+
+
+def _scan_external_urls(file_path: Path, text: str) -> list[SecurityFinding]:
+    findings: list[SecurityFinding] = []
+
+    for match in re.finditer(r"https?://[^\s\"')>]+", text):
+        url = match.group(0)
+        parsed = urlparse(url)
+        hostname = (parsed.hostname or "").lower()
+        if hostname in {"localhost", "127.0.0.1", "::1"}:
+            continue
+
+        line_no = text[: match.start()].count("\n") + 1
+        findings.append(
+            SecurityFinding(
+                id="URL-001",
+                severity="medium",
+                category="DATA_EXFILTRATION",
+                file=str(file_path),
+                line=line_no,
+                pattern=r"https?://[^\s\"')>]+",
+                matched_text=url,
+                description="External URL found in script file",
+                suggestion=(
+                    "Avoid external URLs in scripts, or set "
+                    "secure.allow_external_urls_in_scripts: true when intentional."
+                ),
+                suppressed=False,
+            )
+        )
+
+    return findings

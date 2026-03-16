@@ -5,7 +5,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from skill_guard.main import app
-from skill_guard.models import AgentTestResult, EvalTestResult, HookError
+from skill_guard.models import AgentTestResult, EvalTestResult, HealthCheckTimeoutError, HookError
 
 runner = CliRunner()
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
@@ -180,4 +180,24 @@ def test_test_cmd_exits_five_on_hook_error(monkeypatch) -> None:
         ],
     )
     assert result.exit_code == 5
+    assert "Test setup error" in result.stdout
+
+
+def test_test_cmd_exits_six_on_health_check_timeout(monkeypatch) -> None:
+    async def fake_run_agent_tests(skill, config):  # noqa: ARG001
+        raise HealthCheckTimeoutError("agent never became ready")
+
+    monkeypatch.setattr("skill_guard.commands.test.run_agent_tests", fake_run_agent_tests)
+    result = runner.invoke(
+        app,
+        [
+            "test",
+            str(FIXTURES / "valid-skill"),
+            "--endpoint",
+            "https://mock-agent.test",
+            "--model",
+            "gpt-4.1",
+        ],
+    )
+    assert result.exit_code == 6
     assert "Test setup error" in result.stdout

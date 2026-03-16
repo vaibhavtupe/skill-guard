@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +14,7 @@ from skill_guard.engine.agent_runner import run_agent_tests
 from skill_guard.engine.quality import run_validation
 from skill_guard.engine.security import run_security_scan
 from skill_guard.engine.similarity import compute_similarity
-from skill_guard.models import SkillParseError
+from skill_guard.models import HealthCheckTimeoutError, HookError, SkillParseError
 from skill_guard.output.json_out import format_as_json
 from skill_guard.parser import parse_skill
 
@@ -21,7 +22,7 @@ SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
 AGAINST_OPT = typer.Option(..., "--against", help="Skills dir or catalog YAML")
 ENDPOINT_OPT = typer.Option(None, "--endpoint", help="Agent endpoint URL")
 CONFIG_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
-FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")
+FORMAT_OPT = typer.Option(None, "--format", help="Output format: text|json|md")
 
 
 def _emit(payload: dict[str, Any], output_format: str) -> None:
@@ -53,7 +54,7 @@ def check_cmd(
     against: Path = AGAINST_OPT,
     endpoint: str | None = ENDPOINT_OPT,
     config_path: Path | None = CONFIG_OPT,
-    output_format: str = FORMAT_OPT,
+    output_format: str | None = FORMAT_OPT,
 ) -> None:
     """Run validate + secure + conflict + test pipeline for a skill."""
     try:
@@ -65,6 +66,13 @@ def check_cmd(
     except SkillParseError as e:
         typer.echo(f"Parse error: {e}")
         raise typer.Exit(code=4) from e
+
+    resolved_output_format = output_format or config.ci.output_format
+    if config.ci.post_pr_comment:
+        warnings.warn(
+            "ci.post_pr_comment is not yet implemented and has no effect.",
+            stacklevel=2,
+        )
 
     validation = run_validation(skill, config.validate)
     if validation.blockers > 0:
@@ -81,7 +89,7 @@ def check_cmd(
                     "validation": validation.model_dump(mode="json"),
                 },
             },
-            output_format,
+            resolved_output_format,
         )
         raise typer.Exit(code=1)
 
@@ -101,11 +109,14 @@ def check_cmd(
                     "security": security.model_dump(mode="json"),
                 },
             },
-            output_format,
+            resolved_output_format,
         )
         raise typer.Exit(code=1)
-
-    conflict = compute_similarity(skill, against, config.conflict)
+    try:
+        conflict = compute_similarity(skill, against, config.conflict)
+    except ConfigError as e:
+        typer.echo(f"Config error: {e}")
+        raise typer.Exit(code=3) from e
     if not conflict.passed:
         _emit(
             {
@@ -122,7 +133,7 @@ def check_cmd(
                     "conflict": conflict.model_dump(mode="json"),
                 },
             },
-            output_format,
+            resolved_output_format,
         )
         raise typer.Exit(code=1)
 
@@ -132,7 +143,14 @@ def check_cmd(
     test_result = None
     if resolved_endpoint:
         config.test.endpoint = resolved_endpoint
-        test_result = asyncio.run(run_agent_tests(skill, config.test))
+        try:
+            test_result = asyncio.run(run_agent_tests(skill, config.test))
+        except HealthCheckTimeoutError as e:
+            typer.echo(f"Test setup error: {e}")
+            raise typer.Exit(code=6) from e
+        except HookError as e:
+            typer.echo(f"Test setup error: {e}")
+            raise typer.Exit(code=5) from e
         if test_result.passed:
             test_status = "passed"
         elif test_result.failed_tests > 0:
@@ -152,14 +170,15 @@ def check_cmd(
                         "test": test_result.model_dump(mode="json"),
                     },
                 },
-                output_format,
+                resolved_output_format,
             )
             raise typer.Exit(code=1)
         else:
             test_status = "warning"
 
     has_warning = validation_status == "warning" or test_status == "warning"
-    final_status = "warning" if has_warning else "passed"
+    fail_on_warning = config.ci.fail_on_warning and has_warning
+    final_status = "failed" if fail_on_warning else ("warning" if has_warning else "passed")
     _emit(
         {
             "skill_name": skill.metadata.name,
@@ -171,7 +190,11 @@ def check_cmd(
             "summary": (
                 "All blocking checks passed."
                 if not has_warning
-                else "Blocking checks passed with warnings."
+                else (
+                    "Warnings are configured to fail this CI check."
+                    if fail_on_warning
+                    else "Blocking checks passed with warnings."
+                )
             ),
             "result": {
                 "validation": validation.model_dump(mode="json"),
@@ -182,8 +205,10 @@ def check_cmd(
                 ),
             },
         },
-        output_format,
+        resolved_output_format,
     )
 
+    if fail_on_warning:
+        raise typer.Exit(code=1)
     if has_warning:
         raise typer.Exit(code=2)

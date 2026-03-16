@@ -10,7 +10,7 @@ import typer
 
 from skill_guard.config import ConfigError, TestConfig, load_config
 from skill_guard.engine.agent_runner import run_agent_tests
-from skill_guard.models import HookError, SkillParseError
+from skill_guard.models import HealthCheckTimeoutError, HookError, SkillParseError
 from skill_guard.output.json_out import format_as_json
 from skill_guard.parser import parse_skill
 
@@ -88,6 +88,9 @@ def test_cmd(
 
     try:
         result = asyncio.run(run_agent_tests(skill, merged_test_config))
+    except HealthCheckTimeoutError as e:
+        typer.echo(f"Test setup error: {e}")
+        raise typer.Exit(code=6) from e
     except HookError as e:
         typer.echo(f"Test setup error: {e}")
         raise typer.Exit(code=5) from e

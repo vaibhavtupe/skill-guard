@@ -25,17 +25,19 @@ def _entry(stage: str = "production", failures: int = 0) -> CatalogEntry:
 
 
 def test_apply_stage_transitions_production_to_degraded() -> None:
-    cfg = MonitorConfig(degrade_after_days=7, deprecate_after_days=30)
+    cfg = MonitorConfig(degrade_after_failures=7, deprecate_after_failures=30)
     updated, msgs = apply_stage_transitions(_entry(stage="production", failures=7), cfg, Path("."))
     assert updated.stage == "degraded"
     assert any("production -> degraded" in msg for msg in msgs)
+    assert any("degrade_after_failures=7" in msg for msg in msgs)
 
 
 def test_apply_stage_transitions_degraded_to_deprecated() -> None:
-    cfg = MonitorConfig(degrade_after_days=7, deprecate_after_days=30)
+    cfg = MonitorConfig(degrade_after_failures=7, deprecate_after_failures=30)
     updated, msgs = apply_stage_transitions(_entry(stage="degraded", failures=30), cfg, Path("."))
     assert updated.stage == "deprecated"
     assert any("degraded -> deprecated" in msg for msg in msgs)
+    assert any("deprecate_after_failures=30" in msg for msg in msgs)
 
 
 def test_check_staleness_warns_when_old() -> None:

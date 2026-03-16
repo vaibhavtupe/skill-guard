@@ -38,3 +38,20 @@ def test_missing_env_var(tmp_path: Path):
     config_file.write_text("""\nskills_dir: ${NOT_SET}\n""", encoding="utf-8")
     with pytest.raises(ConfigError):
         load_config(config_file)
+
+
+def test_monitor_failure_aliases_load_from_legacy_keys(tmp_path: Path) -> None:
+    config_file = tmp_path / "skill-guard.yaml"
+    config_file.write_text(
+        (
+            "monitor:\n"
+            "  degrade_after_days: 3\n"
+            "  deprecate_after_days: 9\n"
+        ),
+        encoding="utf-8",
+    )
+
+    cfg = load_config(config_file)
+
+    assert cfg.monitor.degrade_after_failures == 3
+    assert cfg.monitor.deprecate_after_failures == 9

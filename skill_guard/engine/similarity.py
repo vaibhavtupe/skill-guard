@@ -14,7 +14,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from skill_guard.config import ConflictConfig
-from skill_guard.models import ConflictMatch, ConflictResult, ParsedSkill, SkillParseError
+from skill_guard.models import ConfigError, ConflictMatch, ConflictResult, ParsedSkill, SkillParseError
 from skill_guard.parser import parse_skill
 
 _TRIGGER_RE = re.compile(r"use when[^.]+\.?", re.IGNORECASE)
@@ -32,13 +32,13 @@ def compute_similarity(
     threshold = threshold or config.similarity_threshold
 
     if method == "embeddings":
-        raise NotImplementedError(
-            "Embeddings method is not available in Phase 1. "
-            "Install skill-guard[embeddings] and use Phase 3."
+        raise ConfigError(
+            "Embeddings conflict detection is not yet implemented. "
+            "Use method: tfidf (default)."
         )
     if method == "llm":
-        raise NotImplementedError(
-            "LLM-based conflict detection is planned for Phase 3. Use method=tfidf in Phase 1."
+        raise ConfigError(
+            "LLM conflict detection is not yet implemented. Use method: tfidf (default)."
         )
 
     # Apply threshold override (treat as medium threshold)

@@ -124,3 +124,8 @@ class CatalogManager:
         for entry in catalog.skills:
             stats[entry.stage] = stats.get(entry.stage, 0) + 1
         return stats
+
+    def increment_eval_count(self, entry: CatalogEntry) -> CatalogEntry:
+        """Track a completed eval run for a catalog entry."""
+        entry.eval_count += 1
+        return entry

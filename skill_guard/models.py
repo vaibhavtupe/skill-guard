@@ -324,3 +324,7 @@ class ConfigError(SkillGateError):
 
 class HookError(SkillGateError):
     """Raised when a pre/post test hook fails."""
+
+
+class HealthCheckTimeoutError(HookError):
+    """Raised when the agent health check does not become ready in time."""

@@ -43,10 +43,6 @@ def conflict_cmd(
     except SkillParseError as e:
         typer.echo(f"Parse error: {e}")
         raise typer.Exit(code=4) from e
-    except NotImplementedError as e:
-        typer.echo(str(e))
-        raise typer.Exit(code=1) from e
-
     if format == "json":
         typer.echo(format_as_json(result, command="conflict"))
     elif format in ("md", "markdown"):

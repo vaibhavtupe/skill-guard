@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "skill-guard"
-version = "0.4.4"
+version = "0.4.5"
 description = "The quality gate for Agent Skills — validate, secure, conflict-detect, and test skills across their full lifecycle"
 readme = "README.md"
 license = { text = "Apache-2.0" }

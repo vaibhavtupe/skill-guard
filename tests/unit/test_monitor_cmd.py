@@ -35,8 +35,8 @@ def _write_config(path: Path, degrade_after: int = 7) -> None:
         (
             "monitor:\n"
             "  stale_threshold_days: 99999\n"
-            f"  degrade_after_days: {degrade_after}\n"
-            "  deprecate_after_days: 30\n"
+            f"  degrade_after_failures: {degrade_after}\n"
+            "  deprecate_after_failures: 30\n"
             "  check_ownership: false\n"
         ),
         encoding="utf-8",
@@ -104,6 +104,56 @@ def test_monitor_cmd_transitions_to_degraded_and_fails(tmp_path: Path) -> None:
     assert result.exit_code == 1
     updated_catalog = manager.load_catalog(catalog_path)
     assert updated_catalog.skills[0].stage == "degraded"
+
+
+def test_monitor_cmd_increments_eval_count_after_completed_eval(tmp_path: Path, monkeypatch) -> None:
+    catalog_path = tmp_path / "catalog.yaml"
+    config_path = tmp_path / "skill-guard.yaml"
+    manager = CatalogManager()
+    skill_path = str((FIXTURES / "valid-skill").resolve())
+    catalog = Catalog(
+        updated=datetime.now(UTC),
+        skills=[_entry("valid-skill", "production", skill_path)],
+    )
+    manager.save_catalog(catalog, catalog_path)
+    _write_config(config_path)
+
+    async def fake_run_agent_tests(skill, test_config):  # noqa: ARG001
+        from skill_guard.models import AgentTestResult
+
+        return AgentTestResult(
+            skill_name=skill.metadata.name,
+            endpoint=test_config.endpoint or "",
+            total_tests=1,
+            passed_tests=1,
+            failed_tests=0,
+            pass_rate=1.0,
+            results=[],
+            total_time_seconds=0.0,
+            avg_latency_ms=1.0,
+            passed=True,
+        )
+
+    monkeypatch.setattr("skill_guard.commands.monitor.run_agent_tests", fake_run_agent_tests)
+
+    result = runner.invoke(
+        app,
+        [
+            "monitor",
+            "--catalog",
+            str(catalog_path),
+            "--config",
+            str(config_path),
+            "--endpoint",
+            "https://agent.test",
+            "--repo-root",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    updated_catalog = manager.load_catalog(catalog_path)
+    assert updated_catalog.skills[0].eval_count == 1
 
 
 def test_monitor_cmd_html_output(tmp_path: Path) -> None:

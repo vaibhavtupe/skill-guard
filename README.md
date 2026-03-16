@@ -99,7 +99,7 @@ Score: 97/100 | Grade: A | Blockers: 0 | Warnings: 1
 # Core (static analysis — no agent required)
 pip install skill-guard
 
-# With embedding-based conflict detection (sentence-transformers)
+# Optional future extras for planned embedding-based conflict detection
 pip install skill-guard[embeddings]
 ```
 

@@ -48,7 +48,7 @@ test:
 
 monitor:
   stale_threshold_days: 180
-  degrade_after_days: 7
+  degrade_after_failures: 7
   notify:
     slack_webhook: ${SLACK_WEBHOOK_URL}   # optional
 ```

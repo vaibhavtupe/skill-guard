@@ -7,6 +7,7 @@ import subprocess
 import time
 from pathlib import Path
 from typing import Any
+from urllib.parse import urljoin
 
 import httpx
 
@@ -15,6 +16,7 @@ from skill_guard.models import (
     AgentTestResult,
     EvalExpectation,
     EvalTestResult,
+    HealthCheckTimeoutError,
     HookError,
     ParsedSkill,
 )
@@ -35,9 +37,14 @@ def run_hook(hook_script: Path, skill_path: Path, endpoint: str) -> None:
         raise HookError(f"Hook failed ({hook_script}) with exit code {proc.returncode}: {details}")
 
 
-async def wait_for_agent_ready(endpoint: str, api_key: str | None, timeout_seconds: int) -> None:
+async def wait_for_agent_ready(
+    endpoint: str,
+    api_key: str | None,
+    timeout_seconds: int,
+    health_check_path: str = "/health",
+) -> None:
     """Poll endpoint health until ready or timeout."""
-    health_url = f"{endpoint.rstrip('/')}/health"
+    health_url = urljoin(f"{endpoint.rstrip('/')}/", health_check_path.lstrip("/"))
     headers = _build_headers(api_key)
     deadline = time.monotonic() + timeout_seconds
 
@@ -51,7 +58,7 @@ async def wait_for_agent_ready(endpoint: str, api_key: str | None, timeout_secon
                 pass
             await asyncio.sleep(1)
 
-    raise HookError(
+    raise HealthCheckTimeoutError(
         f"Timed out waiting for agent health at '{health_url}' after {timeout_seconds}s"
     )
 
@@ -69,16 +76,26 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
     pre_hook = config.injection.pre_test_hook
     post_hook = config.injection.post_test_hook
 
-    if pre_hook:
-        run_hook(Path(pre_hook), skill.path, endpoint)
-        await wait_for_agent_ready(endpoint, config.api_key, config.reload_timeout_seconds)
-
     started = time.perf_counter()
     results: list[EvalTestResult] = []
 
     headers = _build_headers(config.api_key)
 
     try:
+        if pre_hook:
+            run_hook(Path(pre_hook), skill.path, endpoint)
+        if config.reload_command:
+            _run_reload_command(config.reload_command)
+            if config.reload_wait_seconds > 0:
+                await asyncio.sleep(config.reload_wait_seconds)
+        if pre_hook or config.reload_command:
+            await wait_for_agent_ready(
+                endpoint,
+                config.api_key,
+                config.reload_timeout_seconds,
+                config.reload_health_check_path,
+            )
+
         async with httpx.AsyncClient(timeout=config.timeout_seconds) as client:
             for test in skill.evals_config.tests:
                 prompt_path = skill.path / "evals" / test.prompt_file
@@ -139,6 +156,17 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
         avg_latency_ms=avg_latency_ms,
         passed=failed_tests == 0,
     )
+
+
+def _run_reload_command(command: str) -> None:
+    proc = subprocess.run(command, shell=True, capture_output=True, text=True, check=False)
+    if proc.returncode != 0:
+        stderr = proc.stderr.strip()
+        stdout = proc.stdout.strip()
+        details = stderr or stdout or "No output."
+        raise HookError(
+            f"Reload command failed with exit code {proc.returncode}: {details}"
+        )
 
 
 def _extract_response_data(response_body: dict[str, Any]) -> tuple[str, list[str]]:
