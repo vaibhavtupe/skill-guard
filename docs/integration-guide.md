@@ -16,8 +16,8 @@ Your skills repo
 │   └── skill-catalog.yaml     ← managed by skill-guard catalog
 ├── skill-guard.yaml            ← skill-guard config
 └── .github/workflows/
-    ├── skill-guard-ci.yml      ← PR gate (validate+secure+conflict+test)
-    └── skill-guard-monitor.yml ← weekly health check
+    ├── skill-guard-ci.yml      ← PR gate (validate+secure+conflict; test if endpoint configured)
+    └── skill-guard-monitor.yml ← weekly health check for continuous drift detection
 ```
 
 ---
@@ -164,7 +164,11 @@ skill-guard check skills/my-skill/ \
   --endpoint $AGENT_API_ENDPOINT
 ```
 
-All commands exit 0 on pass, 1 on failure — scriptable in any CI system.
+`skill-guard test` runs evals against an OpenAI-compatible endpoint. Use `pre_test_hook`/`post_test_hook` for your own deploy/teardown flow.
+
+`skill-guard check` runs validate + secure + conflict as a single gate. Agent evals run if `--endpoint` is configured.
+
+All commands are scriptable in CI; see the README for exit codes.
 
 ---
 
@@ -253,6 +257,8 @@ Add secrets to your repo: `Settings → Secrets → AGENT_API_ENDPOINT`, `AGENT_
 ---
 
 ## Step 7: Set up weekly monitoring
+
+Run via cron or CI for continuous drift detection. No built-in scheduler.
 
 Create `.github/workflows/skill-guard-monitor.yml`:
 

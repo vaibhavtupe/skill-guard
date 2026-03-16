@@ -13,7 +13,7 @@ from urllib.request import urlopen
 
 import typer
 
-from skill_guard.commands import conflict, init, secure, test, validate
+from skill_guard.commands import conflict, fix, init, secure, test, validate
 from skill_guard.commands.catalog import catalog_app
 from skill_guard.commands.check import check_cmd
 from skill_guard.commands.monitor import monitor_cmd
@@ -116,6 +116,7 @@ def _version_tuple(version: str) -> tuple[int, ...]:
 app.command("validate")(validate.validate_cmd)
 app.command("secure")(secure.secure_cmd)
 app.command("conflict")(conflict.conflict_cmd)
+app.command("fix")(fix.fix_cmd)
 app.command("init")(init.init_cmd)
 app.command("test")(test.test_cmd)
 app.command("monitor")(monitor_cmd)

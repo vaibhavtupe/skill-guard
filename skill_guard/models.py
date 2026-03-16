@@ -6,6 +6,7 @@ All core types used across the CLI and engine modules.
 from __future__ import annotations
 
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
 
@@ -97,6 +98,21 @@ class ParsedSkill(BaseModel):
 
 SeverityLevel = Literal["blocker", "warning", "info"]
 Grade = Literal["A", "B", "C", "D", "F"]
+
+
+class RuleSet(str, Enum):  # noqa: UP042
+    DEFAULT = "default"
+    ANTHROPIC_SPEC = "anthropic_spec"
+
+
+class Finding(BaseModel):
+    """Generic rule finding used by internal validators."""
+
+    rule_id: str
+    severity: SeverityLevel
+    message: str
+    suggestion: str | None = None
+    rule_set: RuleSet = RuleSet.DEFAULT
 
 
 class CheckResult(BaseModel):

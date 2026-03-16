@@ -1,0 +1,29 @@
+- id: skill-guard-validate
+  name: Validate Agent Skills
+  language: python
+  additional_dependencies: []
+  entry: skill-guard-pre-commit
+  args: [validate]
+  pass_filenames: true
+  types: [file]
+  files: "SKILL\\.md$"
+
+- id: skill-guard-secure
+  name: Security scan Agent Skills
+  language: python
+  additional_dependencies: []
+  entry: skill-guard-pre-commit
+  args: [secure]
+  pass_filenames: true
+  types: [file]
+  files: "SKILL\\.md$"
+
+- id: skill-guard-check
+  name: Full quality gate for Agent Skills
+  language: python
+  additional_dependencies: []
+  entry: skill-guard-pre-commit
+  args: [check]
+  pass_filenames: true
+  types: [file]
+  files: "SKILL\\.md$"

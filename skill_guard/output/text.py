@@ -13,11 +13,37 @@ console = Console()
 def format_validation_result(
     result: ValidationResult, quiet: bool = False, verbose: bool = False
 ) -> None:
-    table = Table(title=f"skill-guard validate — {result.skill_name}")
+    base_checks = [
+        check for check in result.checks if not check.message.startswith("[anthropic-spec]")
+    ]
+    spec_checks = [check for check in result.checks if check.message.startswith("[anthropic-spec]")]
+
+    _print_validation_table(
+        title=f"skill-guard validate — {result.skill_name}",
+        checks=base_checks,
+        quiet=quiet,
+        verbose=verbose,
+    )
+    if spec_checks:
+        _print_validation_table(
+            title="Anthropic Spec",
+            checks=spec_checks,
+            quiet=quiet,
+            verbose=verbose,
+        )
+
+    console.print(
+        f"Score: {result.score}/100 | Grade: {result.grade} | "
+        f"Blockers: {result.blockers} | Warnings: {result.warnings}"
+    )
+
+
+def _print_validation_table(*, title: str, checks: list, quiet: bool, verbose: bool) -> None:
+    table = Table(title=title)
     table.add_column("Check")
     table.add_column("Result")
 
-    for check in result.checks:
+    for check in checks:
         if quiet and check.passed:
             continue
         if not verbose and check.passed and check.severity == "info":
@@ -30,10 +56,6 @@ def format_validation_result(
         table.add_row(check.check_name, f"{status} {msg}")
 
     console.print(table)
-    console.print(
-        f"Score: {result.score}/100 | Grade: {result.grade} | "
-        f"Blockers: {result.blockers} | Warnings: {result.warnings}"
-    )
 
 
 def format_security_result(result: SecurityResult, quiet: bool = False) -> None:

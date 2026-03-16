@@ -71,6 +71,7 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 
 ### `conflict.*`
 - `method` (tfidf|embeddings|llm, but only `tfidf` is currently supported)
+- Currently only `tfidf` is supported. `embeddings` and `llm` are planned for v0.6.
 - `high_overlap_threshold` (float)
 - `medium_overlap_threshold` (float)
 - `block_on_high_overlap` (bool)
@@ -79,6 +80,7 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 - `stale_threshold_days` (int)
 - `degrade_after_failures` (int; `degrade_after_days` still loads as a deprecated alias)
 - `deprecate_after_failures` (int; `deprecate_after_days` still loads as a deprecated alias)
+- Run via cron or CI for continuous drift detection. No built-in scheduler.
 
 ### `ci.*`
 - `fail_on_warning` (bool)

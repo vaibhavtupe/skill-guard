@@ -18,18 +18,28 @@ def format_as_markdown(result: Any, command: str = "") -> str:
 
 
 def _validation_md(result: ValidationResult) -> str:
-    rows = []
+    base_rows = []
+    spec_rows = []
     for check in result.checks:
         status = "✅" if check.passed else ("⚠️" if check.severity == "warning" else "❌")
-        rows.append(f"| {check.check_name} | {status} {check.message} |")
+        row = f"| {check.check_name} | {status} {check.message} |"
+        if check.message.startswith("[anthropic-spec]"):
+            spec_rows.append(row)
+        else:
+            base_rows.append(row)
 
-    return (
+    rendered = (
         f"## skill-guard validate — `{result.skill_name}`\n\n"
         f"| Check | Result |\n|---|---|\n"
-        + "\n".join(rows)
+        + "\n".join(base_rows)
         + f"\n\n**Score:** {result.score}/100 (Grade {result.grade}) | "
         f"Blockers: {result.blockers} | Warnings: {result.warnings}\n"
     )
+    if spec_rows:
+        rendered += (
+            "\n## Anthropic Spec\n\n| Check | Result |\n|---|---|\n" + "\n".join(spec_rows) + "\n"
+        )
+    return rendered
 
 
 def _security_md(result: SecurityResult) -> str:

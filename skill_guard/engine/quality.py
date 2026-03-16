@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from skill_guard.config import ValidateConfig
+from skill_guard.engine.spec_validator import run_spec_validation
 from skill_guard.models import CheckResult, Grade, ParsedSkill, ValidationResult
 
 # ---------------------------------------------------------------------------
@@ -384,6 +385,18 @@ def run_validation(skill: ParsedSkill, config: ValidateConfig) -> ValidationResu
             )
         )
 
+    if config.anthropic_spec:
+        for finding in run_spec_validation(skill):
+            checks.append(
+                CheckResult(
+                    check_name=f"anthropic_spec.{finding.rule_id}",
+                    passed=False,
+                    severity=finding.severity,
+                    message=f"[anthropic-spec] {finding.message}",
+                    suggestion=finding.suggestion,
+                )
+            )
+
     # ── Compute score ───────────────────────────────────────────────────────
     check_result_map = {c.check_name: c for c in checks}
     passed_weight = sum(
@@ -448,6 +461,8 @@ def _find_non_executable_scripts(scripts: list[Path]) -> list[Path]:
     """Return scripts that are not executable."""
     result = []
     for script in scripts:
+        if script.name.startswith("."):
+            continue
         if script.is_file() and not os.access(script, os.X_OK):
             result.append(script)
     return result

@@ -1,0 +1,10 @@
+{
+  "skill_name": "valid-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Diagnose latency spikes between services.",
+      "expected_output": "Structured troubleshooting guidance for a network connectivity issue."
+    }
+  ]
+}

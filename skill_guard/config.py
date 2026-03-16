@@ -68,6 +68,7 @@ class ValidateConfig(BaseModel):
     require_author_in_metadata: bool = True
     require_version_in_metadata: bool = True
     require_evals: bool = False
+    anthropic_spec: bool = True
     vague_phrases: list[str] = Field(default_factory=list)
 
 
@@ -280,6 +281,7 @@ validate:
   require_author_in_metadata: true
   require_version_in_metadata: true
   require_evals: false             # Set true to block PRs with no evals/
+  anthropic_spec: true             # Apply Anthropic AgentSkills compliance checks
   # vague_phrases:                 # Additional phrases to flag as generic
   #   - "a useful skill"
 

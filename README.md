@@ -26,12 +26,12 @@ ONBOARDING (pre-merge, in CI):
   skill-guard validate   → format compliance + quality scoring
   skill-guard secure     → scan for dangerous patterns  
   skill-guard conflict   → detect trigger overlap with existing skills
-  skill-guard test       → inject into staging agent, run evals [requires --agent-url]
-  skill-guard check      → run all four as a single gate
+  skill-guard test       → runs evals against an OpenAI-compatible endpoint. Use pre_test_hook/post_test_hook for your own deploy/teardown flow.
+  skill-guard check      → runs validate + secure + conflict as a single gate. Agent evals run if --endpoint is configured.
 
 ONGOING (post-merge, scheduled):
-  skill-guard monitor    → re-run evals, detect drift, manage lifecycle
-  skill-guard catalog    → searchable registry of approved skills
+  skill-guard monitor    → re-run evals, detect drift, manage lifecycle. Run via cron or CI for continuous drift detection. No built-in scheduler.
+  skill-guard catalog    → searchable registry of registered skills (approval workflow planned for v0.7)
 ```
 
 ## Quick Start
@@ -51,7 +51,9 @@ skill-guard secure ./skills/my-skill/
 # Check for conflicts with existing skills
 skill-guard conflict ./skills/my-skill/ --against ./skills/
 
-# Run the full gate (validate + secure + conflict)
+# Note: Currently only tfidf is supported. embeddings and llm are planned for v0.6.
+
+# Run the full gate (validate + secure + conflict; test runs if --endpoint is configured)
 skill-guard check ./skills/my-skill/ --against ./skills/
 ```
 
@@ -88,7 +90,6 @@ Score: 97/100 | Grade: A | Blockers: 0 | Warnings: 1
 | Python | 3.11+ | Required. 3.12 and 3.13 tested. |
 | pip | any recent | Bundled with Python |
 | typer | ≥0.13.0 | Installed automatically |
-| git | any | Required only if using `skill-guard test` or `skill-guard monitor` with a repo |
 | Agent endpoint | — | Required only for `skill-guard test` (OpenAI-compatible API) |
 
 > **Note:** `skill-guard validate`, `secure`, `conflict`, `init`, `catalog`, and `check` work fully offline — no agent or API key needed.
@@ -111,6 +112,62 @@ pip install skill-guard[embeddings]
 - [Hook Scripts](docs/hooks-guide.md)
 - [CI/CD Integration](docs/ci-integration.md)
 - [Configuration Reference](docs/configuration-reference.md)
+
+## Anthropic Spec Validation
+
+`skill-guard validate` includes Anthropic AgentSkills spec compliance checks by default. Set `validate.anthropic_spec: false` in `skill-guard.yaml` if you need to disable those additional findings.
+
+## Exit Codes
+
+- `0`: success
+- `1`: validation/security failures
+- `2`: warnings only (when `fail_on_warning` is false)
+- `3`: config error
+- `4`: parse error
+- `5`: hook script failure
+- `6`: health check timeout
+
+## Pre-commit
+
+Use `pre-commit` to enforce checks before skill changes land:
+
+```yaml
+repos:
+  - repo: https://github.com/vaibhavtupe/skill-guard
+    rev: v0.5.0
+    hooks:
+      - id: skill-guard-validate
+      - id: skill-guard-secure
+      - id: skill-guard-check
+```
+
+These hooks run against changed `SKILL.md` files, deduplicate by skill root, and then execute the corresponding `skill-guard` command for each affected skill.
+
+## Templates
+
+Use `skill-guard init --template base` to scaffold a new skill, or `skill-guard init --list-templates` to see the available scaffolds. Generated templates include `SKILL.md`, `evals/`, `references/`, `scripts/`, and `assets/` so they validate immediately.
+
+## GitHub Actions
+
+```yaml
+- uses: vaibhavtupe/skill-guard-action@v1
+  with:
+    path: ./skills/my-skill
+```
+
+See `vaibhavtupe/skill-guard-action` for the full action repo.
+
+## GitHub Actions
+
+Use the separate action repo `vaibhavtupe/skill-guard-action@v1` in workflows:
+
+```yaml
+- uses: vaibhavtupe/skill-guard-action@v1
+  with:
+    command: check
+    path: ./skills/my-skill
+    against: ./skills/
+```
 
 ## What skill-guard Does NOT Do
 
