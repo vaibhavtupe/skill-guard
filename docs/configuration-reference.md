@@ -29,10 +29,13 @@ secure:
       file: scripts/setup.sh
 
 conflict:
-  method: tfidf  # the only supported method today
+  method: tfidf
   high_overlap_threshold: 0.75
   medium_overlap_threshold: 0.55
   block_on_high_overlap: true
+  embeddings_cache_dir: .skill-guard-cache/embeddings
+  llm_model: gpt-4o-mini
+  llm_max_concurrent: 5
 
 monitor:
   stale_threshold_days: 180
@@ -70,11 +73,13 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 - `allow_list` (list) suppress specific findings
 
 ### `conflict.*`
-- `method` (tfidf|embeddings|llm, but only `tfidf` is currently supported)
-- Currently only `tfidf` is supported. `embeddings` and `llm` are planned for v0.6.
+- `method` (`tfidf`|`embeddings`|`llm`)
 - `high_overlap_threshold` (float)
 - `medium_overlap_threshold` (float)
 - `block_on_high_overlap` (bool)
+- `embeddings_cache_dir` (string, default `.skill-guard-cache/embeddings`)
+- `llm_model` (string, default `gpt-4o-mini`)
+- `llm_max_concurrent` (int, default `5`)
 
 ### `monitor.*`
 - `stale_threshold_days` (int)

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "skill-guard"
-version = "0.5.0"
+version = "0.6.0"
 description = "The quality gate for Agent Skills — validate, secure, conflict-detect, and test skills across their full lifecycle"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -31,7 +31,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-embeddings = ["sentence-transformers>=2.7"]
+embeddings = ["sentence-transformers"]
+llm = ["openai>=1.0"]
 dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",

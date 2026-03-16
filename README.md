@@ -51,8 +51,6 @@ skill-guard secure ./skills/my-skill/
 # Check for conflicts with existing skills
 skill-guard conflict ./skills/my-skill/ --against ./skills/
 
-# Note: Currently only tfidf is supported. embeddings and llm are planned for v0.6.
-
 # Run the full gate (validate + secure + conflict; test runs if --endpoint is configured)
 skill-guard check ./skills/my-skill/ --against ./skills/
 ```
@@ -100,9 +98,28 @@ Score: 97/100 | Grade: A | Blockers: 0 | Warnings: 1
 # Core (static analysis — no agent required)
 pip install skill-guard
 
-# Optional future extras for planned embedding-based conflict detection
+# Optional embeddings support
 pip install skill-guard[embeddings]
+
+# Optional LLM-based conflict detection
+pip install skill-guard[llm]
 ```
+
+## Conflict Detection Modes
+
+```bash
+# TF-IDF (default)
+skill-guard conflict ./skills/my-skill/ --against ./skills/ --method tfidf
+
+# Embeddings-based overlap detection
+skill-guard conflict ./skills/my-skill/ --against ./skills/ --method embeddings
+
+# LLM-based overlap detection
+export OPENAI_API_KEY=...
+skill-guard conflict ./skills/my-skill/ --against ./skills/ --method llm
+```
+
+`embeddings` uses the `all-MiniLM-L6-v2` sentence-transformers model and caches vectors under `.skill-guard-cache/embeddings/`. `llm` uses the OpenAI Chat API with `gpt-4o-mini` by default.
 
 ## Documentation
 
@@ -134,7 +151,7 @@ Use `pre-commit` to enforce checks before skill changes land:
 ```yaml
 repos:
   - repo: https://github.com/vaibhavtupe/skill-guard
-    rev: v0.5.0
+    rev: v0.6.0
     hooks:
       - id: skill-guard-validate
       - id: skill-guard-secure

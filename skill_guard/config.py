@@ -82,12 +82,13 @@ class SecureConfig(BaseModel):
 
 class ConflictConfig(BaseModel):
     similarity_threshold: float = 0.70
-    # Future note: tfidf is the only supported conflict detection method today.
     method: Literal["tfidf", "embeddings", "llm"] = "tfidf"
     block_on_high_overlap: bool = True
     high_overlap_threshold: float = 0.75
     medium_overlap_threshold: float = 0.55
-    llm_model: str | None = None
+    embeddings_cache_dir: str = ".skill-guard-cache/embeddings"
+    llm_model: str = "gpt-4o-mini"
+    llm_max_concurrent: int = 5
 
 
 class InjectionConfig(BaseModel):

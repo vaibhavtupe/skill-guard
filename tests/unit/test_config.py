@@ -15,6 +15,9 @@ def test_load_config_defaults(tmp_path: Path):
         os.chdir(tmp_path)
         cfg = load_config()
         assert cfg.validate.min_description_length == 20
+        assert cfg.conflict.embeddings_cache_dir == ".skill-guard-cache/embeddings"
+        assert cfg.conflict.llm_model == "gpt-4o-mini"
+        assert cfg.conflict.llm_max_concurrent == 5
     finally:
         os.chdir(cwd)
 

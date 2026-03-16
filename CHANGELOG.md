@@ -1,3 +1,15 @@
+## v0.6.0 — 2026-03-16
+
+### New Features & Fixes
+
+- **feat:** embeddings-based conflict detection via `sentence-transformers` (`all-MiniLM-L6-v2`) with on-disk caching in `.skill-guard-cache/embeddings/`
+- **feat:** LLM-based conflict detection via OpenAI Chat API (`gpt-4o-mini`) with async fan-out, max concurrency control, and 30-second request timeout
+- **feat:** new conflict config fields: `embeddings_cache_dir`, `llm_model`, and `llm_max_concurrent`
+- **packaging:** optional extras now include `skill-guard[embeddings]` and `skill-guard[llm]`
+- **docs:** README and configuration docs now document live embeddings and LLM conflict modes
+
+---
+
 ## v0.5.0 — 2026-03-16
 
 ### New Features & Fixes
