@@ -147,6 +147,7 @@ class ValidationResult(BaseModel):
 SecuritySeverity = Literal["critical", "high", "medium", "low"]
 SecurityCategory = Literal[
     "CREDENTIALS",
+    "INJECTION",
     "DANGEROUS_EXEC",
     "DATA_EXFILTRATION",
     "PROMPT_INJECTION",

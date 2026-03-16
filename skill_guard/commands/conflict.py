@@ -20,6 +20,9 @@ CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml"
 METHOD_OPT = typer.Option(None, "--method", help="tfidf|embeddings|llm")
 THRESHOLD_OPT = typer.Option(None, "--threshold", help="Similarity threshold")
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")
+OFFLINE_OPT = typer.Option(
+    False, "--offline", help="Fall back to tfidf if embeddings unavailable (for air-gapped CI)"
+)
 
 
 def conflict_cmd(
@@ -29,13 +32,24 @@ def conflict_cmd(
     method: str | None = METHOD_OPT,
     threshold: float | None = THRESHOLD_OPT,
     format: str = FORMAT_OPT,
+    offline: bool = OFFLINE_OPT,
 ):
     """Detect trigger overlap with existing skills."""
     try:
         config = load_config(config_path)
         skill = parse_skill(skill_path)
+        # --offline: fall back to tfidf if embeddings requested but unavailable
+        effective_method = method
+        if offline and method == "embeddings":
+            try:
+                import sentence_transformers  # noqa: F401
+            except ImportError:
+                typer.echo(
+                    "Warning: sentence-transformers not installed, falling back to tfidf (--offline mode)"
+                )
+                effective_method = "tfidf"
         result = compute_similarity(
-            skill, against, config.conflict, method=method, threshold=threshold
+            skill, against, config.conflict, method=effective_method, threshold=threshold
         )
     except ConfigError as e:
         typer.echo(f"Config error: {e}")
