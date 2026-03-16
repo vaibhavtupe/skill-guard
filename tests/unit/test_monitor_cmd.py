@@ -106,7 +106,9 @@ def test_monitor_cmd_transitions_to_degraded_and_fails(tmp_path: Path) -> None:
     assert updated_catalog.skills[0].stage == "degraded"
 
 
-def test_monitor_cmd_increments_eval_count_after_completed_eval(tmp_path: Path, monkeypatch) -> None:
+def test_monitor_cmd_increments_eval_count_after_completed_eval(
+    tmp_path: Path, monkeypatch
+) -> None:
     catalog_path = tmp_path / "catalog.yaml"
     config_path = tmp_path / "skill-guard.yaml"
     manager = CatalogManager()

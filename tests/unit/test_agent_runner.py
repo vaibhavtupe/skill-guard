@@ -266,7 +266,9 @@ async def test_run_agent_tests_runs_reload_command_and_waits_for_custom_health_p
     def fake_reload_command(command: str) -> None:
         calls.append(f"reload:{command}")
 
-    async def fake_wait_for_agent_ready(endpoint: str, api_key, timeout_seconds: int, health_check_path: str = "/health") -> None:  # noqa: ANN001
+    async def fake_wait_for_agent_ready(
+        endpoint: str, api_key, timeout_seconds: int, health_check_path: str = "/health"
+    ) -> None:  # noqa: ANN001
         calls.append(f"health:{endpoint}:{timeout_seconds}:{health_check_path}")
 
     def handler(_: httpx.Request) -> httpx.Response:

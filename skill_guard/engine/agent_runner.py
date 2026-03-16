@@ -164,9 +164,7 @@ def _run_reload_command(command: str) -> None:
         stderr = proc.stderr.strip()
         stdout = proc.stdout.strip()
         details = stderr or stdout or "No output."
-        raise HookError(
-            f"Reload command failed with exit code {proc.returncode}: {details}"
-        )
+        raise HookError(f"Reload command failed with exit code {proc.returncode}: {details}")
 
 
 def _extract_response_data(response_body: dict[str, Any]) -> tuple[str, list[str]]:

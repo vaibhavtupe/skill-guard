@@ -14,7 +14,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from skill_guard.config import ConflictConfig
-from skill_guard.models import ConfigError, ConflictMatch, ConflictResult, ParsedSkill, SkillParseError
+from skill_guard.models import (
+    ConfigError,
+    ConflictMatch,
+    ConflictResult,
+    ParsedSkill,
+    SkillParseError,
+)
 from skill_guard.parser import parse_skill
 
 _TRIGGER_RE = re.compile(r"use when[^.]+\.?", re.IGNORECASE)
@@ -33,8 +39,7 @@ def compute_similarity(
 
     if method == "embeddings":
         raise ConfigError(
-            "Embeddings conflict detection is not yet implemented. "
-            "Use method: tfidf (default)."
+            "Embeddings conflict detection is not yet implemented. Use method: tfidf (default)."
         )
     if method == "llm":
         raise ConfigError(

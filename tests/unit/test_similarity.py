@@ -1,6 +1,6 @@
+import re
 from pathlib import Path
 
-import re
 import pytest
 
 from skill_guard.config import ConflictConfig

@@ -109,11 +109,7 @@ def test_check_uses_ci_output_format_from_config_when_flag_omitted(tmp_path: Pat
     config_path = tmp_path / "skill-guard.yaml"
     shutil.copytree(FIXTURES / "valid-skill", against_dir / "valid-skill")
     config_path.write_text(
-        (
-            "ci:\n"
-            "  output_format: json\n"
-            "  post_pr_comment: false\n"
-        ),
+        ("ci:\n  output_format: json\n  post_pr_comment: false\n"),
         encoding="utf-8",
     )
 
@@ -139,12 +135,7 @@ def test_check_fail_on_warning_exits_one(tmp_path: Path, monkeypatch) -> None:
     config_path = tmp_path / "skill-guard.yaml"
     shutil.copytree(FIXTURES / "valid-skill", against_dir / "valid-skill")
     config_path.write_text(
-        (
-            "ci:\n"
-            "  fail_on_warning: true\n"
-            "  post_pr_comment: false\n"
-            "  output_format: json\n"
-        ),
+        ("ci:\n  fail_on_warning: true\n  post_pr_comment: false\n  output_format: json\n"),
         encoding="utf-8",
     )
 
