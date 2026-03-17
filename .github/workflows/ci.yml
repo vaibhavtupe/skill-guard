@@ -117,7 +117,7 @@ jobs:
           PY
           skill-guard validate tests/fixtures/skills/valid-skill
           skill-guard secure tests/fixtures/skills/valid-skill
-          skill-guard conflict tests/fixtures/skills/valid-skill
-          skill-guard conflict tests/fixtures/skills/valid-skill --method embeddings
+          skill-guard conflict tests/fixtures/skills/valid-skill --against tests/fixtures/skills/injection-skill
+          skill-guard conflict tests/fixtures/skills/valid-skill --against tests/fixtures/skills/injection-skill --method embeddings
           skill-guard init "$tmpdir"
           skill-guard suppress tests/fixtures/skills/valid-skill/SKILL.md --rule INJECT-OVERRIDE --reason "smoke-test"
