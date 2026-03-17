@@ -91,7 +91,7 @@ jobs:
       - name: Install release (PyPI) or main
         run: |
           if [ -n "${{ github.event.inputs.release_version }}" ]; then
-            python -m pip install "skill-guard==${{ github.event.inputs.release_version }}[embeddings]"
+            python -m pip install "skill-guard[embeddings]==${{ github.event.inputs.release_version }}"
           else
             python -m pip install -e ".[dev,embeddings]"
           fi
