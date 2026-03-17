@@ -115,9 +115,10 @@ jobs:
           assert valid_dir.exists(), "valid fixture missing"
           assert injection_dir.exists(), "injection fixture missing"
           PY
+          # README-aligned smoke
           skill-guard validate tests/fixtures/skills/valid-skill
           skill-guard secure tests/fixtures/skills/valid-skill
           skill-guard conflict tests/fixtures/skills/valid-skill --against tests/fixtures/skills/injection-skill
           skill-guard conflict tests/fixtures/skills/valid-skill --against tests/fixtures/skills/injection-skill --method embeddings
+          skill-guard check tests/fixtures/skills/valid-skill --against tests/fixtures/skills/injection-skill
           (cd "$tmpdir" && skill-guard init)
-          skill-guard suppress tests/fixtures/skills/valid-skill/SKILL.md --rule INJECT-OVERRIDE --reason "smoke-test"
