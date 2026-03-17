@@ -87,7 +87,11 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
             _run_reload_command(config.reload_command)
             if config.reload_wait_seconds > 0:
                 await asyncio.sleep(config.reload_wait_seconds)
-        if config.reload_command or config.injection.method != "custom_hook" or config.injection.pre_test_hook:
+        if (
+            config.reload_command
+            or config.injection.method != "custom_hook"
+            or config.injection.pre_test_hook
+        ):
             await wait_for_agent_ready(
                 endpoint,
                 config.api_key,

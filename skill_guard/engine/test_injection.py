@@ -25,7 +25,9 @@ class TestInjectionContext:
         if method == "custom_hook":
             self._cleanup = _build_hook_cleanup(self.skill, self._endpoint, self.config)
             if self.config.injection.pre_test_hook:
-                _run_hook(Path(self.config.injection.pre_test_hook), self.skill.path, self._endpoint)
+                _run_hook(
+                    Path(self.config.injection.pre_test_hook), self.skill.path, self._endpoint
+                )
             return
         if method == "directory_copy":
             self._cleanup = _directory_copy_injection(self.skill, self.config)
@@ -46,9 +48,7 @@ class TestInjectionContext:
         return self.config.endpoint.rstrip("/")
 
 
-def _build_hook_cleanup(
-    skill: ParsedSkill, endpoint: str, config: TestConfig
-) -> callable | None:
+def _build_hook_cleanup(skill: ParsedSkill, endpoint: str, config: TestConfig) -> callable | None:
     if not config.injection.post_test_hook:
         return None
 
@@ -121,8 +121,7 @@ def _git_push_injection(skill: ParsedSkill, config: TestConfig) -> callable:
 
         if not _git_status_clean(repo_path):
             commit_message = (
-                injection.git_commit_message
-                or f"skill-guard test injection: {skill.metadata.name}"
+                injection.git_commit_message or f"skill-guard test injection: {skill.metadata.name}"
             )
             _git_command(
                 [

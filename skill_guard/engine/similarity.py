@@ -257,15 +257,11 @@ def _is_ignored_conflict(new_skill: ParsedSkill, existing: ParsedSkill) -> bool:
 def _is_model_cached(cache_dir: Path, model_name: str) -> bool:
     if not cache_dir.exists():
         return False
-    return any(
-        path.is_dir() and model_name in path.name for path in cache_dir.rglob("*")
-    )
+    return any(path.is_dir() and model_name in path.name for path in cache_dir.rglob("*"))
 
 
 def _emit_model_download_message(model_name: str, cache_dir: Path) -> None:
-    sys.stderr.write(
-        f"Downloading model '{model_name}' (cache: {cache_dir})...\n"
-    )
+    sys.stderr.write(f"Downloading model '{model_name}' (cache: {cache_dir})...\n")
 
 
 def _tfidf_similarity(text_a: str, text_b: str) -> float:

@@ -77,9 +77,7 @@ def test_conflict_embeddings_missing_dependency(monkeypatch) -> None:
         compute_similarity(new_skill, FIXTURES, ConflictConfig(method="embeddings"))
 
 
-def test_conflict_embeddings_similarity_uses_cache_and_model(
-    monkeypatch, tmp_path, capsys
-) -> None:
+def test_conflict_embeddings_similarity_uses_cache_and_model(monkeypatch, tmp_path, capsys) -> None:
     fake_model = _install_fake_sentence_transformers(monkeypatch)
     new_skill = parse_skill(FIXTURES / "conflicting-skill")
 
@@ -126,7 +124,6 @@ def test_conflict_embeddings_offline_requires_cached_model(monkeypatch, tmp_path
         )
 
 
-
 def test_conflict_embeddings_offline_uses_model_path(monkeypatch, tmp_path, capsys) -> None:
     fake_model = _install_fake_sentence_transformers(monkeypatch)
     new_skill = parse_skill(FIXTURES / "conflicting-skill")
@@ -150,7 +147,6 @@ def test_conflict_embeddings_offline_uses_model_path(monkeypatch, tmp_path, caps
     assert result.high_conflicts >= 1
     assert fake_model.last_init["model_name"] == str(local_model)
     assert "Downloading model" not in capsys.readouterr().err
-
 
 
 def test_conflict_llm_not_implemented() -> None:
