@@ -18,6 +18,11 @@ SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
 CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")
 QUIET_OPT = typer.Option(False, "--quiet", help="Suppress non-essential output")
+SKIP_REFERENCES_OPT = typer.Option(
+    False,
+    "--skip-references",
+    help="Skip scanning references/ files for injection patterns",
+)
 
 
 def secure_cmd(
@@ -25,10 +30,13 @@ def secure_cmd(
     config_path: Path | None = CONFIG_PATH_OPT,
     format: str = FORMAT_OPT,
     quiet: bool = QUIET_OPT,
+    skip_references: bool = SKIP_REFERENCES_OPT,
 ):
     """Scan a skill for dangerous patterns."""
     try:
         config = load_config(config_path)
+        if skip_references:
+            config.secure.skip_references = True
         skill = parse_skill(skill_path)
         result = run_security_scan(skill, config.secure)
     except ConfigError as e:

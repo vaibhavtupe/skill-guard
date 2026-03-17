@@ -22,6 +22,7 @@ validate:
 secure:
   block_on: [critical, high]
   allow_external_urls_in_scripts: false
+  skip_references: false
   use_snyk_scan: false  # reserved for future integration
   allow_list:
     - id: EXEC-001
@@ -34,6 +35,8 @@ conflict:
   medium_overlap_threshold: 0.55
   block_on_high_overlap: true
   embeddings_cache_dir: .skill-guard-cache/embeddings
+  embeddings_model: all-MiniLM-L6-v2
+  embeddings_model_path: /path/to/local/model
   llm_model: gpt-4o-mini
   llm_max_concurrent: 5
 
@@ -69,6 +72,7 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 ### `secure.*`
 - `block_on` (list[str]) severities that cause failure (critical/high/medium/low)
 - `allow_external_urls_in_scripts` (bool)
+- `skip_references` (bool) skip scanning references/ files for injection patterns
 - `use_snyk_scan` (bool, reserved for future integration)
 - `allow_list` (list) suppress specific findings
 
@@ -78,8 +82,30 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 - `medium_overlap_threshold` (float)
 - `block_on_high_overlap` (bool)
 - `embeddings_cache_dir` (string, default `.skill-guard-cache/embeddings`)
+- `embeddings_model` (string, default `all-MiniLM-L6-v2`)
+- `embeddings_model_path` (string, optional) local model path for offline/air-gapped runs
 - `llm_model` (string, default `gpt-4o-mini`)
 - `llm_max_concurrent` (int, default `5`)
+
+**Tuning tip:** Calibrate thresholds by running `skill-guard conflict` against known similar and dissimilar skills, then adjust `medium_overlap_threshold`/`high_overlap_threshold` (or use `--threshold` for a one-off run).
+
+### `test.*`
+- `endpoint` (string) agent endpoint URL
+- `api_key` (string, optional)
+- `model` (string, optional)
+- `timeout_seconds` (int, default 30)
+- `reload_command` (string, optional)
+- `reload_wait_seconds` (int)
+- `reload_health_check_path` (string)
+- `reload_timeout_seconds` (int)
+- `injection.method` (`custom_hook`|`directory_copy`|`git_push`)
+- `injection.pre_test_hook` / `injection.post_test_hook` (string, custom hooks)
+- `injection.directory_copy_dir` (string, for `directory_copy`)
+- `injection.git_repo_path` (string, for `git_push`)
+- `injection.git_remote` (string, default `origin`)
+- `injection.git_branch` (string, optional)
+- `injection.git_skills_dir` (string, default `skills`)
+- `injection.git_commit_message` (string, optional)
 
 ### `monitor.*`
 - `stale_threshold_days` (int)

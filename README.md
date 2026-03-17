@@ -26,7 +26,7 @@ ONBOARDING (pre-merge, in CI):
   skill-guard validate   → format compliance + quality scoring
   skill-guard secure     → scan for dangerous patterns  
   skill-guard conflict   → detect trigger overlap with existing skills
-  skill-guard test       → runs evals against an OpenAI-compatible endpoint. Use pre_test_hook/post_test_hook for your own deploy/teardown flow.
+  skill-guard test       → runs evals against an OpenAI-compatible endpoint. Supports injection methods: custom_hook (pre/post scripts), directory_copy, and git_push.
   skill-guard check      → runs validate + secure + conflict as a single gate. Agent evals run if --endpoint is configured.
 
 ONGOING (post-merge, scheduled):
@@ -48,11 +48,38 @@ skill-guard validate ./skills/my-skill/
 # Check for security issues
 skill-guard secure ./skills/my-skill/
 
+# Skip scanning references/ for injection patterns
+skill-guard secure ./skills/my-skill/ --skip-references
+
 # Check for conflicts with existing skills
 skill-guard conflict ./skills/my-skill/ --against ./skills/
 
 # Run the full gate (validate + secure + conflict; test runs if --endpoint is configured)
 skill-guard check ./skills/my-skill/ --against ./skills/
+```
+
+### Test injection methods
+
+```yaml
+# skill-guard.yaml
+
+test:
+  endpoint: http://localhost:8000
+  model: gpt-4.1
+  injection:
+    method: directory_copy
+    directory_copy_dir: /app/skills
+
+# Or push into a repo that your agent pulls from:
+# test:
+#   endpoint: http://localhost:8000
+#   model: gpt-4.1
+#   injection:
+#     method: git_push
+#     git_repo_path: /path/to/agent-repo
+#     git_remote: origin
+#     git_branch: main
+#     git_skills_dir: skills
 ```
 
 ### Example Output
@@ -114,12 +141,33 @@ skill-guard conflict ./skills/my-skill/ --against ./skills/ --method tfidf
 # Embeddings-based overlap detection
 skill-guard conflict ./skills/my-skill/ --against ./skills/ --method embeddings
 
+# Choose a different embeddings model
+skill-guard conflict ./skills/my-skill/ --against ./skills/ --method embeddings --model all-MiniLM-L12-v2
+
+# Offline embeddings (local model only; no downloads)
+skill-guard conflict ./skills/my-skill/ --against ./skills/ --method embeddings \
+  --model-path /models/all-MiniLM-L6-v2 --offline
+
 # LLM-based overlap detection
 export OPENAI_API_KEY=...
 skill-guard conflict ./skills/my-skill/ --against ./skills/ --method llm
 ```
 
-`embeddings` uses the `all-MiniLM-L6-v2` sentence-transformers model and caches vectors under `.skill-guard-cache/embeddings/`. `llm` uses the OpenAI Chat API with `gpt-4o-mini` by default.
+`embeddings` uses the `all-MiniLM-L6-v2` sentence-transformers model by default (override with `--model`, `--model-path`, or `conflict.embeddings_model`/`conflict.embeddings_model_path`) and caches downloads under `conflict.embeddings_cache_dir` (default `.skill-guard-cache/embeddings/`). On first download, it prints a "Downloading model..." message to stderr. Use `--offline` to require a local/cached model and skip downloads. `llm` uses the OpenAI Chat API with `gpt-4o-mini` by default.
+
+### Ignoring known conflicts
+
+Add `conflict_ignore` to your SKILL.md frontmatter to skip comparisons against specific skills:
+
+```yaml
+---
+name: my-skill
+description: "Use when ..."
+conflict_ignore:
+  - legacy-skill
+  - skills/legacy-skill/SKILL.md
+---
+```
 
 ## Documentation
 

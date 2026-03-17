@@ -90,11 +90,11 @@ def pre_commit_run(command: str, files: Sequence[str | Path]) -> int:
     return exit_code
 
 
-def main(files: Iterable[str] | None = None) -> None:
+def main(files: Iterable[str] | None = None) -> int:
     """Entry point for the pre-commit hook wrapper."""
     args = list(files) if files is not None else sys.argv[1:]
     if not args:
-        raise typer.Exit(code=3)
+        return 3
 
     command, *changed_files = args
-    raise typer.Exit(code=pre_commit_run(command, changed_files))
+    return pre_commit_run(command, changed_files)

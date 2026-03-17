@@ -23,6 +23,11 @@ def test_parse_invalid_skill_missing_description():
         parse_skill(FIXTURES / "invalid-skill")
 
 
+def test_parse_conflict_ignore_frontmatter():
+    skill = parse_skill(FIXTURES / "ignore-conflict-skill")
+    assert skill.metadata.conflict_ignore == ["conflicting-skill"]
+
+
 def test_parse_missing_skill_md(tmp_path: Path):
     with pytest.raises(SkillParseError):
         parse_skill(tmp_path)

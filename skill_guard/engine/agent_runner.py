@@ -12,6 +12,7 @@ from urllib.parse import urljoin
 import httpx
 
 from skill_guard.config import TestConfig
+from skill_guard.engine.test_injection import TestInjectionContext
 from skill_guard.models import (
     AgentTestResult,
     EvalExpectation,
@@ -73,8 +74,7 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
     endpoint = config.endpoint.rstrip("/")
     responses_url = f"{endpoint}/v1/responses"
 
-    pre_hook = config.injection.pre_test_hook
-    post_hook = config.injection.post_test_hook
+    injection_context = TestInjectionContext(skill=skill, config=config)
 
     started = time.perf_counter()
     results: list[EvalTestResult] = []
@@ -82,13 +82,12 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
     headers = _build_headers(config.api_key)
 
     try:
-        if pre_hook:
-            run_hook(Path(pre_hook), skill.path, endpoint)
+        injection_context.run_pre()
         if config.reload_command:
             _run_reload_command(config.reload_command)
             if config.reload_wait_seconds > 0:
                 await asyncio.sleep(config.reload_wait_seconds)
-        if pre_hook or config.reload_command:
+        if config.reload_command or config.injection.method != "custom_hook" or config.injection.pre_test_hook:
             await wait_for_agent_ready(
                 endpoint,
                 config.api_key,
@@ -134,8 +133,7 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
                     )
                 )
     finally:
-        if post_hook:
-            run_hook(Path(post_hook), skill.path, endpoint)
+        injection_context.run_post()
 
     total_time = time.perf_counter() - started
     total_tests = len(results)

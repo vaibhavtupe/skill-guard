@@ -1,12 +1,17 @@
+# Changelog
+
 ## v0.6.0 — 2026-03-16
 
 ### New Features & Fixes
 
-- **feat:** embeddings-based conflict detection via `sentence-transformers` (`all-MiniLM-L6-v2`) with on-disk caching in `.skill-guard-cache/embeddings/`
-- **feat:** LLM-based conflict detection via OpenAI Chat API (`gpt-4o-mini`) with async fan-out, max concurrency control, and 30-second request timeout
-- **feat:** new conflict config fields: `embeddings_cache_dir`, `llm_model`, and `llm_max_concurrent`
-- **packaging:** optional extras now include `skill-guard[embeddings]` and `skill-guard[llm]`
-- **docs:** README and configuration docs now document live embeddings and LLM conflict modes
+- **feat(#74): embeddings-based conflict detection** — `skill-guard conflict --method embeddings` via `sentence-transformers` (`all-MiniLM-L6-v2`). Catches semantic overlap TF-IDF misses. Optional extra: `pip install skill-guard[embeddings]`. Clear error with install hint when dep is missing. `--offline` flag falls back to tfidf in air-gapped CI.
+- **feat(#75): real prompt injection pattern library** — 15 new `INJECT-*` patterns covering instruction overrides, role hijack, exfiltration hooks, jailbreak scaffolding, zero-width characters, context stuffing, privilege escalation. Zero false positives on 15 OpenClaw production skills.
+- **feat(#76): `skill-guard suppress`** — structured false-positive reporting. Inserts inline disable comment in SKILL.md, records to `skill-guard.yaml` with mandatory reason + timestamp. `validate --show-suppressed` lists all records.
+- **fix(#71): replace `datetime.utcnow()`** — 20 deprecation warnings eliminated.
+- **fix(#72): `fix --check` output** — no longer says "0 fixes applied" when fixes are available in dry-run mode.
+- **test(#73): pre-commit integration tests** — 17 integration tests for the `skill-guard-pre-commit` entrypoint.
+
+**Stats:** 160 tests passing | 0 deprecation warnings
 
 ---
 

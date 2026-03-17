@@ -6,7 +6,7 @@
 pip install skill-guard
 ```
 
-Optional embeddings (Phase 3):
+Optional embeddings:
 
 ```bash
 pip install skill-guard[embeddings]

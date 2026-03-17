@@ -19,7 +19,22 @@ AGAINST_OPT = typer.Option(..., "--against", help="Skills dir or catalog YAML")
 CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 METHOD_OPT = typer.Option(None, "--method", help="tfidf|embeddings|llm")
 THRESHOLD_OPT = typer.Option(None, "--threshold", help="Similarity threshold")
+MODEL_OPT = typer.Option(
+    None,
+    "--model",
+    help="Embeddings model name (only used with --method embeddings)",
+)
+MODEL_PATH_OPT = typer.Option(
+    None,
+    "--model-path",
+    help="Local embeddings model path (offline-friendly; only used with --method embeddings)",
+)
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")
+OFFLINE_OPT = typer.Option(
+    False,
+    "--offline",
+    help="Offline mode (use local embeddings model only; no remote downloads)",
+)
 
 
 def conflict_cmd(
@@ -28,14 +43,24 @@ def conflict_cmd(
     config_path: Path | None = CONFIG_PATH_OPT,
     method: str | None = METHOD_OPT,
     threshold: float | None = THRESHOLD_OPT,
+    model: str | None = MODEL_OPT,
+    model_path: str | None = MODEL_PATH_OPT,
     format: str = FORMAT_OPT,
+    offline: bool = OFFLINE_OPT,
 ):
     """Detect trigger overlap with existing skills."""
     try:
         config = load_config(config_path)
         skill = parse_skill(skill_path)
         result = compute_similarity(
-            skill, against, config.conflict, method=method, threshold=threshold
+            skill,
+            against,
+            config.conflict,
+            method=method,
+            threshold=threshold,
+            embeddings_model=model,
+            embeddings_model_path=model_path,
+            offline=offline,
         )
     except ConfigError as e:
         typer.echo(f"Config error: {e}")

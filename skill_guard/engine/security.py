@@ -6,26 +6,16 @@ from __future__ import annotations
 
 import re
 import warnings
-from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse
 
 from skill_guard.config import SecureConfig
+from skill_guard.engine.injection_patterns import INJECTION_PATTERNS, SecurityPattern
 from skill_guard.models import ParsedSkill, SecurityFinding, SecurityResult
 
 # ---------------------------------------------------------------------------
 # Pattern registry
 # ---------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class SecurityPattern:
-    id: str
-    category: str
-    severity: str
-    pattern: str
-    description: str
-    suggestion: str
 
 
 SECURITY_PATTERNS: list[SecurityPattern] = [
@@ -96,23 +86,6 @@ SECURITY_PATTERNS: list[SecurityPattern] = [
         description="Base64-encoded data sent to network",
         suggestion="Review data being transmitted",
     ),
-    # PROMPT INJECTION — Medium
-    SecurityPattern(
-        id="INJECT-001",
-        category="PROMPT_INJECTION",
-        severity="medium",
-        pattern=r"<IMPORTANT>|IMPORTANT:.*ignore|ignore.*previous.*instructions",
-        description="Possible prompt injection in skill description",
-        suggestion="Remove meta-instructions from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-002",
-        category="PROMPT_INJECTION",
-        severity="medium",
-        pattern=r"[\u200b-\u200f\u202a-\u202e\ufeff]",
-        description="Zero-width Unicode characters detected",
-        suggestion="Remove invisible Unicode characters",
-    ),
     # SCOPE — Medium
     SecurityPattern(
         id="SCOPE-001",
@@ -122,7 +95,7 @@ SECURITY_PATTERNS: list[SecurityPattern] = [
         description="Overly broad Bash tool permission",
         suggestion="Restrict allowed-tools to specific commands",
     ),
-]
+] + INJECTION_PATTERNS
 
 _SUPPRESSION_RE = re.compile(r"skill-guard:\s*ignore\s+([A-Z]+-\d+)")
 
@@ -139,7 +112,7 @@ def run_security_scan(skill: ParsedSkill, config: SecureConfig) -> SecurityResul
 
     findings: list[SecurityFinding] = []
 
-    files_to_scan = _gather_files(skill)
+    files_to_scan = _gather_files(skill, skip_references=config.skip_references)
 
     # Build allow_list map (id -> list of allowed files or None)
     allow_list = {}
@@ -227,13 +200,13 @@ def run_security_scan(skill: ParsedSkill, config: SecureConfig) -> SecurityResul
 # ---------------------------------------------------------------------------
 
 
-def _gather_files(skill: ParsedSkill) -> list[Path]:
+def _gather_files(skill: ParsedSkill, *, skip_references: bool) -> list[Path]:
     files: list[Path] = [skill.skill_md_path]
 
     if skill.has_scripts:
         files.extend([p for p in skill.scripts if p.is_file()])
 
-    if skill.has_references:
+    if skill.has_references and not skip_references:
         files.extend([p for p in skill.references if p.is_file()])
 
     # Evals directory

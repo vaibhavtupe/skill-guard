@@ -26,6 +26,7 @@ class SkillMetadata(BaseModel):
     compatibility: list[str] | None = None
     metadata: dict[str, Any] | None = None
     allowed_tools: list[str] | None = None
+    conflict_ignore: list[str] = Field(default_factory=list)
 
     # Derived from metadata dict
     @property
@@ -147,6 +148,7 @@ class ValidationResult(BaseModel):
 SecuritySeverity = Literal["critical", "high", "medium", "low"]
 SecurityCategory = Literal[
     "CREDENTIALS",
+    "INJECTION",
     "DANGEROUS_EXEC",
     "DATA_EXFILTRATION",
     "PROMPT_INJECTION",

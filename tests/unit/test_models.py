@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from skill_guard.models import (
@@ -88,7 +88,7 @@ def test_models_round_trip():
     )
 
     catalog = Catalog(
-        updated=datetime.utcnow(),
+        updated=datetime.now(UTC),
         skills=[
             CatalogEntry(
                 name="test-skill",
@@ -96,8 +96,8 @@ def test_models_round_trip():
                 author="me",
                 version="1.0",
                 stage="staging",
-                registered=datetime.utcnow(),
-                last_updated=datetime.utcnow(),
+                registered=datetime.now(UTC),
+                last_updated=datetime.now(UTC),
                 quality_score=90,
                 path="./skills/test",
             )
