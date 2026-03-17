@@ -89,7 +89,9 @@ def test_git_push_rolls_back_on_failure(tmp_path: Path, monkeypatch: pytest.Monk
         if args[:2] == ["rev-parse", "--abbrev-ref"]:
             return subprocess.CompletedProcess(args, 0, stdout="main\n", stderr="")
         if args[:2] == ["status", "--porcelain"]:
-            return subprocess.CompletedProcess(args, 0, stdout=" M skills/valid-skill/SKILL.md\n", stderr="")
+            return subprocess.CompletedProcess(
+                args, 0, stdout=" M skills/valid-skill/SKILL.md\n", stderr=""
+            )
         if args[0] == "push":
             if allow_failure:
                 return subprocess.CompletedProcess(args, 1, stdout="", stderr="auth failed")
