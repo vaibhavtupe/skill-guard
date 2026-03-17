@@ -5,7 +5,7 @@ set -euo pipefail
 # Requires Docker.
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-IMAGE="pytorch/pytorch:2.4.0-cpu"
+IMAGE="python:3.12-slim"
 
 set -x
 
@@ -14,6 +14,7 @@ docker run --rm \
   -w /work \
   "$IMAGE" \
   bash -lc "python -m pip install --upgrade pip && \
+            python -m pip install --index-url https://download.pytorch.org/whl/cpu torch==2.4.0 && \
             python -m pip install 'skill-guard[embeddings]==0.6.0' && \
             skill-guard validate tests/fixtures/skills/valid-skill && \
             skill-guard secure tests/fixtures/skills/valid-skill && \
