@@ -247,7 +247,7 @@ def _is_ignored_conflict(new_skill: ParsedSkill, existing: ParsedSkill) -> bool:
             return True
         if entry in (existing_dir_name, existing_md_name):
             return True
-        if entry == existing_path or entry == existing_md_path:
+        if entry in (existing_path, existing_md_path):
             return True
         if existing_path.endswith(entry) or existing_md_path.endswith(entry):
             return True
@@ -257,10 +257,9 @@ def _is_ignored_conflict(new_skill: ParsedSkill, existing: ParsedSkill) -> bool:
 def _is_model_cached(cache_dir: Path, model_name: str) -> bool:
     if not cache_dir.exists():
         return False
-    for path in cache_dir.rglob("*"):
-        if path.is_dir() and model_name in path.name:
-            return True
-    return False
+    return any(
+        path.is_dir() and model_name in path.name for path in cache_dir.rglob("*")
+    )
 
 
 def _emit_model_download_message(model_name: str, cache_dir: Path) -> None:
