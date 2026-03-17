@@ -29,3 +29,21 @@ def test_security_allows_external_urls_when_enabled() -> None:
     result = run_security_scan(skill, SecureConfig(allow_external_urls_in_scripts=True))
 
     assert all(f.id != "URL-001" for f in result.findings)
+
+
+def test_security_injection_fixture_detects_all_patterns() -> None:
+    skill = parse_skill(FIXTURES / "injection-skill")
+    result = run_security_scan(skill, SecureConfig())
+
+    injection_ids = {finding.id for finding in result.findings if finding.category == "INJECTION"}
+    for i in range(1, 9):
+        assert f"INJECT-{i:03d}" in injection_ids
+
+
+def test_security_skip_references_suppresses_reference_findings() -> None:
+    skill = parse_skill(FIXTURES / "injection-skill")
+    result = run_security_scan(skill, SecureConfig(skip_references=True))
+
+    injection_ids = {finding.id for finding in result.findings if finding.category == "INJECTION"}
+    assert "INJECT-003" not in injection_ids
+    assert "INJECT-001" in injection_ids

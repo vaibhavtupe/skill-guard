@@ -16,6 +16,8 @@ def test_load_config_defaults(tmp_path: Path):
         cfg = load_config()
         assert cfg.validate.min_description_length == 20
         assert cfg.conflict.embeddings_cache_dir == ".skill-guard-cache/embeddings"
+        assert cfg.conflict.embeddings_model == "all-MiniLM-L6-v2"
+        assert cfg.conflict.embeddings_model_path is None
         assert cfg.conflict.llm_model == "gpt-4o-mini"
         assert cfg.conflict.llm_max_concurrent == 5
     finally:

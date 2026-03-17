@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import difflib
 import re
+import sys
 from pathlib import Path
 from typing import Literal
 
@@ -32,13 +33,24 @@ def compute_similarity(
     config: ConflictConfig,
     method: Literal["tfidf", "embeddings", "llm"] | None = None,
     threshold: float | None = None,
+    embeddings_model: str | None = None,
+    embeddings_model_path: str | None = None,
+    offline: bool = False,
 ) -> ConflictResult:
     """Compute similarity between new_skill and existing skills."""
     method = method or config.method
     threshold = threshold or config.similarity_threshold
 
     if method == "embeddings":
-        return _compute_embeddings_similarity(new_skill, existing_source, config, threshold)
+        return _compute_embeddings_similarity(
+            new_skill,
+            existing_source,
+            config,
+            threshold,
+            embeddings_model=embeddings_model,
+            embeddings_model_path=embeddings_model_path,
+            offline=offline,
+        )
     if method == "llm":
         raise ConfigError(
             "LLM conflict detection is not yet implemented. Use method: tfidf (default)."
@@ -58,6 +70,8 @@ def compute_similarity(
     name_collision_with = None
 
     for existing in existing_skills:
+        if _is_ignored_conflict(new_skill, existing):
+            continue
         # Name collision check
         if existing.metadata.name == new_skill.metadata.name:
             name_collision = True
@@ -119,6 +133,9 @@ def _compute_embeddings_similarity(
     existing_source: Path,
     config: ConflictConfig,
     threshold: float | None = None,
+    embeddings_model: str | None = None,
+    embeddings_model_path: str | None = None,
+    offline: bool = False,
 ) -> ConflictResult:
     """Embeddings-based conflict detection using sentence-transformers."""
     try:
@@ -134,7 +151,27 @@ def _compute_embeddings_similarity(
     existing_skills = _load_existing_skills(existing_source)
     existing_skills = [s for s in existing_skills if s.metadata.name != new_skill.metadata.name]
 
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+    model_path = embeddings_model_path or config.embeddings_model_path
+    model_name = embeddings_model or config.embeddings_model
+    cache_dir = Path(config.embeddings_cache_dir).expanduser()
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    if model_path:
+        model_path = str(Path(model_path).expanduser())
+        if not Path(model_path).exists():
+            raise ConfigError(f"Embeddings model path not found: '{model_path}'")
+        model_source = model_path
+    else:
+        if offline and not _is_model_cached(cache_dir, model_name):
+            raise ConfigError(
+                "Offline mode requires a cached embeddings model. "
+                "Provide --model-path or set conflict.embeddings_model_path."
+            )
+        if not offline and not _is_model_cached(cache_dir, model_name):
+            _emit_model_download_message(model_name, cache_dir)
+        model_source = model_name
+
+    model = SentenceTransformer(model_source, cache_folder=str(cache_dir))
 
     new_text = new_skill.metadata.description
     new_emb = model.encode([new_text])
@@ -144,6 +181,8 @@ def _compute_embeddings_similarity(
     name_collision_with = None
 
     for existing in existing_skills:
+        if _is_ignored_conflict(new_skill, existing):
+            continue
         if existing.metadata.name == new_skill.metadata.name:
             name_collision = True
             name_collision_with = existing.metadata.name
@@ -189,6 +228,44 @@ def _compute_embeddings_similarity(
         passed=passed,
         high_conflicts=high_conflicts,
         medium_conflicts=medium_conflicts,
+    )
+
+
+def _is_ignored_conflict(new_skill: ParsedSkill, existing: ParsedSkill) -> bool:
+    ignore_list = [entry.strip() for entry in new_skill.metadata.conflict_ignore if entry]
+    if not ignore_list:
+        return False
+
+    existing_name = existing.metadata.name
+    existing_path = existing.path.as_posix()
+    existing_md_path = existing.skill_md_path.as_posix()
+    existing_dir_name = existing.path.name
+    existing_md_name = existing.skill_md_path.name
+
+    for entry in ignore_list:
+        if entry == existing_name:
+            return True
+        if entry in (existing_dir_name, existing_md_name):
+            return True
+        if entry == existing_path or entry == existing_md_path:
+            return True
+        if existing_path.endswith(entry) or existing_md_path.endswith(entry):
+            return True
+    return False
+
+
+def _is_model_cached(cache_dir: Path, model_name: str) -> bool:
+    if not cache_dir.exists():
+        return False
+    for path in cache_dir.rglob("*"):
+        if path.is_dir() and model_name in path.name:
+            return True
+    return False
+
+
+def _emit_model_download_message(model_name: str, cache_dir: Path) -> None:
+    sys.stderr.write(
+        f"Downloading model '{model_name}' (cache: {cache_dir})...\n"
     )
 
 

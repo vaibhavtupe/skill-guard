@@ -19,9 +19,21 @@ AGAINST_OPT = typer.Option(..., "--against", help="Skills dir or catalog YAML")
 CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 METHOD_OPT = typer.Option(None, "--method", help="tfidf|embeddings|llm")
 THRESHOLD_OPT = typer.Option(None, "--threshold", help="Similarity threshold")
+MODEL_OPT = typer.Option(
+    None,
+    "--model",
+    help="Embeddings model name (only used with --method embeddings)",
+)
+MODEL_PATH_OPT = typer.Option(
+    None,
+    "--model-path",
+    help="Local embeddings model path (offline-friendly; only used with --method embeddings)",
+)
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")
 OFFLINE_OPT = typer.Option(
-    False, "--offline", help="Fall back to tfidf if embeddings unavailable (for air-gapped CI)"
+    False,
+    "--offline",
+    help="Offline mode (use local embeddings model only; no remote downloads)",
 )
 
 
@@ -31,6 +43,8 @@ def conflict_cmd(
     config_path: Path | None = CONFIG_PATH_OPT,
     method: str | None = METHOD_OPT,
     threshold: float | None = THRESHOLD_OPT,
+    model: str | None = MODEL_OPT,
+    model_path: str | None = MODEL_PATH_OPT,
     format: str = FORMAT_OPT,
     offline: bool = OFFLINE_OPT,
 ):
@@ -38,18 +52,15 @@ def conflict_cmd(
     try:
         config = load_config(config_path)
         skill = parse_skill(skill_path)
-        # --offline: fall back to tfidf if embeddings requested but unavailable
-        effective_method = method
-        if offline and method == "embeddings":
-            try:
-                import sentence_transformers  # noqa: F401
-            except ImportError:
-                typer.echo(
-                    "Warning: sentence-transformers not installed, falling back to tfidf (--offline mode)"
-                )
-                effective_method = "tfidf"
         result = compute_similarity(
-            skill, against, config.conflict, method=effective_method, threshold=threshold
+            skill,
+            against,
+            config.conflict,
+            method=method,
+            threshold=threshold,
+            embeddings_model=model,
+            embeddings_model_path=model_path,
+            offline=offline,
         )
     except ConfigError as e:
         typer.echo(f"Config error: {e}")

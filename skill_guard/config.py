@@ -75,6 +75,7 @@ class ValidateConfig(BaseModel):
 class SecureConfig(BaseModel):
     block_on: list[str] = Field(default_factory=lambda: ["critical", "high"])
     allow_external_urls_in_scripts: bool = False
+    skip_references: bool = False
     # Reserved for future integration with the snyk CLI.
     use_snyk_scan: bool = False
     allow_list: list[AllowListEntry] = Field(default_factory=list)
@@ -87,6 +88,8 @@ class ConflictConfig(BaseModel):
     high_overlap_threshold: float = 0.75
     medium_overlap_threshold: float = 0.55
     embeddings_cache_dir: str = ".skill-guard-cache/embeddings"
+    embeddings_model: str = "all-MiniLM-L6-v2"
+    embeddings_model_path: str | None = None
     llm_model: str = "gpt-4o-mini"
     llm_max_concurrent: int = 5
 
@@ -95,6 +98,12 @@ class InjectionConfig(BaseModel):
     method: Literal["directory_copy", "git_push", "custom_hook"] = "custom_hook"
     pre_test_hook: str | None = None
     post_test_hook: str | None = None
+    directory_copy_dir: str | None = None
+    git_repo_path: str | None = None
+    git_remote: str = "origin"
+    git_branch: str | None = None
+    git_skills_dir: str = "skills"
+    git_commit_message: str | None = None
 
 
 class TestConfig(BaseModel):
@@ -292,6 +301,7 @@ validate:
 secure:
   block_on: [critical, high]       # Severities that cause a blocking failure
   allow_external_urls_in_scripts: false
+  skip_references: false           # Skip scanning references/ files for injection patterns
   use_snyk_scan: false             # Reserved for future snyk CLI integration
   # allow_list:                    # Suppress specific findings
   #   - id: EXEC-001
@@ -302,10 +312,14 @@ secure:
 # Conflict detection (skill-guard conflict)
 # ─────────────────────────────────────────────
 conflict:
-  method: tfidf                    # Only supported today; embeddings/llm are future modes
+  method: tfidf                    # tfidf | embeddings | llm
   high_overlap_threshold: 0.75    # >= this = HIGH conflict
   medium_overlap_threshold: 0.55  # >= this = MEDIUM conflict
   block_on_high_overlap: true
+  embeddings_cache_dir: .skill-guard-cache/embeddings
+  embeddings_model: all-MiniLM-L6-v2
+  # embeddings_model_path: /path/to/local/model  # Use a local model in offline mode
+  # Tip: add conflict_ignore in SKILL.md frontmatter to skip specific skills
 
 # ─────────────────────────────────────────────
 # Integration testing (skill-guard test) — Phase 2
@@ -318,9 +332,19 @@ conflict:
 #   reload_command: "curl -X POST ${AGENT_ADMIN_URL}/reload"
 #   reload_wait_seconds: 10
 #   injection:
+#     # Supported methods: custom_hook | directory_copy | git_push
 #     method: custom_hook
+#     # custom_hook
 #     pre_test_hook: ./hooks/deploy-skill.sh
 #     post_test_hook: ./hooks/remove-skill.sh
+#     # directory_copy
+#     # directory_copy_dir: /app/skills
+#     # git_push
+#     # git_repo_path: /path/to/agent-repo
+#     # git_remote: origin
+#     # git_branch: main
+#     # git_skills_dir: skills
+#     # git_commit_message: "skill-guard test injection"
 
 # ─────────────────────────────────────────────
 # Monitoring — Phase 3

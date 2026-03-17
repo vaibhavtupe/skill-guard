@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shutil
+import subprocess
 
 import pytest
 
@@ -95,31 +97,30 @@ class TestPreCommitRun:
         assert exit_code != 0
 
 
+class TestPreCommitEntrypoint:
+    @pytest.mark.integration
+    def test_entrypoint_validate_via_subprocess(self) -> None:
+        entrypoint = shutil.which("skill-guard-pre-commit")
+        if not entrypoint:
+            pytest.skip("skill-guard-pre-commit entrypoint not installed")
+
+        result = subprocess.run(
+            [entrypoint, "validate", str(FIXTURES / "valid-skill" / "SKILL.md")],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, result.stderr
+
+
 class TestMain:
     def test_main_exits_nonzero_with_no_args(self) -> None:
-        import typer
-
-        with pytest.raises(typer.Exit) as exc_info:
-            main([])
-        assert exc_info.value.exit_code == 3
+        assert main([]) == 3
 
     def test_main_validate_valid_skill(self) -> None:
-        import typer
-
-        with pytest.raises(typer.Exit) as exc_info:
-            main(["validate", str(FIXTURES / "valid-skill" / "SKILL.md")])
-        assert exc_info.value.exit_code == 0
+        assert main(["validate", str(FIXTURES / "valid-skill" / "SKILL.md")]) == 0
 
     def test_main_validate_invalid_skill_exits_nonzero(self) -> None:
-        import typer
-
-        with pytest.raises(typer.Exit) as exc_info:
-            main(["validate", str(FIXTURES / "invalid-skill" / "SKILL.md")])
-        assert exc_info.value.exit_code != 0
+        assert main(["validate", str(FIXTURES / "invalid-skill" / "SKILL.md")]) != 0
 
     def test_main_unknown_command_exits_nonzero(self) -> None:
-        import typer
-
-        with pytest.raises(typer.Exit) as exc_info:
-            main(["badcmd", str(FIXTURES / "valid-skill" / "SKILL.md")])
-        assert exc_info.value.exit_code != 0
+        assert main(["badcmd", str(FIXTURES / "valid-skill" / "SKILL.md")]) != 0

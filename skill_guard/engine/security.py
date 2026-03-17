@@ -6,26 +6,16 @@ from __future__ import annotations
 
 import re
 import warnings
-from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse
 
 from skill_guard.config import SecureConfig
+from skill_guard.engine.injection_patterns import INJECTION_PATTERNS, SecurityPattern
 from skill_guard.models import ParsedSkill, SecurityFinding, SecurityResult
 
 # ---------------------------------------------------------------------------
 # Pattern registry
 # ---------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class SecurityPattern:
-    id: str
-    category: str
-    severity: str
-    pattern: str
-    description: str
-    suggestion: str
 
 
 SECURITY_PATTERNS: list[SecurityPattern] = [
@@ -96,23 +86,6 @@ SECURITY_PATTERNS: list[SecurityPattern] = [
         description="Base64-encoded data sent to network",
         suggestion="Review data being transmitted",
     ),
-    # PROMPT INJECTION — Medium
-    SecurityPattern(
-        id="INJECT-001",
-        category="PROMPT_INJECTION",
-        severity="medium",
-        pattern=r"<IMPORTANT>|IMPORTANT:.*ignore|ignore.*previous.*instructions",
-        description="Possible prompt injection in skill description",
-        suggestion="Remove meta-instructions from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-002",
-        category="PROMPT_INJECTION",
-        severity="medium",
-        pattern=r"[\u200b-\u200f\u202a-\u202e\ufeff]",
-        description="Zero-width Unicode characters detected",
-        suggestion="Remove invisible Unicode characters",
-    ),
     # SCOPE — Medium
     SecurityPattern(
         id="SCOPE-001",
@@ -122,128 +95,7 @@ SECURITY_PATTERNS: list[SecurityPattern] = [
         description="Overly broad Bash tool permission",
         suggestion="Restrict allowed-tools to specific commands",
     ),
-    # INJECTION — Prompt injection and jailbreak patterns
-    SecurityPattern(
-        id="INJECT-001",
-        category="INJECTION",
-        severity="critical",
-        pattern=r"(?i)(ignore\s+(previous|prior|all)\s+instructions?|disregard\s+your\s+system\s+prompt|your\s+new\s+instructions?\s+are)",
-        description="Instruction override attempt",
-        suggestion="Remove instruction override language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-002",
-        category="INJECTION",
-        severity="high",
-        pattern=r"(?i)\b(you\s+are\s+now\s+[a-z]|act\s+as\s+[a-z]|pretend\s+(you\s+are|to\s+be))\b",
-        description="Role hijack attempt",
-        suggestion="Remove role-overriding language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-003",
-        category="INJECTION",
-        severity="critical",
-        pattern=r"(?i)(send\s+(this|it|data|all)\s+to\b|exfiltrate|POST\s+to\s+https?://)",
-        description="Data exfiltration instruction",
-        suggestion="Remove data exfiltration language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-004",
-        category="INJECTION",
-        severity="high",
-        pattern=r"(?i)(repeat\s+your\s+instructions?|show\s+your\s+system\s+prompt|what\s+are\s+you\s+told\s+to)",
-        description="Prompt leak attempt",
-        suggestion="Remove prompt-leaking language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-005",
-        category="INJECTION",
-        severity="high",
-        pattern=r"(?i)\b(DAN\s+mode|developer\s+mode|opposite\s+mode|jailbreak\b)",
-        description="Jailbreak scaffolding detected",
-        suggestion="Remove jailbreak language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-006",
-        category="INJECTION",
-        severity="high",
-        pattern="[\u200b\u200c\u200d\ufeff\u2060]",
-        description="Zero-width characters detected (potential hidden content)",
-        suggestion="Remove zero-width characters from skill files",
-    ),
-    SecurityPattern(
-        id="INJECT-007",
-        category="INJECTION",
-        severity="medium",
-        pattern=r"\n{6,}",
-        description="Excessive blank lines (potential content hiding)",
-        suggestion="Reduce consecutive blank lines to 2 or fewer",
-    ),
-    SecurityPattern(
-        id="INJECT-008",
-        category="INJECTION",
-        severity="high",
-        pattern=r"(?i)(when\s+(the\s+)?user\s+(asks?|says?|mentions?)[^,]{0,50},\s+(instead|actually)\s+(do|say|respond))",
-        description="Indirect instruction override",
-        suggestion="Remove conditional override language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-009",
-        category="INJECTION",
-        severity="high",
-        pattern=r"(?i)(call\s+(tool|function)\s+.{0,30}\s+with\s+(these|the\s+following)\s+parameters?)",
-        description="Tool chain manipulation attempt",
-        suggestion="Remove tool override language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-010",
-        category="INJECTION",
-        severity="medium",
-        pattern=r"(.)\1{500,}",
-        description="Context window stuffing pattern",
-        suggestion="Remove repeated filler content from skill files",
-    ),
-    SecurityPattern(
-        id="INJECT-011",
-        category="INJECTION",
-        severity="critical",
-        pattern=r"(?i)(override\s+(all\s+)?previous\s+(instructions?|context|rules?))",
-        description="Context override attempt",
-        suggestion="Remove context override language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-012",
-        category="INJECTION",
-        severity="high",
-        pattern=r"(?i)(forget\s+(everything|all)\s+(you|i).{0,30}(told|said|instructed))",
-        description="Memory wipe instruction",
-        suggestion="Remove memory-wiping language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-013",
-        category="INJECTION",
-        severity="high",
-        pattern=r"(?i)(respond\s+(only|exclusively)\s+(in|as|with)\s+.{0,30}(mode|persona|character))",
-        description="Persona lock attempt",
-        suggestion="Remove persona-locking language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-014",
-        category="INJECTION",
-        severity="medium",
-        pattern=r"(?i)(translate\s+(the\s+above|this|everything)\s+(to|into)\s+(base64|hex|rot13))",
-        description="Encoding obfuscation attempt",
-        suggestion="Remove encoding obfuscation language from skill content",
-    ),
-    SecurityPattern(
-        id="INJECT-015",
-        category="INJECTION",
-        severity="critical",
-        pattern=r"(?i)\b(sudo\s+mode|root\s+access|admin\s+mode|bypass\s+(security|filter|restriction))\b",
-        description="Privilege escalation language",
-        suggestion="Remove privilege escalation language from skill content",
-    ),
-]
+] + INJECTION_PATTERNS
 
 _SUPPRESSION_RE = re.compile(r"skill-guard:\s*ignore\s+([A-Z]+-\d+)")
 
@@ -260,7 +112,7 @@ def run_security_scan(skill: ParsedSkill, config: SecureConfig) -> SecurityResul
 
     findings: list[SecurityFinding] = []
 
-    files_to_scan = _gather_files(skill)
+    files_to_scan = _gather_files(skill, skip_references=config.skip_references)
 
     # Build allow_list map (id -> list of allowed files or None)
     allow_list = {}
@@ -348,13 +200,13 @@ def run_security_scan(skill: ParsedSkill, config: SecureConfig) -> SecurityResul
 # ---------------------------------------------------------------------------
 
 
-def _gather_files(skill: ParsedSkill) -> list[Path]:
+def _gather_files(skill: ParsedSkill, *, skip_references: bool) -> list[Path]:
     files: list[Path] = [skill.skill_md_path]
 
     if skill.has_scripts:
         files.extend([p for p in skill.scripts if p.is_file()])
 
-    if skill.has_references:
+    if skill.has_references and not skip_references:
         files.extend([p for p in skill.references if p.is_file()])
 
     # Evals directory
