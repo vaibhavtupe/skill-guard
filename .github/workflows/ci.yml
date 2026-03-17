@@ -119,5 +119,5 @@ jobs:
           skill-guard secure tests/fixtures/skills/valid-skill
           skill-guard conflict tests/fixtures/skills/valid-skill --against tests/fixtures/skills/injection-skill
           skill-guard conflict tests/fixtures/skills/valid-skill --against tests/fixtures/skills/injection-skill --method embeddings
-          skill-guard init "$tmpdir"
+          (cd "$tmpdir" && skill-guard init)
           skill-guard suppress tests/fixtures/skills/valid-skill/SKILL.md --rule INJECT-OVERRIDE --reason "smoke-test"
