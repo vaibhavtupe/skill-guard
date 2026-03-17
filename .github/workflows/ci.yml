@@ -110,12 +110,14 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          skill_dir = Path("tests/fixtures/skills/injection-skill")
-          assert skill_dir.exists(), "fixture missing"
+          valid_dir = Path("tests/fixtures/skills/valid-skill")
+          injection_dir = Path("tests/fixtures/skills/injection-skill")
+          assert valid_dir.exists(), "valid fixture missing"
+          assert injection_dir.exists(), "injection fixture missing"
           PY
-          skill-guard validate tests/fixtures/skills/injection-skill
-          skill-guard secure tests/fixtures/skills/injection-skill
-          skill-guard conflict tests/fixtures/skills/injection-skill
-          skill-guard conflict tests/fixtures/skills/injection-skill --method embeddings
+          skill-guard validate tests/fixtures/skills/valid-skill
+          skill-guard secure tests/fixtures/skills/valid-skill
+          skill-guard conflict tests/fixtures/skills/valid-skill
+          skill-guard conflict tests/fixtures/skills/valid-skill --method embeddings
           skill-guard init "$tmpdir"
-          skill-guard suppress tests/fixtures/skills/injection-skill/SKILL.md --rule INJECT-OVERRIDE --reason "smoke-test"
+          skill-guard suppress tests/fixtures/skills/valid-skill/SKILL.md --rule INJECT-OVERRIDE --reason "smoke-test"
