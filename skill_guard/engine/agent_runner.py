@@ -14,8 +14,10 @@ import httpx
 from skill_guard.config import TestConfig
 from skill_guard.engine.test_injection import TestInjectionContext
 from skill_guard.models import (
+    AgentTestComparisonResult,
     AgentTestResult,
     EvalExpectation,
+    EvalTestComparison,
     EvalTestResult,
     HealthCheckTimeoutError,
     HookError,
@@ -64,7 +66,12 @@ async def wait_for_agent_ready(
     )
 
 
-async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestResult:
+async def run_agent_tests(
+    skill: ParsedSkill,
+    config: TestConfig,
+    *,
+    inject_skill: bool = True,
+) -> AgentTestResult:
     """Execute eval tests against an agent endpoint using the OpenAI Responses API."""
     if not config.endpoint:
         raise HookError("Agent endpoint is required. Set test.endpoint or pass --endpoint.")
@@ -74,7 +81,7 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
     endpoint = config.endpoint.rstrip("/")
     responses_url = f"{endpoint}/v1/responses"
 
-    injection_context = TestInjectionContext(skill=skill, config=config)
+    injection_context = TestInjectionContext(skill=skill, config=config) if inject_skill else None
 
     started = time.perf_counter()
     results: list[EvalTestResult] = []
@@ -82,22 +89,23 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
     headers = _build_headers(config.api_key)
 
     try:
-        injection_context.run_pre()
-        if config.reload_command:
-            _run_reload_command(config.reload_command)
-            if config.reload_wait_seconds > 0:
-                await asyncio.sleep(config.reload_wait_seconds)
-        if (
-            config.reload_command
-            or config.injection.method != "custom_hook"
-            or config.injection.pre_test_hook
-        ):
-            await wait_for_agent_ready(
-                endpoint,
-                config.api_key,
-                config.reload_timeout_seconds,
-                config.reload_health_check_path,
-            )
+        if injection_context:
+            injection_context.run_pre()
+            if config.reload_command:
+                _run_reload_command(config.reload_command)
+                if config.reload_wait_seconds > 0:
+                    await asyncio.sleep(config.reload_wait_seconds)
+            if (
+                config.reload_command
+                or config.injection.method != "custom_hook"
+                or config.injection.pre_test_hook
+            ):
+                await wait_for_agent_ready(
+                    endpoint,
+                    config.api_key,
+                    config.reload_timeout_seconds,
+                    config.reload_health_check_path,
+                )
 
         async with httpx.AsyncClient(timeout=config.timeout_seconds) as client:
             for test in skill.evals_config.tests:
@@ -144,7 +152,8 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
                     )
                 )
     finally:
-        injection_context.run_post()
+        if injection_context:
+            injection_context.run_post()
 
     total_time = time.perf_counter() - started
     total_tests = len(results)
@@ -164,6 +173,59 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
         total_time_seconds=total_time,
         avg_latency_ms=avg_latency_ms,
         passed=failed_tests == 0,
+    )
+
+
+async def run_agent_tests_with_baseline(
+    skill: ParsedSkill, config: TestConfig
+) -> AgentTestComparisonResult:
+    """Run evals with and without skill injection and compare results."""
+    with_skill = await run_agent_tests(skill, config, inject_skill=True)
+    baseline = await run_agent_tests(skill, config, inject_skill=False)
+
+    baseline_by_name = {result.test_name: result for result in baseline.results}
+    comparisons: list[EvalTestComparison] = []
+    improved = regressed = unchanged = 0
+
+    for result in with_skill.results:
+        baseline_result = baseline_by_name.get(result.test_name)
+        baseline_passed = baseline_result.passed if baseline_result else False
+        outcome = "no_change"
+        if result.passed and not baseline_passed:
+            outcome = "improved"
+            improved += 1
+        elif not result.passed and baseline_passed:
+            outcome = "regressed"
+            regressed += 1
+        else:
+            unchanged += 1
+
+        comparisons.append(
+            EvalTestComparison(
+                test_name=result.test_name,
+                with_skill_passed=result.passed,
+                baseline_passed=baseline_passed,
+                outcome=outcome,
+                with_skill_latency_ms=result.latency_ms,
+                baseline_latency_ms=baseline_result.latency_ms if baseline_result else 0,
+            )
+        )
+
+    pass_rate_delta = with_skill.pass_rate - baseline.pass_rate
+    passed_tests_delta = with_skill.passed_tests - baseline.passed_tests
+
+    return AgentTestComparisonResult(
+        skill_name=with_skill.skill_name,
+        endpoint=with_skill.endpoint,
+        with_skill=with_skill,
+        baseline=baseline,
+        pass_rate_delta=pass_rate_delta,
+        passed_tests_delta=passed_tests_delta,
+        improved_tests=improved,
+        regressed_tests=regressed,
+        unchanged_tests=unchanged,
+        comparisons=comparisons,
+        passed=with_skill.passed,
     )
 
 

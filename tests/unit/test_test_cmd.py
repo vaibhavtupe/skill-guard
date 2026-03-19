@@ -5,7 +5,14 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from skill_guard.main import app
-from skill_guard.models import AgentTestResult, EvalTestResult, HealthCheckTimeoutError, HookError
+from skill_guard.models import (
+    AgentTestComparisonResult,
+    AgentTestResult,
+    EvalTestComparison,
+    EvalTestResult,
+    HealthCheckTimeoutError,
+    HookError,
+)
 
 runner = CliRunner()
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
@@ -161,6 +168,75 @@ def test_test_cmd_markdown_output(monkeypatch) -> None:
     )
     assert result.exit_code == 0
     assert "## skill-guard test" in result.stdout
+
+
+def test_test_cmd_baseline_output(monkeypatch) -> None:
+    async def fake_run_agent_tests_with_baseline(skill, config):  # noqa: ARG001
+        with_skill = AgentTestResult(
+            skill_name="valid-skill",
+            endpoint="https://mock-agent.test",
+            total_tests=1,
+            passed_tests=1,
+            failed_tests=0,
+            pass_rate=1.0,
+            results=[],
+            total_time_seconds=0.1,
+            avg_latency_ms=12.0,
+            passed=True,
+        )
+        baseline = AgentTestResult(
+            skill_name="valid-skill",
+            endpoint="https://mock-agent.test",
+            total_tests=1,
+            passed_tests=0,
+            failed_tests=1,
+            pass_rate=0.0,
+            results=[],
+            total_time_seconds=0.1,
+            avg_latency_ms=30.0,
+            passed=False,
+        )
+        return AgentTestComparisonResult(
+            skill_name="valid-skill",
+            endpoint="https://mock-agent.test",
+            with_skill=with_skill,
+            baseline=baseline,
+            pass_rate_delta=1.0,
+            passed_tests_delta=1,
+            improved_tests=1,
+            regressed_tests=0,
+            unchanged_tests=0,
+            comparisons=[
+                EvalTestComparison(
+                    test_name="basic",
+                    with_skill_passed=True,
+                    baseline_passed=False,
+                    outcome="improved",
+                    with_skill_latency_ms=12,
+                    baseline_latency_ms=30,
+                )
+            ],
+            passed=True,
+        )
+
+    monkeypatch.setattr(
+        "skill_guard.commands.test.run_agent_tests_with_baseline",
+        fake_run_agent_tests_with_baseline,
+    )
+    result = runner.invoke(
+        app,
+        [
+            "test",
+            str(FIXTURES / "valid-skill"),
+            "--endpoint",
+            "https://mock-agent.test",
+            "--model",
+            "gpt-4.1",
+            "--baseline",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "pass_rate_delta" in result.stdout
 
 
 def test_test_cmd_exits_five_on_hook_error(monkeypatch) -> None:

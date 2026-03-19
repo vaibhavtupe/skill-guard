@@ -253,6 +253,33 @@ class AgentTestResult(BaseModel):
     passed: bool
 
 
+class EvalTestComparison(BaseModel):
+    """Comparison between with-skill and baseline eval results for a test."""
+
+    test_name: str
+    with_skill_passed: bool
+    baseline_passed: bool
+    outcome: str
+    with_skill_latency_ms: int
+    baseline_latency_ms: int
+
+
+class AgentTestComparisonResult(BaseModel):
+    """Aggregate output for with-skill vs baseline eval runs."""
+
+    skill_name: str
+    endpoint: str
+    with_skill: AgentTestResult
+    baseline: AgentTestResult
+    pass_rate_delta: float
+    passed_tests_delta: int
+    improved_tests: int
+    regressed_tests: int
+    unchanged_tests: int
+    comparisons: list[EvalTestComparison]
+    passed: bool
+
+
 # ---------------------------------------------------------------------------
 # Unified pipeline result
 # ---------------------------------------------------------------------------

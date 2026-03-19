@@ -115,6 +115,7 @@ class TestConfig(BaseModel):
     reload_wait_seconds: int = 10
     reload_health_check_path: str = "/health"
     reload_timeout_seconds: int = 60
+    baseline: bool = False
     injection: InjectionConfig = Field(default_factory=InjectionConfig)
 
 
@@ -329,6 +330,7 @@ conflict:
 #   api_key: ${AGENT_API_KEY}
 #   model: your-agent-model
 #   timeout_seconds: 30
+#   baseline: false              # run baseline evals without skill injection
 #   reload_command: "curl -X POST ${AGENT_ADMIN_URL}/reload"
 #   reload_wait_seconds: 10
 #   injection:

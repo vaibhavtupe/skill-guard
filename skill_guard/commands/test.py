@@ -9,7 +9,7 @@ from typing import Any
 import typer
 
 from skill_guard.config import ConfigError, TestConfig, load_config
-from skill_guard.engine.agent_runner import run_agent_tests
+from skill_guard.engine.agent_runner import run_agent_tests, run_agent_tests_with_baseline
 from skill_guard.models import HealthCheckTimeoutError, HookError, SkillParseError
 from skill_guard.output.json_out import format_as_json
 from skill_guard.parser import parse_skill
@@ -20,6 +20,11 @@ API_KEY_OPT = typer.Option(None, "--api-key", help="Agent API key")
 MODEL_OPT = typer.Option(None, "--model", help="Model name for /v1/responses")
 CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")
+BASELINE_OPT = typer.Option(
+    False,
+    "--baseline",
+    help="Run baseline evals without skill injection for comparison",
+)
 
 
 def _emit(payload: dict[str, Any], output_format: str) -> None:
@@ -58,6 +63,42 @@ def _emit(payload: dict[str, Any], output_format: str) -> None:
             typer.echo(f"    failed_checks={','.join(test_result['checks_failed'])}")
 
 
+def _emit_baseline(payload: dict[str, Any], output_format: str) -> None:
+    if output_format == "json":
+        typer.echo(format_as_json(payload, command="test"))
+        return
+
+    if output_format in ("md", "markdown"):
+        lines = [
+            "## skill-guard test (baseline)",
+            "",
+            f"- skill: {payload['skill_name']}",
+            f"- endpoint: {payload['endpoint']}",
+            f"- with_skill: {payload['with_skill']['passed_tests']}/{payload['with_skill']['total_tests']}",
+            f"- baseline: {payload['baseline']['passed_tests']}/{payload['baseline']['total_tests']}",
+            f"- pass_rate_delta: {payload['pass_rate_delta']:.2%}",
+            f"- improved/regressed/unchanged: {payload['improved_tests']}/{payload['regressed_tests']}/{payload['unchanged_tests']}",
+            f"- status: {'passed' if payload['passed'] else 'failed'}",
+        ]
+        typer.echo("\n".join(lines))
+        return
+
+    typer.echo(
+        f"skill={payload['skill_name']} endpoint={payload['endpoint']} "
+        f"with_skill={payload['with_skill']['passed_tests']}/{payload['with_skill']['total_tests']} "
+        f"baseline={payload['baseline']['passed_tests']}/{payload['baseline']['total_tests']} "
+        f"pass_rate_delta={payload['pass_rate_delta']:.2%} "
+        f"status={'passed' if payload['passed'] else 'failed'}"
+    )
+    for comparison in payload["comparisons"]:
+        with_status = "PASS" if comparison["with_skill_passed"] else "FAIL"
+        baseline_status = "PASS" if comparison["baseline_passed"] else "FAIL"
+        typer.echo(
+            f"  - {comparison['test_name']} with={with_status} baseline={baseline_status} "
+            f"outcome={comparison['outcome']}"
+        )
+
+
 def test_cmd(
     skill_path: Path = SKILL_PATH_ARG,
     endpoint: str | None = ENDPOINT_OPT,
@@ -65,6 +106,7 @@ def test_cmd(
     model: str | None = MODEL_OPT,
     config_path: Path | None = CONFIG_PATH_OPT,
     format: str = FORMAT_OPT,
+    baseline: bool = BASELINE_OPT,
 ) -> None:
     """Run evals against an agent endpoint via the OpenAI Responses API."""
     try:
@@ -86,8 +128,13 @@ def test_cmd(
         }
     )
 
+    run_baseline = baseline or getattr(config.test, "baseline", False)
+
     try:
-        result = asyncio.run(run_agent_tests(skill, merged_test_config))
+        if run_baseline:
+            result = asyncio.run(run_agent_tests_with_baseline(skill, merged_test_config))
+        else:
+            result = asyncio.run(run_agent_tests(skill, merged_test_config))
     except HealthCheckTimeoutError as e:
         typer.echo(f"Test setup error: {e}")
         raise typer.Exit(code=6) from e
@@ -102,7 +149,14 @@ def test_cmd(
         raise typer.Exit(code=1) from e
 
     payload = result.model_dump(mode="json")
-    _emit(payload, format)
+    if run_baseline:
+        _emit_baseline(payload, format)
+    else:
+        _emit(payload, format)
 
-    if result.pass_rate < 1.0:
-        raise typer.Exit(code=1)
+    if run_baseline:
+        if result.with_skill.pass_rate < 1.0:
+            raise typer.Exit(code=1)
+    else:
+        if result.pass_rate < 1.0:
+            raise typer.Exit(code=1)

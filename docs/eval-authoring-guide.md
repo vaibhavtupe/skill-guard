@@ -139,7 +139,16 @@ skill-guard test ./skills/my-skill/ \
 skill-guard check ./skills/my-skill/ \
   --against ./skills/ \
   --endpoint http://localhost:8000
+
+# Compare with-skill vs baseline behavior
+skill-guard test ./skills/my-skill/ \
+  --endpoint http://localhost:8000 \
+  --model gpt-4.1 \
+  --baseline
 ```
+
+Baseline runs execute the same evals without injecting the skill (no hooks or copy),
+then compare pass/fail outcomes and aggregate deltas.
 
 ---
 
