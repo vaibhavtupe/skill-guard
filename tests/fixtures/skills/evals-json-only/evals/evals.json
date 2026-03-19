@@ -1,0 +1,10 @@
+{
+  "skill_name": "evals-json-only",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "How do I structure evals.json for a skill?",
+      "expected_output": "Explain the required keys and provide an example."
+    }
+  ]
+}

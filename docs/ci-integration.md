@@ -106,13 +106,14 @@ Exit codes from `skill-guard check`:
 
 ### Prerequisites
 
-1. Your skill must have an `evals/` directory with `config.yaml` and prompt files:
+1. Your skill must have an `evals/` directory with either `config.yaml` (prompt files) or `evals.json` (inline prompts):
 
 ```
 my-skill/
 ├── SKILL.md
 └── evals/
     ├── config.yaml
+    ├── evals.json
     └── prompts/
         ├── basic.md
         └── edge-case.md
@@ -135,6 +136,21 @@ tests:
     expect:
       not_contains: ["traceroute", "packet"]
       skill_not_triggered: my-skill
+```
+
+3. `evals/evals.json` format:
+
+```json
+{
+  "skill_name": "my-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My AWS connection keeps dropping packets.",
+      "expected_output": "diagnosed"
+    }
+  ]
+}
 ```
 
 ### Running the eval
