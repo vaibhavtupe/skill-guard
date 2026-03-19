@@ -48,7 +48,7 @@ tests:
 
 ## evals.json format
 
-`evals.json` lets you keep prompts inline. It expects `skill_name` and an `evals` list. Each entry needs a `prompt`. `expected_output` is treated as a basic contains check.
+`evals.json` lets you keep prompts inline. It expects `skill_name` and an `evals` list. Each entry needs a `prompt`. Use `expected_output` to describe what a correct response should look like; if no explicit checks are provided, the test is marked as **needs review** (non-blocking).
 
 ```json
 {
@@ -58,6 +58,14 @@ tests:
       "id": 1,
       "prompt": "My AWS Direct Connect link keeps dropping packets. Can you help?",
       "expected_output": "diagnostic latency"
+    },
+    {
+      "id": 2,
+      "prompt": "Check if the skill routes to the right tool.",
+      "expected_output": "Guidance plus a tool call",
+      "expect": {
+        "skill_triggered": "my-skill"
+      }
     }
   ]
 }

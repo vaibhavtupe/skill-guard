@@ -262,19 +262,26 @@ def _parse_evals_json(evals_json_path: Path, evals_dir: Path) -> EvalConfig:
                 prompt_text += f"\n\n[FILE: {file_path}]\n{file_content}"
 
         expected_output = entry.get("expected_output")
-        contains: list[str] = []
-        if expected_output:
-            if isinstance(expected_output, list):
-                contains.extend(str(item) for item in expected_output)
-            else:
-                contains.append(str(expected_output))
+        if expected_output is not None and not isinstance(expected_output, str):
+            raise SkillParseError(
+                f"evals/evals.json entry {idx} 'expected_output' must be a string"
+            )
+
+        expect_payload = entry.get("expect")
+        if expect_payload is None:
+            expect_payload = {}
+        if not isinstance(expect_payload, dict):
+            raise SkillParseError(
+                f"evals/evals.json entry {idx} 'expect' must be an object"
+            )
 
         test_name = entry.get("name") or entry.get("id") or f"eval-{idx}"
         tests.append(
             {
                 "name": str(test_name),
                 "prompt": prompt_text,
-                "expect": {"contains": contains},
+                "expect": expect_payload,
+                "expected_output": expected_output,
                 "description": entry.get("description"),
             }
         )
