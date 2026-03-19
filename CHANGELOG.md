@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.7.0 — 2026-03-19
+
+### New Features & Fixes
+
+- **feat(#96): evals.json support** — parse and validate `evals/evals.json` alongside existing config.yaml flow; inline prompts supported.
+- **feat(#100): expected_output evals** — store expected_output and mark review-only when no assertions; allow expect blocks in evals.json.
+- **feat(#97): baseline eval runs** — optional with-skill vs without-skill comparison and summary output.
+- **feat(#98): eval workspace artifacts** — iteration-N directories, per-test outputs, and benchmark.json; baseline writes with_skill/ and without_skill/.
+- **docs(#99): eval iteration loop guidance** — aligned docs with Anthropic skill-creator workflow and clarified evals.json vs config.yaml precedence.
+- **fix: lint** — ruff UP037 cleanup.
+
+---
+
 ## v0.6.0 — 2026-03-16
 
 ### New Features & Fixes
