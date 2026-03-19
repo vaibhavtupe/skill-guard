@@ -104,6 +104,8 @@ Exit codes from `skill-guard check`:
 
 `skill-guard test` sends eval prompts from your skill's `evals/` directory to your agent and validates the responses.
 
+For the full eval iteration loop (run → review → revise → expand tests), see [Writing Evals](eval-authoring-guide.md). If you want persistent artifacts for manual review, use `--workspace` as described in [Workspace output](eval-authoring-guide.md#workspace-output-agentskills-eval-artifacts).
+
 ### Prerequisites
 
 1. Your skill must have an `evals/` directory with either `config.yaml` (prompt files) or `evals.json` (inline prompts):
@@ -118,6 +120,8 @@ my-skill/
         ├── basic.md
         └── edge-case.md
 ```
+
+Use one format per skill. If both exist, `evals.json` takes precedence; `config.yaml`-only setups may emit a validation warning about missing `evals.json`.
 
 2. `evals/config.yaml` format:
 

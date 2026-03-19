@@ -20,6 +20,8 @@ my-skill/
         └── out-of-scope.md
 ```
 
+Use one format per skill. If both `evals.json` and `config.yaml` exist, `evals.json` takes precedence. If you only use `config.yaml`, you'll see a validation warning about missing `evals.json` — safe to ignore, or add a minimal `evals.json` stub if you want a clean validation report.
+
 ---
 
 ## config.yaml format
@@ -127,6 +129,19 @@ Edge cases test boundary conditions — low-signal inputs, ambiguous requests, i
 A skill with only positive tests will pass `skill-guard test` but may cause conflicts with other skills in production. Always include at least one out-of-scope prompt.
 
 ---
+
+## Eval iteration loop (run → review → revise → expand tests)
+
+Anthropic’s skill-creator workflow treats evals as an **iteration loop**, not a one-off gate. A practical loop with skill-guard looks like this:
+
+1. **Run** evals with `skill-guard test` (or `skill-guard check` in CI).
+2. **Review** results:
+   - If a test has no explicit `expect` checks, it will be flagged **needs review** — read the response text + tool calls and decide whether behavior is acceptable.
+   - Use `--format json` for detailed output, or `--workspace` to persist artifacts you can inspect later (see [Workspace output](#workspace-output-agentskills-eval-artifacts)).
+3. **Revise** prompts, `expect` checks, or the skill implementation based on what you learn.
+4. **Expand tests** as you discover edge cases or regressions — add new evals to lock in the improved behavior.
+
+In CI, use [CI Integration](ci-integration.md) to run the same loop automatically on every PR. Locally, the workspace artifacts make review and iteration faster.
 
 ## Running evals
 
