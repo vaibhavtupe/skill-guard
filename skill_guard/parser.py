@@ -216,15 +216,11 @@ def _parse_evals_json(evals_json_path: Path, evals_dir: Path) -> EvalConfig:
         ) from e
 
     if not isinstance(payload, dict):
-        raise SkillParseError(
-            f"evals/evals.json must be a JSON object in '{evals_dir.parent}'"
-        )
+        raise SkillParseError(f"evals/evals.json must be a JSON object in '{evals_dir.parent}'")
 
     missing = [key for key in ("skill_name", "evals") if key not in payload]
     if missing:
-        raise SkillParseError(
-            f"evals/evals.json is missing required key(s): {', '.join(missing)}"
-        )
+        raise SkillParseError(f"evals/evals.json is missing required key(s): {', '.join(missing)}")
 
     evals_payload = payload.get("evals")
     if not isinstance(evals_payload, list):
@@ -237,22 +233,16 @@ def _parse_evals_json(evals_json_path: Path, evals_dir: Path) -> EvalConfig:
 
         prompt = entry.get("prompt")
         if not isinstance(prompt, str) or not prompt.strip():
-            raise SkillParseError(
-                f"evals/evals.json entry {idx} is missing a non-empty 'prompt'"
-            )
+            raise SkillParseError(f"evals/evals.json entry {idx} is missing a non-empty 'prompt'")
 
         prompt_text = prompt.strip()
         files = entry.get("files")
         if files:
             if not isinstance(files, list):
-                raise SkillParseError(
-                    f"evals/evals.json entry {idx} 'files' must be a list"
-                )
+                raise SkillParseError(f"evals/evals.json entry {idx} 'files' must be a list")
             for file_path in files:
                 if not isinstance(file_path, str) or not file_path.strip():
-                    raise SkillParseError(
-                        f"evals/evals.json entry {idx} has invalid file path"
-                    )
+                    raise SkillParseError(f"evals/evals.json entry {idx} has invalid file path")
                 absolute_path = (evals_dir.parent / file_path).resolve()
                 if not absolute_path.exists():
                     raise SkillParseError(
@@ -271,9 +261,7 @@ def _parse_evals_json(evals_json_path: Path, evals_dir: Path) -> EvalConfig:
         if expect_payload is None:
             expect_payload = {}
         if not isinstance(expect_payload, dict):
-            raise SkillParseError(
-                f"evals/evals.json entry {idx} 'expect' must be an object"
-            )
+            raise SkillParseError(f"evals/evals.json entry {idx} 'expect' must be an object")
 
         test_name = entry.get("name") or entry.get("id") or f"eval-{idx}"
         tests.append(
@@ -289,9 +277,7 @@ def _parse_evals_json(evals_json_path: Path, evals_dir: Path) -> EvalConfig:
     try:
         return EvalConfig.model_validate({"tests": tests})
     except Exception as e:
-        raise SkillParseError(
-            f"Invalid evals/evals.json in '{evals_dir.parent}': {e}"
-        ) from e
+        raise SkillParseError(f"Invalid evals/evals.json in '{evals_dir.parent}': {e}") from e
 
 
 def _to_plain_dict(obj: object) -> object:

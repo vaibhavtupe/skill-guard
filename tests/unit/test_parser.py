@@ -46,7 +46,7 @@ def test_parse_invalid_evals_json(tmp_path: Path):
     evals_dir = skill_dir / "evals"
     evals_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
-        "---\nname: bad-evals\ndescription: \"bad evals\"\n---\n",
+        '---\nname: bad-evals\ndescription: "bad evals"\n---\n',
         encoding="utf-8",
     )
     (evals_dir / "evals.json").write_text("{not json", encoding="utf-8")

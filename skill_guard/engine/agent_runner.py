@@ -107,9 +107,7 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
                 elif test.prompt:
                     prompt_text = test.prompt
                 else:
-                    raise HookError(
-                        f"Eval test '{test.name}' is missing a prompt or prompt_file."
-                    )
+                    raise HookError(f"Eval test '{test.name}' is missing a prompt or prompt_file.")
 
                 payload: dict[str, Any] = {"model": config.model, "input": prompt_text}
                 request_started = time.perf_counter()
