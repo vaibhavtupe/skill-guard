@@ -8,7 +8,7 @@ import pytest
 from skill_guard.config import TestConfig as RunnerConfig
 from skill_guard.engine import agent_runner
 from skill_guard.engine.agent_runner import run_agent_tests, run_hook, wait_for_agent_ready
-from skill_guard.models import HealthCheckTimeoutError, HookError
+from skill_guard.models import AgentTestResult, HealthCheckTimeoutError, HookError
 from skill_guard.parser import parse_skill
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "skills"
@@ -69,6 +69,37 @@ async def test_run_agent_tests_against_mock_responses_api(monkeypatch: pytest.Mo
     assert result.total_tests == 3
     assert result.results[0].tool_calls == ["valid-skill"]
     assert result.results[0].passed is True
+
+
+@pytest.mark.asyncio
+async def test_run_agent_tests_with_baseline_computes_comparison(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    skill = parse_skill(FIXTURES / "valid-skill")
+
+    async def fake_run_agent_tests(skill_arg, config, *, inject_skill=True):  # noqa: ARG001
+        passed_tests = 2 if inject_skill else 1
+        total_tests = 2
+        return AgentTestResult(
+            skill_name=skill_arg.metadata.name,
+            endpoint="https://mock-agent.test",
+            total_tests=total_tests,
+            passed_tests=passed_tests,
+            failed_tests=total_tests - passed_tests,
+            pass_rate=passed_tests / total_tests,
+            results=[],
+            total_time_seconds=0.1,
+            avg_latency_ms=10.0,
+            passed=passed_tests == total_tests,
+        )
+
+    monkeypatch.setattr(agent_runner, "run_agent_tests", fake_run_agent_tests)
+    result = await agent_runner.run_agent_tests_with_baseline(
+        skill, RunnerConfig(endpoint="https://mock-agent.test", model="gpt-4.1")
+    )
+
+    assert result.pass_rate_delta == 0.5
+    assert result.passed_tests_delta == 1
 
 
 @pytest.mark.asyncio
