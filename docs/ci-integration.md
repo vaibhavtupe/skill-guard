@@ -153,6 +153,8 @@ tests:
 }
 ```
 
+`expected_output` records the human-readable success criteria. If you omit `expect` checks, the test is flagged **needs review** (non-blocking).
+
 ### Running the eval
 
 ```bash

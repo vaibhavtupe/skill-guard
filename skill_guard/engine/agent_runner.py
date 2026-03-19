@@ -107,9 +107,7 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
                 elif test.prompt:
                     prompt_text = test.prompt
                 else:
-                    raise HookError(
-                        f"Eval test '{test.name}' is missing a prompt or prompt_file."
-                    )
+                    raise HookError(f"Eval test '{test.name}' is missing a prompt or prompt_file.")
 
                 payload: dict[str, Any] = {"model": config.model, "input": prompt_text}
                 request_started = time.perf_counter()
@@ -130,11 +128,16 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
                 if test.expect.skill_triggered and test.expect.skill_triggered in tool_calls:
                     skill_triggered = test.expect.skill_triggered
 
+                has_assertions = _has_assertions(test.expect)
+                needs_review = bool(test.expected_output) and not has_assertions
+
                 results.append(
                     EvalTestResult(
                         test_name=test.name,
                         passed=not checks_failed,
+                        needs_review=needs_review,
                         prompt=prompt_text,
+                        expected_output=test.expected_output,
                         response_text=response_text,
                         latency_ms=latency_ms,
                         checks_passed=checks_passed,
@@ -207,6 +210,19 @@ def _message_text_parts(item: dict[str, Any]) -> list[str]:
     if item.get("text"):
         parts.append(str(item["text"]))
     return parts
+
+
+def _has_assertions(test_expect: EvalExpectation) -> bool:
+    return any(
+        (
+            test_expect.contains,
+            test_expect.not_contains,
+            test_expect.min_length is not None,
+            test_expect.max_latency_ms is not None,
+            test_expect.skill_triggered,
+            test_expect.skill_not_triggered,
+        )
+    )
 
 
 def _evaluate_checks(

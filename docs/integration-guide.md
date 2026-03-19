@@ -101,6 +101,8 @@ tests:
 }
 ```
 
+`expected_output` captures the human-readable success criteria. If you don't include explicit `expect` checks, the test is marked **needs review** (non-blocking).
+
 ---
 
 ## Step 3: What your agent needs to expose

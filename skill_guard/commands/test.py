@@ -49,11 +49,14 @@ def _emit(payload: dict[str, Any], output_format: str) -> None:
     )
     for test_result in payload["results"]:
         status = "PASS" if test_result["passed"] else "FAIL"
+        review_suffix = " (review)" if test_result.get("needs_review") else ""
         typer.echo(
-            f"  - {status} {test_result['test_name']} "
+            f"  - {status}{review_suffix} {test_result['test_name']} "
             f"latency={test_result['latency_ms']}ms "
             f"tools={','.join(test_result['tool_calls']) if test_result['tool_calls'] else '-'}"
         )
+        if test_result.get("needs_review") and test_result.get("expected_output"):
+            typer.echo(f"    expected_output={test_result['expected_output']}")
         if test_result["checks_failed"]:
             typer.echo(f"    failed_checks={','.join(test_result['checks_failed'])}")
 

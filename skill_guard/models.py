@@ -66,10 +66,11 @@ class EvalTest(BaseModel):
     prompt_file: str | None = None
     prompt: str | None = None
     expect: EvalExpectation
+    expected_output: str | None = None
     description: str | None = None
 
     @model_validator(mode="after")
-    def _ensure_prompt_source(self) -> "EvalTest":
+    def _ensure_prompt_source(self) -> EvalTest:
         if not self.prompt_file and not self.prompt:
             raise ValueError("Eval test must define either prompt_file or prompt")
         return self
@@ -229,7 +230,9 @@ class EvalTestResult(BaseModel):
 
     test_name: str
     passed: bool
+    needs_review: bool = False
     prompt: str
+    expected_output: str | None = None
     response_text: str
     latency_ms: int
     checks_passed: list[str] = Field(default_factory=list)
