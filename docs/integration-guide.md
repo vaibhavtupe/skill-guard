@@ -57,7 +57,7 @@ monitor:
 
 ## Step 2: Add evals to your skills
 
-Each skill needs an `evals/` directory for `skill-guard test` to work. See [Writing Evals](eval-authoring-guide.md) for full details.
+Each skill needs an `evals/` directory for `skill-guard test` to work. See [Writing Evals](eval-authoring-guide.md) for the eval authoring + iteration loop (including workspace artifacts), and [CI Integration](ci-integration.md) for running the same loop in GitHub Actions.
 
 Minimum structure (choose one format):
 
@@ -71,6 +71,8 @@ skills/my-skill/
         ├── basic.md        # positive test — skill should trigger
         └── out-of-scope.md # negative test — skill should NOT trigger
 ```
+
+Use one format per skill. If both exist, `evals.json` takes precedence; `config.yaml`-only setups may emit a validation warning about missing `evals.json`.
 
 `evals/config.yaml`:
 ```yaml
