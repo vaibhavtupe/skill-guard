@@ -59,13 +59,14 @@ monitor:
 
 Each skill needs an `evals/` directory for `skill-guard test` to work. See [Writing Evals](eval-authoring-guide.md) for full details.
 
-Minimum structure:
+Minimum structure (choose one format):
 
 ```
 skills/my-skill/
 ├── SKILL.md
 └── evals/
-    ├── config.yaml
+    ├── config.yaml         # YAML format
+    ├── evals.json           # JSON format (inline prompts)
     └── prompts/
         ├── basic.md        # positive test — skill should trigger
         └── out-of-scope.md # negative test — skill should NOT trigger
@@ -84,6 +85,20 @@ tests:
     prompt_file: prompts/out-of-scope.md
     expect:
       skill_not_triggered: my-skill
+```
+
+`evals/evals.json`:
+```json
+{
+  "skill_name": "my-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My AWS connection keeps dropping packets. Can you help diagnose?",
+      "expected_output": "diagnosed"
+    }
+  ]
+}
 ```
 
 ---

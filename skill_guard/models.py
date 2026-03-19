@@ -10,7 +10,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # ---------------------------------------------------------------------------
 # Skill parsing models
@@ -63,9 +63,16 @@ class EvalTest(BaseModel):
     """A single eval test case."""
 
     name: str
-    prompt_file: str
+    prompt_file: str | None = None
+    prompt: str | None = None
     expect: EvalExpectation
     description: str | None = None
+
+    @model_validator(mode="after")
+    def _ensure_prompt_source(self) -> "EvalTest":
+        if not self.prompt_file and not self.prompt:
+            raise ValueError("Eval test must define either prompt_file or prompt")
+        return self
 
 
 class EvalConfig(BaseModel):

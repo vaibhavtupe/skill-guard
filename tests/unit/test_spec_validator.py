@@ -139,7 +139,7 @@ def test_large_code_block_returns_warning() -> None:
 
 
 def test_anthropic_spec_false_in_config_skips_spec_findings() -> None:
-    skill = parse_skill(FIXTURES / "anthropic-noncompliant")
+    skill = parse_skill(FIXTURES / "anthropic-noncompliant-valid-evals")
 
     result = run_validation(
         skill,

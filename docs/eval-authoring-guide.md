@@ -6,13 +6,14 @@ Evals are prompt/response test cases that verify your skill behaves correctly wh
 
 ## Directory structure
 
-Every skill that supports `skill-guard test` needs an `evals/` directory:
+Every skill that supports `skill-guard test` needs an `evals/` directory. You can use either `config.yaml` (prompt files) or `evals.json` (inline prompts):
 
 ```
 my-skill/
 ├── SKILL.md
 └── evals/
-    ├── config.yaml          # test definitions
+    ├── config.yaml          # test definitions (YAML)
+    ├── evals.json           # test definitions (JSON)
     └── prompts/
         ├── basic.md         # one file per test case
         ├── edge-case.md
@@ -43,6 +44,23 @@ tests:
     expect:
       not_contains: ["traceroute", "packet loss"]
       skill_not_triggered: my-skill             # skill must NOT be called
+```
+
+## evals.json format
+
+`evals.json` lets you keep prompts inline. It expects `skill_name` and an `evals` list. Each entry needs a `prompt`. `expected_output` is treated as a basic contains check.
+
+```json
+{
+  "skill_name": "my-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My AWS Direct Connect link keeps dropping packets. Can you help?",
+      "expected_output": "diagnostic latency"
+    }
+  ]
+}
 ```
 
 ---

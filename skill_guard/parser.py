@@ -4,6 +4,7 @@ SKILL.md parser — converts a skill directory into a ParsedSkill object.
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -167,15 +168,28 @@ def _parse_frontmatter(content: str, skill_md_path: Path) -> tuple[SkillMetadata
 
 
 def _parse_evals_config(evals_dir: Path) -> EvalConfig:
-    """Parse evals/config.yaml into EvalConfig."""
+    """Parse evals/config.yaml or evals/evals.json into EvalConfig."""
     config_path = evals_dir / "config.yaml"
-    if not config_path.exists():
-        raise SkillParseError(
-            f"evals/config.yaml not found in '{evals_dir.parent}'\n"
-            f"  → Create evals/config.yaml with test case definitions\n"
-            f"  → See docs/eval-authoring-guide.md for the format"
-        )
+    evals_json_path = evals_dir / "evals.json"
 
+    evals_json_config: EvalConfig | None = None
+    if evals_json_path.exists():
+        evals_json_config = _parse_evals_json(evals_json_path, evals_dir)
+
+    if config_path.exists():
+        return _parse_evals_yaml(config_path, evals_dir)
+
+    if evals_json_config is not None:
+        return evals_json_config
+
+    raise SkillParseError(
+        f"evals/config.yaml not found in '{evals_dir.parent}'\n"
+        f"  → Create evals/config.yaml with test case definitions\n"
+        f"  → See docs/eval-authoring-guide.md for the format"
+    )
+
+
+def _parse_evals_yaml(config_path: Path, evals_dir: Path) -> EvalConfig:
     yaml = YAML()
     try:
         with open(config_path) as f:
@@ -191,6 +205,86 @@ def _parse_evals_config(evals_dir: Path) -> EvalConfig:
         return EvalConfig.model_validate(raw_dict)
     except Exception as e:
         raise SkillParseError(f"Invalid evals/config.yaml in '{evals_dir.parent}': {e}") from e
+
+
+def _parse_evals_json(evals_json_path: Path, evals_dir: Path) -> EvalConfig:
+    try:
+        payload = json.loads(evals_json_path.read_text(encoding="utf-8"))
+    except Exception as e:
+        raise SkillParseError(
+            f"evals/evals.json exists but could not be parsed as JSON in '{evals_dir.parent}': {e}"
+        ) from e
+
+    if not isinstance(payload, dict):
+        raise SkillParseError(
+            f"evals/evals.json must be a JSON object in '{evals_dir.parent}'"
+        )
+
+    missing = [key for key in ("skill_name", "evals") if key not in payload]
+    if missing:
+        raise SkillParseError(
+            f"evals/evals.json is missing required key(s): {', '.join(missing)}"
+        )
+
+    evals_payload = payload.get("evals")
+    if not isinstance(evals_payload, list):
+        raise SkillParseError("evals/evals.json 'evals' must be a list")
+
+    tests = []
+    for idx, entry in enumerate(evals_payload, start=1):
+        if not isinstance(entry, dict):
+            raise SkillParseError("Each eval entry in evals/evals.json must be an object")
+
+        prompt = entry.get("prompt")
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise SkillParseError(
+                f"evals/evals.json entry {idx} is missing a non-empty 'prompt'"
+            )
+
+        prompt_text = prompt.strip()
+        files = entry.get("files")
+        if files:
+            if not isinstance(files, list):
+                raise SkillParseError(
+                    f"evals/evals.json entry {idx} 'files' must be a list"
+                )
+            for file_path in files:
+                if not isinstance(file_path, str) or not file_path.strip():
+                    raise SkillParseError(
+                        f"evals/evals.json entry {idx} has invalid file path"
+                    )
+                absolute_path = (evals_dir.parent / file_path).resolve()
+                if not absolute_path.exists():
+                    raise SkillParseError(
+                        f"evals/evals.json entry {idx} references missing file: {file_path}"
+                    )
+                file_content = absolute_path.read_text(encoding="utf-8")
+                prompt_text += f"\n\n[FILE: {file_path}]\n{file_content}"
+
+        expected_output = entry.get("expected_output")
+        contains: list[str] = []
+        if expected_output:
+            if isinstance(expected_output, list):
+                contains.extend(str(item) for item in expected_output)
+            else:
+                contains.append(str(expected_output))
+
+        test_name = entry.get("name") or entry.get("id") or f"eval-{idx}"
+        tests.append(
+            {
+                "name": str(test_name),
+                "prompt": prompt_text,
+                "expect": {"contains": contains},
+                "description": entry.get("description"),
+            }
+        )
+
+    try:
+        return EvalConfig.model_validate({"tests": tests})
+    except Exception as e:
+        raise SkillParseError(
+            f"Invalid evals/evals.json in '{evals_dir.parent}': {e}"
+        ) from e
 
 
 def _to_plain_dict(obj: object) -> object:

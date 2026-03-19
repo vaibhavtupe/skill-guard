@@ -101,8 +101,15 @@ async def run_agent_tests(skill: ParsedSkill, config: TestConfig) -> AgentTestRe
 
         async with httpx.AsyncClient(timeout=config.timeout_seconds) as client:
             for test in skill.evals_config.tests:
-                prompt_path = skill.path / "evals" / test.prompt_file
-                prompt_text = prompt_path.read_text(encoding="utf-8")
+                if test.prompt_file:
+                    prompt_path = skill.path / "evals" / test.prompt_file
+                    prompt_text = prompt_path.read_text(encoding="utf-8")
+                elif test.prompt:
+                    prompt_text = test.prompt
+                else:
+                    raise HookError(
+                        f"Eval test '{test.name}' is missing a prompt or prompt_file."
+                    )
 
                 payload: dict[str, Any] = {"model": config.model, "input": prompt_text}
                 request_started = time.perf_counter()
