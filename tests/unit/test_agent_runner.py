@@ -77,7 +77,13 @@ async def test_run_agent_tests_with_baseline_computes_comparison(
 ) -> None:
     skill = parse_skill(FIXTURES / "valid-skill")
 
-    async def fake_run_agent_tests(skill_arg, config, *, inject_skill=True):  # noqa: ARG001
+    async def fake_run_agent_tests(  # noqa: ARG001
+        skill_arg,
+        config,
+        *,
+        inject_skill=True,
+        write_workspace=True,
+    ):
         passed_tests = 2 if inject_skill else 1
         total_tests = 2
         return AgentTestResult(

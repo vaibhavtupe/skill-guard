@@ -160,6 +160,39 @@ then compare pass/fail outcomes and aggregate deltas.
 
 ---
 
+## Workspace output (AgentSkills eval artifacts)
+
+Use `--workspace` to write eval artifacts to disk in the AgentSkills-compatible
+layout. Each run creates a new `iteration-N` directory with per-test outputs and
+an aggregated `benchmark.json`.
+
+```bash
+skill-guard test ./skills/my-skill/ \
+  --endpoint http://localhost:8000 \
+  --model gpt-4.1 \
+  --workspace ./eval-workspace
+```
+
+Directory layout:
+
+```
+./eval-workspace/
+  iteration-1/
+    with_skill/
+      <test-name>/
+        outputs/
+          response.txt
+          tool_calls.json
+          timing.json
+          grading.json
+    benchmark.json
+```
+
+When `--baseline` is enabled, the iteration includes both `with_skill/` and
+`without_skill/` directories, and `benchmark.json` captures the deltas.
+
+---
+
 ## Debugging failing evals
 
 Use `--format json` to get full response details:
