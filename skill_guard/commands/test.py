@@ -20,6 +20,11 @@ API_KEY_OPT = typer.Option(None, "--api-key", help="Agent API key")
 MODEL_OPT = typer.Option(None, "--model", help="Model name for /v1/responses")
 CONFIG_PATH_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 FORMAT_OPT = typer.Option("text", "--format", help="Output format: text|json|md")
+WORKSPACE_OPT = typer.Option(
+    None,
+    "--workspace",
+    help="Write AgentSkills-compatible eval artifacts to this directory",
+)
 BASELINE_OPT = typer.Option(
     False,
     "--baseline",
@@ -109,6 +114,7 @@ def test_cmd(
     model: str | None = MODEL_OPT,
     config_path: Path | None = CONFIG_PATH_OPT,
     format: str = FORMAT_OPT,
+    workspace: str | None = WORKSPACE_OPT,
     baseline: bool = BASELINE_OPT,
 ) -> None:
     """Run evals against an agent endpoint via the OpenAI Responses API."""
@@ -128,6 +134,7 @@ def test_cmd(
             "endpoint": endpoint if endpoint is not None else config.test.endpoint,
             "api_key": api_key if api_key is not None else config.test.api_key,
             "model": model if model is not None else config.test.model,
+            "workspace_dir": workspace if workspace is not None else config.test.workspace_dir,
         }
     )
 

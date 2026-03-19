@@ -116,6 +116,10 @@ class TestConfig(BaseModel):
     reload_health_check_path: str = "/health"
     reload_timeout_seconds: int = 60
     baseline: bool = False
+    workspace_dir: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("workspace", "workspace_dir"),
+    )
     injection: InjectionConfig = Field(default_factory=InjectionConfig)
 
 
@@ -331,6 +335,7 @@ conflict:
 #   model: your-agent-model
 #   timeout_seconds: 30
 #   baseline: false              # run baseline evals without skill injection
+#   workspace_dir: ./eval-workspace  # optional: write eval artifacts
 #   reload_command: "curl -X POST ${AGENT_ADMIN_URL}/reload"
 #   reload_wait_seconds: 10
 #   injection:

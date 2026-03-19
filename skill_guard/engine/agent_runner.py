@@ -23,6 +23,10 @@ from skill_guard.models import (
     HookError,
     ParsedSkill,
 )
+from skill_guard.output.workspace import (
+    write_workspace_comparison,
+    write_workspace_results,
+)
 
 
 def run_hook(hook_script: Path, skill_path: Path, endpoint: str) -> None:
@@ -71,6 +75,7 @@ async def run_agent_tests(
     config: TestConfig,
     *,
     inject_skill: bool = True,
+    write_workspace: bool = True,
 ) -> AgentTestResult:
     """Execute eval tests against an agent endpoint using the OpenAI Responses API."""
     if not config.endpoint:
@@ -165,7 +170,7 @@ async def run_agent_tests(
     pass_rate = (passed_tests / total_tests) if total_tests else 0.0
     avg_latency_ms = (sum(r.latency_ms for r in results) / total_tests) if total_tests else 0.0
 
-    return AgentTestResult(
+    result = AgentTestResult(
         skill_name=skill.metadata.name,
         endpoint=endpoint,
         total_tests=total_tests,
@@ -178,13 +183,18 @@ async def run_agent_tests(
         passed=failed_tests == 0,
     )
 
+    if config.workspace_dir and write_workspace:
+        write_workspace_results(result, Path(config.workspace_dir))
+
+    return result
+
 
 async def run_agent_tests_with_baseline(
     skill: ParsedSkill, config: TestConfig
 ) -> AgentTestComparisonResult:
     """Run evals with and without skill injection and compare results."""
-    with_skill = await run_agent_tests(skill, config, inject_skill=True)
-    baseline = await run_agent_tests(skill, config, inject_skill=False)
+    with_skill = await run_agent_tests(skill, config, inject_skill=True, write_workspace=False)
+    baseline = await run_agent_tests(skill, config, inject_skill=False, write_workspace=False)
 
     baseline_by_name = {result.test_name: result for result in baseline.results}
     comparisons: list[EvalTestComparison] = []
@@ -217,7 +227,7 @@ async def run_agent_tests_with_baseline(
     pass_rate_delta = with_skill.pass_rate - baseline.pass_rate
     passed_tests_delta = with_skill.passed_tests - baseline.passed_tests
 
-    return AgentTestComparisonResult(
+    result = AgentTestComparisonResult(
         skill_name=with_skill.skill_name,
         endpoint=with_skill.endpoint,
         with_skill=with_skill,
@@ -230,6 +240,11 @@ async def run_agent_tests_with_baseline(
         comparisons=comparisons,
         passed=with_skill.passed,
     )
+
+    if config.workspace_dir:
+        write_workspace_comparison(result, Path(config.workspace_dir))
+
+    return result
 
 
 def _run_reload_command(command: str) -> None:

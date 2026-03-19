@@ -94,6 +94,7 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 - `api_key` (string, optional)
 - `model` (string, optional)
 - `timeout_seconds` (int, default 30)
+- `workspace_dir` (string, optional) write AgentSkills eval artifacts
 - `reload_command` (string, optional)
 - `reload_wait_seconds` (int)
 - `reload_health_check_path` (string)
