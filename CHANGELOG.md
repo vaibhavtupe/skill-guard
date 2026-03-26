@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.2 — 2026-03-26
+
+### Bug Fixes
+
+- **fix: dotted identifiers in code** — ignore inline dotted identifiers like `pagination.total` in `no_broken_body_paths` (unless they look like actual file paths).
+
+---
+
 ## v0.7.1 — 2026-03-26
 
 ### Bug Fixes

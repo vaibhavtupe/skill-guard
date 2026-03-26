@@ -36,7 +36,8 @@ metadata:
 ---
 
 See references/guide.md for the real repo file.
-Read response.output_text and reader.pages from the API response before continuing.
+Read `response.output_text` and reader.pages from the API response before continuing.
+Also surface `pagination.total` in the response.
 """,
         encoding="utf-8",
     )

@@ -494,6 +494,8 @@ def _find_broken_body_paths(body: str, skill_path: Path) -> list[str]:
             continue
         if "." not in raw_path and "/" not in raw_path:
             continue
+        if not _is_plain_text_relative_path(raw_path):
+            continue
         candidate = skill_path / raw_path
         if not candidate.exists():
             broken.append(raw_path)
