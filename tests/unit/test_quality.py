@@ -43,7 +43,9 @@ Read response.output_text and reader.pages from the API response before continui
 
     skill = parse_skill(skill_dir)
     result = run_validation(skill, ValidateConfig())
-    broken_paths_check = next(check for check in result.checks if check.check_name == "no_broken_body_paths")
+    broken_paths_check = next(
+        check for check in result.checks if check.check_name == "no_broken_body_paths"
+    )
 
     assert broken_paths_check.passed is True
 
@@ -67,7 +69,9 @@ Read REFERENCE.md before proceeding.
 
     skill = parse_skill(skill_dir)
     result = run_validation(skill, ValidateConfig())
-    broken_paths_check = next(check for check in result.checks if check.check_name == "no_broken_body_paths")
+    broken_paths_check = next(
+        check for check in result.checks if check.check_name == "no_broken_body_paths"
+    )
 
     assert broken_paths_check.passed is False
     assert "REFERENCE.md" in broken_paths_check.message
