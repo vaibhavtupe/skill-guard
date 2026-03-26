@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.1 — 2026-03-26
+
+### Bug Fixes
+
+- **fix(#107): dotted API field references** — avoid false positives in `no_broken_body_paths` for dotted API fields like `response.output_text`; add regression tests.
+
+---
+
 ## v0.7.0 — 2026-03-19
 
 ### New Features & Fixes
