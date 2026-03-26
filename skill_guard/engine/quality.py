@@ -473,6 +473,16 @@ def _find_missing_references(references: list[Path]) -> list[Path]:
     return [ref for ref in references if not ref.exists()]
 
 
+def _is_plain_text_relative_path(raw_path: str) -> bool:
+    """Heuristically keep plain-text path detection to explicit file references."""
+    normalized = raw_path.strip()
+    if "/" in normalized or normalized.startswith(("./", "../")):
+        return True
+
+    basename = Path(normalized).stem
+    return bool(basename) and basename.upper() == basename and any(ch.isalpha() for ch in basename)
+
+
 def _find_broken_body_paths(body: str, skill_path: Path) -> list[str]:
     """Find relative paths referenced in SKILL.md body that don't exist."""
     broken = []
@@ -493,6 +503,8 @@ def _find_broken_body_paths(body: str, skill_path: Path) -> list[str]:
     for raw_path in plain_paths:
         raw_path = raw_path.strip()
         if raw_path.startswith("http") or raw_path.startswith("#"):
+            continue
+        if not _is_plain_text_relative_path(raw_path):
             continue
         candidate = skill_path / raw_path
         if not candidate.exists() and raw_path not in broken:
