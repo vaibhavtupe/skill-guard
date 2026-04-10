@@ -177,6 +177,9 @@ conflict_ignore:
 - [Hook Scripts](docs/hooks-guide.md)
 - [CI/CD Integration](docs/ci-integration.md)
 - [Configuration Reference](docs/configuration-reference.md)
+- [Automation Policy](docs/automation-policy.md)
+- [Release Gate Checklist](docs/release-gate.md)
+- [Roadmap](ROADMAP.md)
 
 ## Anthropic Spec Validation
 
@@ -244,6 +247,11 @@ Use the separate action repo `vaibhavtupe/skill-guard-action@v1` in workflows:
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). We welcome contributions of all kinds.
+
+For planning and release discipline:
+- `ROADMAP.md` is the canonical scope source
+- `docs/automation-policy.md` defines PM ↔ Dev workflow
+- `docs/release-gate.md` is the required pre-release checklist
 
 ## License
 
