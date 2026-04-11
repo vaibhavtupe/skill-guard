@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.8.0 — 2026-04-11
+
+### Default PR Gate
+
+- **feat(#109): repo-aware multi-skill PR checks** — `check --changed` now resolves changed skills directly from the repo, supports aggregate multi-skill evaluation, and handles zero-change, rename, and delete flows cleanly.
+- **feat(#110): canonical GitHub Actions PR gate** — shipped one documented PR-native CI path with markdown and JSON output contracts plus artifact/reporting expectations.
+- **docs(#111): `check` as the default workflow** — CLI help and docs now lead with `check`, with advanced workflows explicitly demoted behind the default path.
+- **fix(#112): spec and docs alignment** — `evals/evals.json` is now the preferred format end to end, parser precedence is explicit, and placeholder or experimental behavior is labeled clearly.
+- **fix(#113): offline-first remediation and lower false-positive friction** — summaries now distinguish blockers vs warnings cleanly, markdown includes remediation guidance, and comment-only external URLs in scripts no longer trip the security finding.
+- **feat(#114): deterministic eval CI contract** — `skill-guard test` now emits stable run metadata and setup-failure artifacts, and setup/health failures carry actionable remediation guidance.
+- **docs: closeout alignment** — README guidance now matches the shipped deterministic CI eval path and release-gate expectations.
+- **docs(#115): roadmap and release gate** — added `ROADMAP.md` as the planning source of truth plus a release-gate checklist tied to shipped behavior.
+
+### Release Notes
+
+- `skill-guard` now presents a coherent pre-merge default workflow for shared skill repositories.
+- The static gate remains useful without live eval setup.
+- Live evals now have one recommended CI path and better debugging artifacts when setup fails.
+
+---
+
 ## v0.7.2 — 2026-03-26
 
 ### Bug Fixes
