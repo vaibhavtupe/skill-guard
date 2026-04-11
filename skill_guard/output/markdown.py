@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from skill_guard.models import ConflictResult, SecurityResult, ValidationResult
+from skill_guard.models import CheckRunReport, ConflictResult, SecurityResult, ValidationResult
 
 
 def format_as_markdown(result: Any, command: str = "") -> str:
@@ -14,6 +14,8 @@ def format_as_markdown(result: Any, command: str = "") -> str:
         return _security_md(result)
     if isinstance(result, ConflictResult):
         return _conflict_md(result)
+    if isinstance(result, CheckRunReport):
+        return _check_run_md(result)
     return f"## skill-guard result\n\n``\n{result}\n``"
 
 
@@ -71,4 +73,34 @@ def _conflict_md(result: ConflictResult) -> str:
     return (
         f"## skill-guard conflict — `{result.skill_name}`\n\n"
         f"| Skill | Severity | Score |\n|---|---|---|\n" + "\n".join(rows)
+    )
+
+
+def _check_run_md(result: CheckRunReport) -> str:
+    rows = []
+    for skill in result.skills:
+        rows.append(
+            f"| {skill.skill_name} | {skill.target_status} | {skill.validation} | "
+            f"{skill.security} | {skill.conflict} | {skill.test} | {skill.status} |"
+        )
+
+    if not rows:
+        rows.append("| - | - | - | - | - | - | passed |")
+
+    return (
+        "## skill-guard check\n\n"
+        f"- mode: {result.mode}\n"
+        f"- target_root: {result.target_root}\n"
+        f"- against: {result.against}\n"
+        f"- total_skills: {result.total_skills}\n"
+        f"- checked_skills: {result.checked_skills}\n"
+        f"- skipped_skills: {result.skipped_skills}\n"
+        f"- passed: {result.passed}\n"
+        f"- warnings: {result.warnings}\n"
+        f"- failed: {result.failed}\n"
+        f"- status: {result.status}\n"
+        f"- summary: {result.summary}\n\n"
+        "| Skill | Change | Validation | Security | Conflict | Test | Status |\n"
+        "|---|---|---|---|---|---|---|\n"
+        + "\n".join(rows)
     )
