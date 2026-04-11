@@ -114,6 +114,8 @@ echo "Restarted $CONTAINER with $(basename "$SKILL_PATH")"
 
 After the pre-test hook runs, skill-guard can optionally execute `test.reload_command`, wait `reload_wait_seconds`, then poll `GET {endpoint}{reload_health_check_path}` until it returns 200 or `reload_timeout_seconds` is exceeded. The default health path is `/health`.
 
+For CI, this hook-based path is the recommended injection strategy. Keep the hook idempotent, expose a deterministic health endpoint, and run with `--workspace` so failed setup runs emit `setup_failure.json` and `run.json` for debugging.
+
 ```python
 # FastAPI example
 @app.get("/health")

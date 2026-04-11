@@ -257,6 +257,8 @@ def test_test_cmd_exits_five_on_hook_error(monkeypatch) -> None:
     )
     assert result.exit_code == 5
     assert "Test setup error" in result.stdout
+    assert "injection_method=custom_hook" in result.stdout
+    assert "Recommended CI path" in result.stdout
 
 
 def test_test_cmd_exits_six_on_health_check_timeout(monkeypatch) -> None:
@@ -277,3 +279,30 @@ def test_test_cmd_exits_six_on_health_check_timeout(monkeypatch) -> None:
     )
     assert result.exit_code == 6
     assert "Test setup error" in result.stdout
+    assert "Health check failed" in result.stdout
+    assert "reload_timeout_seconds" in result.stdout
+
+
+def test_test_cmd_writes_workspace_artifact_on_setup_error(tmp_path: Path, monkeypatch) -> None:
+    async def fake_run_agent_tests(skill, config):  # noqa: ARG001
+        raise HookError("pre-test hook failed")
+
+    monkeypatch.setattr("skill_guard.commands.test.run_agent_tests", fake_run_agent_tests)
+    result = runner.invoke(
+        app,
+        [
+            "test",
+            str(FIXTURES / "valid-skill"),
+            "--endpoint",
+            "https://mock-agent.test",
+            "--model",
+            "gpt-4.1",
+            "--workspace",
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 5
+    iteration_dir = tmp_path / "iteration-1"
+    assert (iteration_dir / "setup_failure.json").is_file()
+    assert (iteration_dir / "run.json").is_file()

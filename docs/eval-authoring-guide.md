@@ -173,13 +173,20 @@ skill-guard test ./skills/my-skill/ \
 Baseline runs execute the same evals without injecting the skill (no hooks or copy),
 then compare pass/fail outcomes and aggregate deltas.
 
+For CI, prefer a single deterministic path:
+- `test.injection.method: custom_hook`
+- a stable health endpoint
+- `--workspace` enabled
+
+Treat `directory_copy` and `git_push` as secondary workflows for specialized setups, not the default CI path.
+
 ---
 
 ## Workspace output (AgentSkills eval artifacts)
 
 Use `--workspace` to write eval artifacts to disk in the AgentSkills-compatible
-layout. Each run creates a new `iteration-N` directory with per-test outputs and
-an aggregated `benchmark.json`.
+layout. Each run creates a new `iteration-N` directory with per-test outputs, a
+stable `run.json` describing the setup, and an aggregated `benchmark.json`.
 
 ```bash
 skill-guard test ./skills/my-skill/ \
@@ -193,6 +200,7 @@ Directory layout:
 ```
 ./eval-workspace/
   iteration-1/
+    run.json
     with_skill/
       <test-name>/
         outputs/
@@ -205,6 +213,8 @@ Directory layout:
 
 When `--baseline` is enabled, the iteration includes both `with_skill/` and
 `without_skill/` directories, and `benchmark.json` captures the deltas.
+If setup fails before eval execution starts, the iteration still includes
+`run.json` plus `setup_failure.json` with the error type, message, and remediation steps.
 
 ---
 

@@ -44,6 +44,50 @@ def run_hook(hook_script: Path, skill_path: Path, endpoint: str) -> None:
         raise HookError(f"Hook failed ({hook_script}) with exit code {proc.returncode}: {details}")
 
 
+def build_test_remediation(config: TestConfig, error: Exception) -> list[str]:
+    """Return actionable next steps for setup/test failures."""
+    if isinstance(error, HealthCheckTimeoutError):
+        return [
+            f"Verify the agent is reachable at {config.endpoint or '<missing endpoint>'}.",
+            (
+                "Confirm the health endpoint responds with HTTP 200 at "
+                f"{config.reload_health_check_path} after injection or reload."
+            ),
+            (
+                "Increase test.reload_timeout_seconds if the agent needs longer to reload after "
+                "skill injection."
+            ),
+            "If you use hooks, check the pre-test hook and reload_command output first.",
+        ]
+
+    injection_method = config.injection.method
+    remediation = [
+        "Recommended CI path: use test.injection.method: custom_hook for deterministic setup.",
+    ]
+    if injection_method == "custom_hook":
+        remediation.extend(
+            [
+                "Verify the pre_test_hook and post_test_hook paths exist and are executable.",
+                "Run the hook scripts manually against the same skill path and endpoint to confirm they succeed.",
+            ]
+        )
+    elif injection_method == "directory_copy":
+        remediation.extend(
+            [
+                "Prefer custom_hook in CI. directory_copy is better suited to local or single-host setups.",
+                "Verify test.injection.directory_copy_dir exists and the agent reloads from that directory deterministically.",
+            ]
+        )
+    elif injection_method == "git_push":
+        remediation.extend(
+            [
+                "Prefer custom_hook in CI. git_push adds repo and network state that is harder to make deterministic.",
+                "Verify git_repo_path, git_remote, and the target branch are writable from the CI runner.",
+            ]
+        )
+    return remediation
+
+
 async def wait_for_agent_ready(
     endpoint: str,
     api_key: str | None,
@@ -184,7 +228,17 @@ async def run_agent_tests(
     )
 
     if config.workspace_dir and write_workspace:
-        write_workspace_results(result, Path(config.workspace_dir))
+        write_workspace_results(
+            result,
+            Path(config.workspace_dir),
+            injection_method=config.injection.method,
+            model=config.model,
+            timeout_seconds=config.timeout_seconds,
+            reload_command=config.reload_command,
+            reload_wait_seconds=config.reload_wait_seconds,
+            reload_health_check_path=config.reload_health_check_path,
+            reload_timeout_seconds=config.reload_timeout_seconds,
+        )
 
     return result
 
@@ -242,7 +296,17 @@ async def run_agent_tests_with_baseline(
     )
 
     if config.workspace_dir:
-        write_workspace_comparison(result, Path(config.workspace_dir))
+        write_workspace_comparison(
+            result,
+            Path(config.workspace_dir),
+            injection_method=config.injection.method,
+            model=config.model,
+            timeout_seconds=config.timeout_seconds,
+            reload_command=config.reload_command,
+            reload_wait_seconds=config.reload_wait_seconds,
+            reload_health_check_path=config.reload_health_check_path,
+            reload_timeout_seconds=config.reload_timeout_seconds,
+        )
 
     return result
 
