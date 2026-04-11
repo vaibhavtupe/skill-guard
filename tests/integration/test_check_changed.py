@@ -65,7 +65,7 @@ def test_check_changed_reports_multi_skill_pr(tmp_path: Path, monkeypatch) -> No
         ],
     )
 
-    assert result.exit_code in (0, 2)
+    assert result.exit_code == 0
     payload = json.loads(result.stdout)
     report = payload["result"]
     assert report["checked_skills"] == 2

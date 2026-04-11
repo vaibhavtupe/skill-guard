@@ -24,6 +24,7 @@ from skill_guard.models import (
     SkillParseError,
 )
 from skill_guard.output.json_out import format_as_json
+from skill_guard.output.markdown import format_as_markdown
 from skill_guard.parser import parse_skill
 
 TARGET_PATH_ARG = typer.Argument(
@@ -72,38 +73,9 @@ def _emit_run(report: CheckRunReport, output_format: str) -> None:
         typer.echo(format_as_json(report, command="check"))
         return
     if output_format in ("md", "markdown"):
-        typer.echo(_format_markdown(report))
+        typer.echo(format_as_markdown(report, command="check"))
         return
     typer.echo(_format_text(report))
-
-
-def _format_markdown(report: CheckRunReport) -> str:
-    rows = []
-    for skill in report.skills:
-        rows.append(
-            f"| {skill.skill_name} | {skill.target_status} | {skill.validation} | "
-            f"{skill.security} | {skill.conflict} | {skill.test} | {skill.status} |"
-        )
-
-    if not rows:
-        rows.append("| - | - | - | - | - | - | passed |")
-
-    return (
-        "## skill-guard check\n\n"
-        f"- mode: {report.mode}\n"
-        f"- target_root: {report.target_root}\n"
-        f"- against: {report.against}\n"
-        f"- total_skills: {report.total_skills}\n"
-        f"- checked_skills: {report.checked_skills}\n"
-        f"- skipped_skills: {report.skipped_skills}\n"
-        f"- passed: {report.passed}\n"
-        f"- warnings: {report.warnings}\n"
-        f"- failed: {report.failed}\n"
-        f"- status: {report.status}\n"
-        f"- summary: {report.summary}\n\n"
-        "| Skill | Change | Validation | Security | Conflict | Test | Status |\n"
-        "|---|---|---|---|---|---|---|\n" + "\n".join(rows)
-    )
 
 
 def _format_text(report: CheckRunReport) -> str:

@@ -218,24 +218,31 @@ Use `skill-guard init --template base` to scaffold a new skill, or `skill-guard 
 ## GitHub Actions
 
 ```yaml
-- uses: vaibhavtupe/skill-guard-action@v1
-  with:
-    path: ./skills/my-skill
+name: skill-guard PR Gate
+
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+
+jobs:
+  skill-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install skill-guard
+      - run: |
+          skill-guard check skills/ \
+            --changed \
+            --base-ref "${{ github.event.pull_request.base.sha }}" \
+            --head-ref "${{ github.sha }}" \
+            --format md > skill-guard-summary.md
 ```
 
-See `vaibhavtupe/skill-guard-action` for the full action repo.
-
-## GitHub Actions
-
-Use the separate action repo `vaibhavtupe/skill-guard-action@v1` in workflows:
-
-```yaml
-- uses: vaibhavtupe/skill-guard-action@v1
-  with:
-    command: check
-    path: ./skills/my-skill
-    against: ./skills/
-```
+See [docs/ci-integration.md](docs/ci-integration.md) for the canonical workflow, JSON + markdown artifact strategy, and the checked-in example at [.github/workflows/skill-guard-pr-gate.yml](.github/workflows/skill-guard-pr-gate.yml).
 
 ## What skill-guard Does NOT Do
 

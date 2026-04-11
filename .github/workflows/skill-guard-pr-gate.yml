@@ -1,0 +1,81 @@
+name: skill-guard PR Gate
+
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+      - "skill-guard.yaml"
+      - ".github/workflows/skill-guard-pr-gate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  skill-guard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install skill-guard
+        run: python -m pip install --upgrade pip && python -m pip install skill-guard
+
+      - name: Run repo-aware PR gate
+        id: skill_guard
+        shell: bash
+        run: |
+          set +e
+
+          if [ ! -d "skills" ]; then
+            echo "## skill-guard check" > skill-guard-summary.md
+            echo "" >> skill-guard-summary.md
+            echo "- status: passed" >> skill-guard-summary.md
+            echo "- summary: No top-level skills/ directory found; PR gate skipped." >> skill-guard-summary.md
+            printf '{\n  "command": "check",\n  "result": {\n    "status": "passed",\n    "summary": "No top-level skills/ directory found; PR gate skipped.",\n    "skills": []\n  }\n}\n' > skill-guard-report.json
+            cat skill-guard-summary.md >> "$GITHUB_STEP_SUMMARY"
+            echo "exit_code=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.sha }}"
+
+          skill-guard check skills/ \
+            --changed \
+            --base-ref "$BASE_SHA" \
+            --head-ref "$HEAD_SHA" \
+            --format md > skill-guard-summary.md
+          md_exit=$?
+
+          skill-guard check skills/ \
+            --changed \
+            --base-ref "$BASE_SHA" \
+            --head-ref "$HEAD_SHA" \
+            --format json > skill-guard-report.json
+          json_exit=$?
+
+          exit_code=$md_exit
+          if [ "$json_exit" -gt "$exit_code" ]; then
+            exit_code=$json_exit
+          fi
+
+          cat skill-guard-summary.md >> "$GITHUB_STEP_SUMMARY"
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload PR gate artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-guard-pr-gate
+          path: |
+            skill-guard-summary.md
+            skill-guard-report.json
+
+      - name: Enforce skill-guard gate
+        if: steps.skill_guard.outputs.exit_code != '0'
+        run: exit 1
