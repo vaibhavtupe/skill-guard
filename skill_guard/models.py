@@ -300,6 +300,48 @@ class CheckPipelineResult(BaseModel):
     summary: str
 
 
+CheckStatus = Literal["passed", "warning", "failed", "skipped"]
+
+
+class CheckSkillReport(BaseModel):
+    """Per-skill report emitted by the repo-aware check command."""
+
+    skill_name: str
+    skill_path: Path
+    target_status: Literal["modified", "renamed", "deleted", "single"]
+    previous_skill_path: Path | None = None
+    validation: str
+    security: str
+    conflict: str
+    test: str
+    status: CheckStatus
+    summary: str
+    result: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = {"arbitrary_types_allowed": True}
+
+
+class CheckRunReport(BaseModel):
+    """Aggregate report for a repo-aware `skill-guard check` run."""
+
+    mode: Literal["single", "changed"]
+    target_root: Path
+    against: Path
+    base_ref: str | None = None
+    head_ref: str | None = None
+    total_skills: int
+    checked_skills: int
+    skipped_skills: int
+    passed: int
+    warnings: int
+    failed: int
+    status: CheckStatus
+    summary: str
+    skills: list[CheckSkillReport]
+
+    model_config = {"arbitrary_types_allowed": True}
+
+
 # ---------------------------------------------------------------------------
 # Catalog models
 # ---------------------------------------------------------------------------
