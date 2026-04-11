@@ -9,7 +9,11 @@ from skill_guard.models import (
     EvalTestComparison,
     EvalTestResult,
 )
-from skill_guard.output.workspace import write_workspace_comparison, write_workspace_results
+from skill_guard.output.workspace import (
+    write_workspace_comparison,
+    write_workspace_results,
+    write_workspace_setup_failure,
+)
 
 
 def _result(name: str, passed: bool) -> AgentTestResult:
@@ -40,7 +44,17 @@ def _result(name: str, passed: bool) -> AgentTestResult:
 
 
 def test_write_workspace_results(tmp_path: Path) -> None:
-    iteration_dir = write_workspace_results(_result("basic test", True), tmp_path)
+    iteration_dir = write_workspace_results(
+        _result("basic test", True),
+        tmp_path,
+        injection_method="custom_hook",
+        model="gpt-4.1",
+        timeout_seconds=30,
+        reload_command="./reload-agent.sh",
+        reload_wait_seconds=5,
+        reload_health_check_path="/health",
+        reload_timeout_seconds=60,
+    )
     outputs_dir = iteration_dir / "with_skill" / "basic_test" / "outputs"
 
     assert outputs_dir.is_dir()
@@ -51,6 +65,10 @@ def test_write_workspace_results(tmp_path: Path) -> None:
     grading = json.loads((outputs_dir / "grading.json").read_text(encoding="utf-8"))
     assert grading["passed"] is True
     assert (iteration_dir / "benchmark.json").is_file()
+    run = json.loads((iteration_dir / "run.json").read_text(encoding="utf-8"))
+    assert run["injection_method"] == "custom_hook"
+    assert run["reload_command"] == "./reload-agent.sh"
+    assert run["tests"] == ["basic test"]
 
 
 def test_write_workspace_comparison(tmp_path: Path) -> None:
@@ -79,8 +97,46 @@ def test_write_workspace_comparison(tmp_path: Path) -> None:
         passed=True,
     )
 
-    iteration_dir = write_workspace_comparison(comparison, tmp_path)
+    iteration_dir = write_workspace_comparison(
+        comparison,
+        tmp_path,
+        injection_method="custom_hook",
+        model="gpt-4.1",
+        timeout_seconds=30,
+        reload_command=None,
+        reload_wait_seconds=0,
+        reload_health_check_path="/health",
+        reload_timeout_seconds=60,
+    )
 
     assert (iteration_dir / "with_skill" / "basic" / "outputs" / "response.txt").is_file()
     assert (iteration_dir / "without_skill" / "basic" / "outputs" / "response.txt").is_file()
     assert (iteration_dir / "benchmark.json").is_file()
+    run = json.loads((iteration_dir / "run.json").read_text(encoding="utf-8"))
+    assert run["mode"] == "baseline_comparison"
+    assert run["tests"] == ["basic"]
+
+
+def test_write_workspace_setup_failure(tmp_path: Path) -> None:
+    iteration_dir = write_workspace_setup_failure(
+        tmp_path,
+        skill_name="valid-skill",
+        endpoint="https://mock-agent.test",
+        mode="with_skill",
+        injection_method="custom_hook",
+        model="gpt-4.1",
+        timeout_seconds=30,
+        reload_command="./reload-agent.sh",
+        reload_wait_seconds=5,
+        reload_health_check_path="/health",
+        reload_timeout_seconds=60,
+        stage="setup",
+        error_type="HookError",
+        error_message="hook failed",
+        remediation=["Verify the hook path."],
+    )
+
+    setup_failure = json.loads((iteration_dir / "setup_failure.json").read_text(encoding="utf-8"))
+    assert setup_failure["stage"] == "setup"
+    assert setup_failure["error_type"] == "HookError"
+    assert setup_failure["remediation"] == ["Verify the hook path."]

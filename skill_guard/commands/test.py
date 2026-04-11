@@ -9,9 +9,14 @@ from typing import Any
 import typer
 
 from skill_guard.config import ConfigError, TestConfig, load_config
-from skill_guard.engine.agent_runner import run_agent_tests, run_agent_tests_with_baseline
+from skill_guard.engine.agent_runner import (
+    build_test_remediation,
+    run_agent_tests,
+    run_agent_tests_with_baseline,
+)
 from skill_guard.models import HealthCheckTimeoutError, HookError, SkillParseError
 from skill_guard.output.json_out import format_as_json
+from skill_guard.output.workspace import write_workspace_setup_failure
 from skill_guard.parser import parse_skill
 
 SKILL_PATH_ARG = typer.Argument(..., help="Path to skill directory")
@@ -139,6 +144,7 @@ def test_cmd(
     )
 
     run_baseline = baseline or getattr(config.test, "baseline", False)
+    test_mode = "baseline_comparison" if run_baseline else "with_skill"
 
     try:
         if run_baseline:
@@ -146,10 +152,22 @@ def test_cmd(
         else:
             result = asyncio.run(run_agent_tests(skill, merged_test_config))
     except HealthCheckTimeoutError as e:
-        typer.echo(f"Test setup error: {e}")
+        _write_setup_failure_artifact(
+            skill_name=skill.metadata.name,
+            test_mode=test_mode,
+            test_config=merged_test_config,
+            error=e,
+        )
+        typer.echo(_format_setup_error("Health check failed", e, merged_test_config))
         raise typer.Exit(code=6) from e
     except HookError as e:
-        typer.echo(f"Test setup error: {e}")
+        _write_setup_failure_artifact(
+            skill_name=skill.metadata.name,
+            test_mode=test_mode,
+            test_config=merged_test_config,
+            error=e,
+        )
+        typer.echo(_format_setup_error("Injection/setup failed", e, merged_test_config))
         raise typer.Exit(code=5) from e
     except OSError as e:
         typer.echo(f"Test execution error: {e}")
@@ -170,3 +188,49 @@ def test_cmd(
     else:
         if result.pass_rate < 1.0:
             raise typer.Exit(code=1)
+
+
+def _write_setup_failure_artifact(
+    *,
+    skill_name: str,
+    test_mode: str,
+    test_config: TestConfig,
+    error: Exception,
+) -> None:
+    if not test_config.workspace_dir:
+        return
+
+    write_workspace_setup_failure(
+        Path(test_config.workspace_dir),
+        skill_name=skill_name,
+        endpoint=test_config.endpoint,
+        mode=test_mode,
+        injection_method=test_config.injection.method,
+        model=test_config.model,
+        timeout_seconds=test_config.timeout_seconds,
+        reload_command=test_config.reload_command,
+        reload_wait_seconds=test_config.reload_wait_seconds,
+        reload_health_check_path=test_config.reload_health_check_path,
+        reload_timeout_seconds=test_config.reload_timeout_seconds,
+        stage="setup",
+        error_type=type(error).__name__,
+        error_message=str(error),
+        remediation=build_test_remediation(test_config, error),
+    )
+
+
+def _format_setup_error(prefix: str, error: Exception, test_config: TestConfig) -> str:
+    remediation = build_test_remediation(test_config, error)
+    lines = [
+        f"Test setup error: {prefix}: {error}",
+        f"  injection_method={test_config.injection.method}",
+    ]
+    if test_config.reload_command:
+        lines.append(f"  reload_command={test_config.reload_command}")
+    lines.extend(f"  remediation: {step}" for step in remediation)
+    if test_config.workspace_dir:
+        lines.append(
+            f"  workspace_artifact={Path(test_config.workspace_dir)} "
+            "(see latest iteration setup_failure.json)"
+        )
+    return "\n".join(lines)

@@ -108,6 +108,13 @@ Warnings remain in the markdown and JSON reports, but the canonical PR gate stay
 
 For the full eval iteration loop (run → review → revise → expand tests), see [Writing Evals](eval-authoring-guide.md). If you want persistent artifacts for manual review, use `--workspace` as described in [Workspace output](eval-authoring-guide.md#workspace-output-agentskills-eval-artifacts).
 
+Recommended CI path:
+- use `test.injection.method: custom_hook`
+- use a stable `reload_health_check_path`
+- use `--workspace` so every run writes deterministic debug artifacts
+
+`directory_copy` and `git_push` remain supported, but they are secondary paths. They add host or repo state that is harder to keep deterministic in CI.
+
 ### Prerequisites
 
 1. Your skill must have an `evals/` directory with either `config.yaml` (prompt files) or `evals.json` (inline prompts):
@@ -168,6 +175,7 @@ skill-guard test skills/my-skill \
   --endpoint https://your-agent.example.com \
   --api-key $AGENT_API_KEY \
   --model gpt-4.1 \
+  --workspace ./eval-workspace \
   --format json
 ```
 
@@ -249,6 +257,8 @@ test:
 ```
 
 Hook scripts receive two arguments: `<skill_path> <endpoint_url>`. Exit non-zero to abort the test run.
+
+This is the recommended CI injection path. Keep the hook idempotent, pair it with a health endpoint, and rely on workspace artifacts for failed-run diagnosis.
 
 ---
 
