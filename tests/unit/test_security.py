@@ -47,3 +47,27 @@ def test_security_skip_references_suppresses_reference_findings() -> None:
     injection_ids = {finding.id for finding in result.findings if finding.category == "INJECTION"}
     assert "INJECT-003" not in injection_ids
     assert "INJECT-001" in injection_ids
+
+
+def test_security_ignores_external_urls_in_comment_only_script(tmp_path: Path) -> None:
+    skill_dir = tmp_path / "comment-url-skill"
+    scripts_dir = skill_dir / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        (
+            "---\n"
+            "name: comment-url-skill\n"
+            'description: "Use when checking whether comment-only URLs trigger false positives."\n'
+            "---\n"
+        ),
+        encoding="utf-8",
+    )
+    (scripts_dir / "setup.sh").write_text(
+        "# docs: https://example.com/install\necho ready\n",
+        encoding="utf-8",
+    )
+
+    skill = parse_skill(skill_dir)
+    result = run_security_scan(skill, SecureConfig())
+
+    assert all(f.id != "URL-001" for f in result.findings)

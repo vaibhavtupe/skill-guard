@@ -95,6 +95,7 @@ def compute_similarity(
             "Merge into a single skill with broader scope",
             "Narrow descriptions to distinguish triggers",
             "Add exclusion hints (e.g., 'Do NOT use for ...')",
+            "Add conflict_ignore in SKILL.md if this overlap is intentional",
         ]
 
         matches.append(
@@ -212,6 +213,7 @@ def _compute_embeddings_similarity(
                     "Merge into a single skill with broader scope",
                     "Narrow descriptions to distinguish triggers",
                     "Add exclusion hints (e.g., 'Do NOT use for ...')",
+                    "Add conflict_ignore in SKILL.md if this overlap is intentional",
                 ],
             )
         )

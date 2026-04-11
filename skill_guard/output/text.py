@@ -34,7 +34,8 @@ def format_validation_result(
 
     console.print(
         f"Score: {result.score}/100 | Grade: {result.grade} | "
-        f"Blockers: {result.blockers} | Warnings: {result.warnings}"
+        f"Blockers: {result.blockers} | Warnings: {result.warnings} | "
+        f"Status: {_validation_status_label(result)}"
     )
 
 
@@ -63,9 +64,13 @@ def format_security_result(result: SecurityResult, quiet: bool = False) -> None:
     table.add_column("Severity")
     table.add_column("Finding")
 
-    for finding in result.findings:
-        if quiet and finding.suppressed:
-            continue
+    visible_findings = [
+        finding for finding in result.findings if not (quiet and finding.suppressed)
+    ]
+    if not visible_findings:
+        table.add_row("✅ none", "No security findings detected")
+
+    for finding in visible_findings:
         status = "✅" if finding.suppressed else "❌"
         msg = f"{finding.category} [{finding.id}] in {finding.file}:{finding.line}\n{finding.description}\n→ {finding.suggestion}"
         table.add_row(f"{status} {finding.severity}", msg)
@@ -73,7 +78,8 @@ def format_security_result(result: SecurityResult, quiet: bool = False) -> None:
     console.print(table)
     console.print(
         f"Critical: {result.critical_count} | High: {result.high_count} | "
-        f"Medium: {result.medium_count} | Low: {result.low_count}"
+        f"Medium: {result.medium_count} | Low: {result.low_count} | "
+        f"Status: {_security_status_label(result)}"
     )
 
 
@@ -94,7 +100,33 @@ def format_conflict_result(result: ConflictResult, quiet: bool = False) -> None:
         )
         table.add_row(f"{status} {match.existing_skill_name}", details)
 
+    if not result.name_collision and not result.matches:
+        table.add_row("✅ none", "No conflicting skills detected")
+
     console.print(table)
     console.print(
-        f"High conflicts: {result.high_conflicts} | Medium conflicts: {result.medium_conflicts}"
+        f"High conflicts: {result.high_conflicts} | Medium conflicts: {result.medium_conflicts} | "
+        f"Status: {_conflict_status_label(result)}"
     )
+
+
+def _validation_status_label(result: ValidationResult) -> str:
+    if result.blockers > 0:
+        return "blocking failures"
+    if result.warnings > 0:
+        return "warnings only (non-blocking by default)"
+    return "clean"
+
+
+def _security_status_label(result: SecurityResult) -> str:
+    if result.passed:
+        return "no blocking findings"
+    return "blocking findings present"
+
+
+def _conflict_status_label(result: ConflictResult) -> str:
+    if result.name_collision or result.high_conflicts > 0:
+        return "blocking conflicts present"
+    if result.medium_conflicts > 0:
+        return "warnings only"
+    return "clean"
