@@ -208,7 +208,9 @@ def _default_base_ref(repo_root: Path, head_ref: str) -> str:
     return "HEAD"
 
 
-def _git_diff_name_status(repo_root: Path, base_ref: str | None, head_ref: str) -> list[ChangedPath]:
+def _git_diff_name_status(
+    repo_root: Path, base_ref: str | None, head_ref: str
+) -> list[ChangedPath]:
     command = ["git", "diff", "--name-status", "-z"]
     if base_ref:
         command.append(f"{base_ref}...{head_ref}")

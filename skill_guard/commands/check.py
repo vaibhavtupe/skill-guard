@@ -170,7 +170,9 @@ def _normalize_validation_for_target(
     if not changed:
         return validation
 
-    blockers = sum(1 for check in updated_checks if not check.passed and check.severity == "blocker")
+    blockers = sum(
+        1 for check in updated_checks if not check.passed and check.severity == "blocker"
+    )
     warnings_count = sum(
         1 for check in updated_checks if not check.passed and check.severity == "warning"
     )
@@ -399,7 +401,9 @@ def _run_skill_check(
                 "validation": validation.model_dump(mode="json"),
                 "security": security.model_dump(mode="json"),
                 "conflict": conflict.model_dump(mode="json"),
-                **({"test": test_result.model_dump(mode="json")} if test_result is not None else {}),
+                **(
+                    {"test": test_result.model_dump(mode="json")} if test_result is not None else {}
+                ),
             },
         ),
         1 if fail_on_warning else (2 if has_warning else 0),

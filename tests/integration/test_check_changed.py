@@ -40,7 +40,9 @@ def test_check_changed_reports_multi_skill_pr(tmp_path: Path, monkeypatch) -> No
 
     valid_skill = repo_root / "skills" / "valid-skill" / "SKILL.md"
     anthropic_skill = repo_root / "skills" / "anthropic-compliant" / "SKILL.md"
-    valid_skill.write_text(valid_skill.read_text(encoding="utf-8") + "\nExtra note.\n", encoding="utf-8")
+    valid_skill.write_text(
+        valid_skill.read_text(encoding="utf-8") + "\nExtra note.\n", encoding="utf-8"
+    )
     anthropic_skill.write_text(
         anthropic_skill.read_text(encoding="utf-8") + "\nExtra policy detail.\n",
         encoding="utf-8",

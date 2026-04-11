@@ -44,7 +44,9 @@ def test_resolve_changed_skill_selection_collects_modified_renamed_and_deleted(
         repo_targets,
         "_git_diff_name_status",
         lambda repo, base, head: [
-            repo_targets.ChangedPath(status="M", old_path=None, new_path=Path("skills/alpha/SKILL.md")),
+            repo_targets.ChangedPath(
+                status="M", old_path=None, new_path=Path("skills/alpha/SKILL.md")
+            ),
             repo_targets.ChangedPath(
                 status="R100",
                 old_path=Path("skills/beta/SKILL.md"),
