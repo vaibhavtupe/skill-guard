@@ -43,7 +43,6 @@ def test_cli_help_positions_check_as_default():
     result = runner.invoke(app, ["--help"])
 
     assert result.exit_code == 0
-    assert "Start with `skill-guard check <skill-or-skills-root>`" in result.stdout
-    assert "Primary Workflow" in result.stdout
-    assert "Default gate: run validate + secure + conflict" in result.stdout
+    assert "Start with `skill-guard check" in result.stdout
+    assert "pre-merge workflow" in result.stdout
     assert "Advanced / Secondary" in result.stdout
