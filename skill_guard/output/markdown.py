@@ -101,6 +101,5 @@ def _check_run_md(result: CheckRunReport) -> str:
         f"- status: {result.status}\n"
         f"- summary: {result.summary}\n\n"
         "| Skill | Change | Validation | Security | Conflict | Test | Status |\n"
-        "|---|---|---|---|---|---|---|\n"
-        + "\n".join(rows)
+        "|---|---|---|---|---|---|---|\n" + "\n".join(rows)
     )

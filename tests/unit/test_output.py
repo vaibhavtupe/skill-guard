@@ -1,8 +1,13 @@
+import json
 from pathlib import Path
 
-import json
-
-from skill_guard.models import CheckResult, CheckRunReport, CheckSkillReport, ConflictResult, ValidationResult
+from skill_guard.models import (
+    CheckResult,
+    CheckRunReport,
+    CheckSkillReport,
+    ConflictResult,
+    ValidationResult,
+)
 from skill_guard.output.json_out import format_as_json
 from skill_guard.output.markdown import format_as_markdown
 

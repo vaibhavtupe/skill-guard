@@ -31,6 +31,17 @@ jobs:
         run: |
           set +e
 
+          if [ ! -d "skills" ]; then
+            echo "## skill-guard check" > skill-guard-summary.md
+            echo "" >> skill-guard-summary.md
+            echo "- status: passed" >> skill-guard-summary.md
+            echo "- summary: No top-level skills/ directory found; PR gate skipped." >> skill-guard-summary.md
+            printf '{\n  "command": "check",\n  "result": {\n    "status": "passed",\n    "summary": "No top-level skills/ directory found; PR gate skipped.",\n    "skills": []\n  }\n}\n' > skill-guard-report.json
+            cat skill-guard-summary.md >> "$GITHUB_STEP_SUMMARY"
+            echo "exit_code=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.sha }}"
 
