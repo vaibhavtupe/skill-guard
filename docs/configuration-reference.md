@@ -16,6 +16,7 @@ validate:
   require_author_in_metadata: true
   require_version_in_metadata: true
   require_evals: false
+  anthropic_spec: true
   vague_phrases:
     - "a useful skill"
 
@@ -30,6 +31,7 @@ secure:
       file: scripts/setup.sh
 
 conflict:
+  similarity_threshold: 0.70
   method: tfidf
   high_overlap_threshold: 0.75
   medium_overlap_threshold: 0.55
@@ -40,14 +42,23 @@ conflict:
   llm_model: gpt-4o-mini
   llm_max_concurrent: 5
 
+test:
+  baseline: false
+  workspace_dir: ./eval-workspace
+
 monitor:
   stale_threshold_days: 180
   degrade_after_failures: 7
   deprecate_after_failures: 30
+  notify:
+    slack_webhook: ${SLACK_WEBHOOK_URL}
+    github_issues: false
+    github_token: ${GITHUB_TOKEN}
+    github_repo: owner/repo
 
 ci:
   fail_on_warning: false
-  post_pr_comment: false  # reserved for future GitHub integration
+  post_pr_comment: false  # experimental placeholder; no PR comment posting yet
   output_format: markdown
 ```
 
@@ -67,16 +78,18 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 - `require_author_in_metadata` (bool, default true)
 - `require_version_in_metadata` (bool, default true)
 - `require_evals` (bool, default false)
+- `anthropic_spec` (bool, default true)
 - `vague_phrases` (list[str]) additional phrases to flag
 
 ### `secure.*`
 - `block_on` (list[str]) severities that cause failure (critical/high/medium/low)
 - `allow_external_urls_in_scripts` (bool)
 - `skip_references` (bool) skip scanning references/ files for injection patterns
-- `use_snyk_scan` (bool, reserved for future integration)
+- `use_snyk_scan` (bool, experimental placeholder; no snyk CLI integration yet)
 - `allow_list` (list) suppress specific findings
 
 ### `conflict.*`
+- `similarity_threshold` (float, default `0.70`) legacy overall threshold used when a command asks for one threshold value
 - `method` (`tfidf`|`embeddings`|`llm`)
 - `high_overlap_threshold` (float)
 - `medium_overlap_threshold` (float)
@@ -94,6 +107,7 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 - `api_key` (string, optional)
 - `model` (string, optional)
 - `timeout_seconds` (int, default 30)
+- `baseline` (bool, default false) run a second no-injection eval pass for comparison
 - `workspace_dir` (string, optional) write AgentSkills eval artifacts
 - `reload_command` (string, optional)
 - `reload_wait_seconds` (int)
@@ -112,11 +126,15 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 - `stale_threshold_days` (int)
 - `degrade_after_failures` (int; `degrade_after_days` still loads as a deprecated alias)
 - `deprecate_after_failures` (int; `deprecate_after_days` still loads as a deprecated alias)
+- `notify.slack_webhook` (string, optional)
+- `notify.github_issues` (bool, default false)
+- `notify.github_token` (string, optional)
+- `notify.github_repo` (string, optional)
 - Run via cron or CI for continuous drift detection. No built-in scheduler.
 
 ### `ci.*`
 - `fail_on_warning` (bool)
-- `post_pr_comment` (bool, reserved for future integration)
+- `post_pr_comment` (bool, experimental placeholder; no GitHub PR comment support in the CLI yet)
 - `output_format` (text|json|markdown)
 
 ## Environment Variables

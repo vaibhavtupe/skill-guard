@@ -56,3 +56,40 @@ def test_monitor_failure_aliases_load_from_legacy_keys(tmp_path: Path) -> None:
 
     assert cfg.monitor.degrade_after_failures == 3
     assert cfg.monitor.deprecate_after_failures == 9
+
+
+def test_documented_config_fields_load(tmp_path: Path) -> None:
+    config_file = tmp_path / "skill-guard.yaml"
+    config_file.write_text(
+        (
+            "validate:\n"
+            "  anthropic_spec: false\n"
+            "secure:\n"
+            "  use_snyk_scan: true\n"
+            "conflict:\n"
+            "  similarity_threshold: 0.82\n"
+            "test:\n"
+            "  baseline: true\n"
+            "  workspace: ./eval-artifacts\n"
+            "monitor:\n"
+            "  notify:\n"
+            "    github_issues: true\n"
+            "    github_token: token\n"
+            "    github_repo: owner/repo\n"
+            "ci:\n"
+            "  post_pr_comment: true\n"
+        ),
+        encoding="utf-8",
+    )
+
+    cfg = load_config(config_file)
+
+    assert cfg.validate.anthropic_spec is False
+    assert cfg.secure.use_snyk_scan is True
+    assert cfg.conflict.similarity_threshold == 0.82
+    assert cfg.test.baseline is True
+    assert cfg.test.workspace_dir == "./eval-artifacts"
+    assert cfg.monitor.notify.github_issues is True
+    assert cfg.monitor.notify.github_token == "token"
+    assert cfg.monitor.notify.github_repo == "owner/repo"
+    assert cfg.ci.post_pr_comment is True
