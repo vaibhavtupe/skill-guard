@@ -61,4 +61,4 @@ Suggestions: merge, narrow, exclude hints
 ## Next
 
 - See [Configuration Reference](configuration-reference.md)
-- Add evals in `evals/` for Phase 2 integration tests
+- Add evals in `evals/` if you want optional live eval coverage with `skill-guard test`

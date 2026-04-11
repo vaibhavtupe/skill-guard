@@ -3,8 +3,31 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Diagnose latency spikes between services.",
-      "expected_output": "Structured troubleshooting guidance for a network connectivity issue."
+      "name": "basic-usage",
+      "prompt": "My AWS connection keeps dropping packets. Can you help diagnose?",
+      "expect": {
+        "contains": ["diagnostic", "latency"],
+        "not_contains": ["I cannot", "error"]
+      },
+      "expected_output": "Diagnostic guidance for packet loss or latency issues."
+    },
+    {
+      "id": 2,
+      "name": "edge-case",
+      "prompt": "Connection reports 0.01% packet loss. Is that normal?",
+      "expect": {
+        "contains": ["no active connections found"]
+      },
+      "expected_output": "Guidance about whether the packet loss level is significant."
+    },
+    {
+      "id": 3,
+      "name": "not-my-job",
+      "prompt": "Create a new Azure connection in US-East.",
+      "expect": {
+        "not_contains": ["diagnostic", "traceroute", "packet loss"]
+      },
+      "expected_output": "A refusal or redirect because the request is out of scope."
     }
   ]
 }

@@ -172,20 +172,16 @@ def _parse_evals_config(evals_dir: Path) -> EvalConfig:
     config_path = evals_dir / "config.yaml"
     evals_json_path = evals_dir / "evals.json"
 
-    evals_json_config: EvalConfig | None = None
     if evals_json_path.exists():
-        evals_json_config = _parse_evals_json(evals_json_path, evals_dir)
+        return _parse_evals_json(evals_json_path, evals_dir)
 
     if config_path.exists():
         return _parse_evals_yaml(config_path, evals_dir)
 
-    if evals_json_config is not None:
-        return evals_json_config
-
     raise SkillParseError(
         f"evals/config.yaml not found in '{evals_dir.parent}'\n"
-        f"  → Create evals/config.yaml with test case definitions\n"
-        f"  → See docs/eval-authoring-guide.md for the format"
+        f"  → Create evals/evals.json (preferred) or evals/config.yaml with test case definitions\n"
+        f"  → See docs/eval-authoring-guide.md for the supported formats"
     )
 
 

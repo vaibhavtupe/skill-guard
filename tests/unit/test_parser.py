@@ -41,6 +41,40 @@ def test_parse_evals_json_only():
     assert skill.evals_config.tests[0].prompt is not None
 
 
+def test_parse_evals_json_takes_precedence_over_yaml(tmp_path: Path) -> None:
+    skill_dir = tmp_path / "precedence-skill"
+    evals_dir = skill_dir / "evals"
+    prompts_dir = evals_dir / "prompts"
+    prompts_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        '---\nname: precedence-skill\ndescription: "Use when eval precedence must be verified."\n---\n',
+        encoding="utf-8",
+    )
+    (prompts_dir / "yaml.md").write_text("yaml prompt", encoding="utf-8")
+    (evals_dir / "config.yaml").write_text(
+        "tests:\n  - name: yaml-test\n    prompt_file: prompts/yaml.md\n",
+        encoding="utf-8",
+    )
+    (evals_dir / "evals.json").write_text(
+        (
+            "{\n"
+            '  "skill_name": "precedence-skill",\n'
+            '  "evals": [\n'
+            '    {"id": 1, "prompt": "json prompt", "expected_output": "json"}\n'
+            "  ]\n"
+            "}\n"
+        ),
+        encoding="utf-8",
+    )
+
+    skill = parse_skill(skill_dir)
+
+    assert skill.evals_config is not None
+    assert len(skill.evals_config.tests) == 1
+    assert skill.evals_config.tests[0].prompt == "json prompt"
+    assert skill.evals_config.tests[0].prompt_file is None
+
+
 def test_parse_invalid_evals_json(tmp_path: Path):
     skill_dir = tmp_path / "bad-evals"
     evals_dir = skill_dir / "evals"

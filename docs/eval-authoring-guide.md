@@ -20,7 +20,7 @@ my-skill/
         └── out-of-scope.md
 ```
 
-Use one format per skill. If both `evals.json` and `config.yaml` exist, `evals.json` takes precedence. If you only use `config.yaml`, you'll see a validation warning about missing `evals.json` — safe to ignore, or add a minimal `evals.json` stub if you want a clean validation report.
+`evals/evals.json` is the canonical format. `config.yaml` is still supported for prompt-file workflows. If both `evals.json` and `config.yaml` exist, `evals.json` takes precedence. If you only use `config.yaml`, Anthropic-spec validation may warn about missing `evals.json` — safe to ignore if you intentionally use the YAML format.
 
 ---
 

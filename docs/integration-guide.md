@@ -72,7 +72,7 @@ skills/my-skill/
         └── out-of-scope.md # negative test — skill should NOT trigger
 ```
 
-Use one format per skill. If both exist, `evals.json` takes precedence; `config.yaml`-only setups may emit a validation warning about missing `evals.json`.
+`evals/evals.json` is the canonical format. `config.yaml` remains supported for prompt-file workflows. If both exist, `evals.json` takes precedence; `config.yaml`-only setups may emit an Anthropic-spec warning about missing `evals.json`.
 
 `evals/config.yaml`:
 ```yaml

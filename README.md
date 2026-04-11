@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-skill-guard is a CLI tool that validates, secures, and governs [Agent Skills](https://agentskills.io) across their full lifecycle — from contribution to production monitoring.
+skill-guard is a CLI tool that validates, secures, and checks [Agent Skills](https://agentskills.io), with the default workflow centered on pre-merge repository gates.
 
 ## The Problem
 
@@ -29,9 +29,9 @@ ONBOARDING (pre-merge, in CI):
   skill-guard test       → runs evals against an OpenAI-compatible endpoint. Supports injection methods: custom_hook (pre/post scripts), directory_copy, and git_push.
   skill-guard check      → runs validate + secure + conflict as a single gate. Agent evals run if --endpoint is configured.
 
-ONGOING (post-merge, scheduled):
-  skill-guard monitor    → re-run evals, detect drift, manage lifecycle. Run via cron or CI for continuous drift detection. No built-in scheduler.
-  skill-guard catalog    → searchable registry of registered skills (approval workflow planned for v0.7)
+OPTIONAL / NON-DEFAULT:
+  skill-guard monitor    → re-run evals and lifecycle checks on a schedule. Run via cron or CI. No built-in scheduler.
+  skill-guard catalog    → maintain a YAML skill catalog. Approval workflow is not implemented in the CLI.
 ```
 
 ## Quick Start
@@ -99,7 +99,7 @@ $ skill-guard validate ./skills/my-skill/
 │ description_trigger_hint  │ ✅ Description contains trigger hint ('Use when')│
 │ no_broken_body_paths      │ ✅ No broken relative paths in SKILL.md body     │
 │ evals_directory_exists    │ ⚠️ No evals/ directory found                     │
-│                           │ → Create evals/config.yaml with test cases       │
+│                           │ → Create evals/evals.json or evals/config.yaml   │
 │ metadata_has_author       │ ✅ author: my-team                               │
 │ metadata_has_version      │ ✅ version: 1.0                                  │
 └───────────────────────────┴──────────────────────────────────────────────────┘
@@ -213,7 +213,7 @@ These hooks run against changed `SKILL.md` files, deduplicate by skill root, and
 
 ## Templates
 
-Use `skill-guard init --template base` to scaffold a new skill, or `skill-guard init --list-templates` to see the available scaffolds. Generated templates include `SKILL.md`, `evals/`, `references/`, `scripts/`, and `assets/` so they validate immediately.
+Use `skill-guard init --template base` to scaffold a new skill, or `skill-guard init --list-templates` to see the available scaffolds. Generated templates include `SKILL.md`, `evals/evals.json`, `references/`, `scripts/`, and `assets/` so they validate immediately.
 
 ## GitHub Actions
 

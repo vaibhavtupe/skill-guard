@@ -317,6 +317,7 @@ secure:
 # Conflict detection (skill-guard conflict)
 # ─────────────────────────────────────────────
 conflict:
+  similarity_threshold: 0.70      # Legacy overall threshold; medium/high thresholds below drive richer output
   method: tfidf                    # tfidf | embeddings | llm
   high_overlap_threshold: 0.75    # >= this = HIGH conflict
   medium_overlap_threshold: 0.55  # >= this = MEDIUM conflict
@@ -327,7 +328,7 @@ conflict:
   # Tip: add conflict_ignore in SKILL.md frontmatter to skip specific skills
 
 # ─────────────────────────────────────────────
-# Integration testing (skill-guard test) — Phase 2
+# Live eval configuration (optional; not required for the default PR gate)
 # ─────────────────────────────────────────────
 # test:
 #   endpoint: ${AGENT_API_ENDPOINT}
@@ -354,7 +355,7 @@ conflict:
 #     # git_commit_message: "skill-guard test injection"
 
 # ─────────────────────────────────────────────
-# Monitoring — Phase 3
+# Monitoring (optional lifecycle workflow; not part of the default PR gate)
 # ─────────────────────────────────────────────
 # monitor:
 #   stale_threshold_days: 180
@@ -368,6 +369,6 @@ conflict:
 # ─────────────────────────────────────────────
 ci:
   fail_on_warning: false
-  post_pr_comment: false           # Reserved for future GitHub PR comment support
+  post_pr_comment: false           # Experimental placeholder; no GitHub PR comment support yet
   output_format: markdown
 """

@@ -123,7 +123,7 @@ my-skill/
         └── edge-case.md
 ```
 
-Use one format per skill. If both exist, `evals.json` takes precedence; `config.yaml`-only setups may emit a validation warning about missing `evals.json`.
+`evals/evals.json` is the canonical format. `config.yaml` remains supported for prompt-file workflows. If both exist, `evals.json` takes precedence; `config.yaml`-only setups may emit an Anthropic-spec warning about missing `evals.json`.
 
 2. `evals/config.yaml` format:
 
@@ -258,10 +258,10 @@ See [configuration-reference.md](configuration-reference.md) for all `skill-guar
 
 ---
 
-## Versioning
+## Scope note
 
-| Version | Phase | Key additions |
-|---|---|---|
-| `0.1.x` | Phase 1 | `validate`, `secure`, `conflict`, `init` |
-| `0.2.x` | Phase 2 | `test`, `catalog`, `check`, integration testing, this guide |
-| `0.3.x` | Phase 3 | `monitor`, Slack/GitHub notifications, auto-stage transitions |
+This guide covers the shipped CI paths in the repo today:
+- the default PR gate around `skill-guard check --changed`
+- optional live eval runs with `skill-guard test`
+
+Monitoring and notification workflows exist in the CLI, but they are not part of the default v0.8 PR-gate path.
