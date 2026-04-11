@@ -62,7 +62,7 @@ def build_test_remediation(config: TestConfig, error: Exception) -> list[str]:
 
     injection_method = config.injection.method
     remediation = [
-        f"Recommended CI path: use test.injection.method: custom_hook for deterministic setup.",
+        "Recommended CI path: use test.injection.method: custom_hook for deterministic setup.",
     ]
     if injection_method == "custom_hook":
         remediation.extend(
