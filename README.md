@@ -26,7 +26,7 @@ ONBOARDING (pre-merge, in CI):
   skill-guard validate   → format compliance + quality scoring
   skill-guard secure     → scan for dangerous patterns  
   skill-guard conflict   → detect trigger overlap with existing skills
-  skill-guard test       → runs evals against an OpenAI-compatible endpoint. Supports injection methods: custom_hook (pre/post scripts), directory_copy, and git_push.
+  skill-guard test       → optional live evals against an OpenAI-compatible endpoint. For CI, prefer custom_hook + --workspace; directory_copy and git_push are secondary workflows.
   skill-guard check      → runs validate + secure + conflict as a single gate. Agent evals run if --endpoint is configured.
 
 OPTIONAL / NON-DEFAULT:
@@ -72,11 +72,16 @@ skill-guard conflict ./skills/my-skill/ --against ./skills/
 test:
   endpoint: http://localhost:8000
   model: gpt-4.1
+  workspace_dir: ./eval-workspace
   injection:
-    method: directory_copy
-    directory_copy_dir: /app/skills
+    method: custom_hook
+    pre_test_hook: hooks/pre-test.sh
+    post_test_hook: hooks/post-test.sh
+  reload_health_check_path: /health
 
-# Or push into a repo that your agent pulls from:
+# Secondary workflows remain available for specialized setups:
+# - directory_copy into a mounted skills directory
+# - git_push into a repo your agent syncs from
 # test:
 #   endpoint: http://localhost:8000
 #   model: gpt-4.1
