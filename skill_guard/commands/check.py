@@ -77,6 +77,7 @@ def _emit_run(report: CheckRunReport, output_format: str) -> None:
         return
     typer.echo(_format_text(report))
 
+
 def _format_text(report: CheckRunReport) -> str:
     lines = [
         f"mode={report.mode} status={report.status} total={report.total_skills} "
