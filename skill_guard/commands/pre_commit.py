@@ -9,6 +9,7 @@ from pathlib import Path
 import typer
 
 from skill_guard.config import ConfigError, load_config
+from skill_guard.engine.repo_targets import collect_skill_roots
 from skill_guard.engine.quality import run_validation
 from skill_guard.engine.security import run_security_scan
 from skill_guard.engine.similarity import compute_similarity
@@ -16,33 +17,6 @@ from skill_guard.models import SkillParseError
 from skill_guard.parser import parse_skill
 
 VALID_COMMANDS = {"validate", "secure", "check"}
-
-
-def find_skill_root(path: Path) -> Path | None:
-    """Walk up from a changed path until a skill root is found."""
-    candidate = path.resolve()
-    if candidate.is_file():
-        candidate = candidate.parent
-
-    for current in (candidate, *candidate.parents):
-        if (current / "SKILL.md").is_file():
-            return current
-    return None
-
-
-def collect_skill_roots(paths: Sequence[Path]) -> list[Path]:
-    """Resolve changed file paths to unique skill roots."""
-    roots: list[Path] = []
-    seen: set[Path] = set()
-    for path in paths:
-        root = find_skill_root(path)
-        if root is None or root in seen:
-            continue
-        seen.add(root)
-        roots.append(root)
-    return roots
-
-
 def _run_command(command: str, skill_root: Path) -> int:
     try:
         config = load_config()
