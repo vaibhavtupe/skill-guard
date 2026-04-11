@@ -69,3 +69,58 @@ def test_text_formatters_smoke():
     format_validation_result(val, quiet=True)
     format_security_result(sec, quiet=True)
     format_conflict_result(conflict)
+
+
+def test_text_formatters_include_status_labels(capsys) -> None:
+    val = ValidationResult(
+        skill_name="x",
+        skill_path=Path("/tmp/x"),
+        checks=[
+            CheckResult(
+                check_name="c",
+                passed=False,
+                severity="warning",
+                message="warning",
+                suggestion="fix it",
+            )
+        ],
+        score=95,
+        grade="A",
+        passed=True,
+        warnings=1,
+        blockers=0,
+    )
+    sec = SecurityResult(
+        skill_name="x",
+        findings=[],
+        passed=True,
+        critical_count=0,
+        high_count=0,
+        medium_count=0,
+        low_count=0,
+    )
+    conflict = ConflictResult(
+        skill_name="x",
+        matches=[
+            ConflictMatch(
+                existing_skill_name="y",
+                similarity_score=0.61,
+                severity="medium",
+                overlapping_phrases=["foo"],
+                suggestions=["Add conflict_ignore in SKILL.md if this overlap is intentional"],
+            )
+        ],
+        name_collision=False,
+        passed=True,
+        high_conflicts=0,
+        medium_conflicts=1,
+    )
+
+    format_validation_result(val)
+    format_security_result(sec)
+    format_conflict_result(conflict)
+
+    output = capsys.readouterr().out
+    assert "non-blocking by default" in output
+    assert "Status: no blocking findings" in output
+    assert "Status: warnings only" in output

@@ -237,6 +237,14 @@ def _scan_external_urls(file_path: Path, text: str) -> list[SecurityFinding]:
     findings: list[SecurityFinding] = []
 
     for match in re.finditer(r"https?://[^\s\"')>]+", text):
+        line_start = text.rfind("\n", 0, match.start()) + 1
+        line_end = text.find("\n", match.start())
+        if line_end == -1:
+            line_end = len(text)
+        line_text = text[line_start:line_end]
+        if line_text.lstrip().startswith("#"):
+            continue
+
         url = match.group(0)
         parsed = urlparse(url)
         hostname = (parsed.hostname or "").lower()

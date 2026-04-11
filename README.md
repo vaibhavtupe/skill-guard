@@ -119,6 +119,8 @@ Score: 97/100 | Grade: A | Blockers: 0 | Warnings: 1
 
 > **Note:** `skill-guard validate`, `secure`, `conflict`, `init`, `catalog`, and `check` work fully offline — no agent or API key needed.
 
+The default offline path is already useful on its own: `validate` catches structure and metadata problems, `secure` catches risky patterns with remediation hints, `conflict` flags overlapping triggers, and `check` combines those static gates into one pre-merge decision.
+
 ## Installation
 
 ```bash

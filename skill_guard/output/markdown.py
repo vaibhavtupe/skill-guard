@@ -24,7 +24,10 @@ def _validation_md(result: ValidationResult) -> str:
     spec_rows = []
     for check in result.checks:
         status = "✅" if check.passed else ("⚠️" if check.severity == "warning" else "❌")
-        row = f"| {check.check_name} | {status} {check.message} |"
+        detail = f"{status} {check.message}"
+        if not check.passed and check.suggestion:
+            detail += f"<br>→ {check.suggestion}"
+        row = f"| {check.check_name} | {detail} |"
         if check.message.startswith("[anthropic-spec]"):
             spec_rows.append(row)
         else:
@@ -35,7 +38,8 @@ def _validation_md(result: ValidationResult) -> str:
         f"| Check | Result |\n|---|---|\n"
         + "\n".join(base_rows)
         + f"\n\n**Score:** {result.score}/100 (Grade {result.grade}) | "
-        f"Blockers: {result.blockers} | Warnings: {result.warnings}\n"
+        f"Blockers: {result.blockers} | Warnings: {result.warnings} | "
+        f"Status: {_validation_status_label(result)}\n"
     )
     if spec_rows:
         rendered += (
@@ -49,7 +53,8 @@ def _security_md(result: SecurityResult) -> str:
     for f in result.findings:
         status = "✅" if f.suppressed else "❌"
         rows.append(
-            f"| {f.severity} | {status} {f.category} [{f.id}] | {f.file}:{f.line} | {f.description} |"
+            f"| {f.severity} | {status} {f.category} [{f.id}] | {f.file}:{f.line} | "
+            f"{f.description}<br>→ {f.suggestion} |"
         )
 
     if not rows:
@@ -57,22 +62,42 @@ def _security_md(result: SecurityResult) -> str:
 
     return (
         f"## skill-guard secure — `{result.skill_name}`\n\n"
-        f"| Severity | Finding | Location | Description |\n|---|---|---|---|\n" + "\n".join(rows)
+        f"| Severity | Finding | Location | Description |\n|---|---|---|---|\n"
+        + "\n".join(rows)
+        + (
+            f"\n\n**Critical:** {result.critical_count} | **High:** {result.high_count} | "
+            f"**Medium:** {result.medium_count} | **Low:** {result.low_count} | "
+            f"**Status:** {_security_status_label(result)}"
+        )
     )
 
 
 def _conflict_md(result: ConflictResult) -> str:
     rows = []
+    if result.name_collision:
+        rows.append(
+            f"| {result.name_collision_with} | ❌ name collision | 1.0 | "
+            "Rename one skill so the identifiers are clearly distinct. |"
+        )
     for m in result.matches:
         status = "❌" if m.severity == "high" else "⚠️"
-        rows.append(f"| {m.existing_skill_name} | {status} {m.severity} | {m.similarity_score} |")
+        rows.append(
+            f"| {m.existing_skill_name} | {status} {m.severity} | {m.similarity_score} | "
+            f"{', '.join(m.suggestions)} |"
+        )
 
     if not rows:
-        rows.append("| - | ✅ No conflicts | - |")
+        rows.append("| - | ✅ No conflicts | - | - |")
 
     return (
         f"## skill-guard conflict — `{result.skill_name}`\n\n"
-        f"| Skill | Severity | Score |\n|---|---|---|\n" + "\n".join(rows)
+        f"| Skill | Severity | Score | Remediation |\n|---|---|---|---|\n"
+        + "\n".join(rows)
+        + (
+            f"\n\n**High conflicts:** {result.high_conflicts} | "
+            f"**Medium conflicts:** {result.medium_conflicts} | "
+            f"**Status:** {_conflict_status_label(result)}"
+        )
     )
 
 
@@ -103,3 +128,25 @@ def _check_run_md(result: CheckRunReport) -> str:
         "| Skill | Change | Validation | Security | Conflict | Test | Status |\n"
         "|---|---|---|---|---|---|---|\n" + "\n".join(rows)
     )
+
+
+def _validation_status_label(result: ValidationResult) -> str:
+    if result.blockers > 0:
+        return "blocking failures"
+    if result.warnings > 0:
+        return "warnings only (non-blocking by default)"
+    return "clean"
+
+
+def _security_status_label(result: SecurityResult) -> str:
+    if result.passed:
+        return "no blocking findings"
+    return "blocking findings present"
+
+
+def _conflict_status_label(result: ConflictResult) -> str:
+    if result.name_collision or result.high_conflicts > 0:
+        return "blocking conflicts present"
+    if result.medium_conflicts > 0:
+        return "warnings only"
+    return "clean"
