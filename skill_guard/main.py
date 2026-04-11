@@ -19,7 +19,14 @@ from skill_guard.commands.check import check_cmd
 from skill_guard.commands.monitor import monitor_cmd
 from skill_guard.commands.suppress import suppress_cmd
 
-app = typer.Typer(name="skill-guard", help="The quality gate for Agent Skills.")
+app = typer.Typer(
+    name="skill-guard",
+    help=(
+        "The quality gate for Agent Skills.\n\n"
+        "Start with `skill-guard check <skill-or-skills-root>` for the default pre-merge workflow."
+    ),
+    no_args_is_help=True,
+)
 _VERSION_CHECK_CACHE_PATH = Path.home() / ".cache" / "skill-guard" / "version-check"
 _VERSION_CHECK_TTL_SECONDS = 24 * 60 * 60
 
@@ -41,7 +48,7 @@ def main(
         help="Show version and exit.",
     ),
 ) -> None:
-    """The quality gate for Agent Skills."""
+    """Start with `skill-guard check` for the default workflow."""
     _start_version_check()
 
 
@@ -114,16 +121,57 @@ def _version_tuple(version: str) -> tuple[int, ...]:
 
 
 # Register subcommands
-app.command("validate")(validate.validate_cmd)
-app.command("secure")(secure.secure_cmd)
-app.command("conflict")(conflict.conflict_cmd)
-app.command("fix")(fix.fix_cmd)
-app.command("init")(init.init_cmd)
-app.command("test")(test.test_cmd)
-app.command("monitor")(monitor_cmd)
-app.add_typer(catalog_app, name="catalog")
-app.command("check")(check_cmd)
-app.command("suppress")(suppress_cmd)
+app.command(
+    "check",
+    help="Default gate: run validate + secure + conflict, and test if --endpoint is set.",
+    rich_help_panel="Primary Workflow",
+)(check_cmd)
+app.command(
+    "init",
+    help="Initialize a repo or scaffold a skill so you can start using `check` quickly.",
+    rich_help_panel="Primary Workflow",
+)(init.init_cmd)
+app.command(
+    "validate",
+    help="Inspect one part of the gate in isolation: format and metadata quality checks.",
+    rich_help_panel="Core Building Blocks",
+)(validate.validate_cmd)
+app.command(
+    "secure",
+    help="Inspect one part of the gate in isolation: security and injection pattern checks.",
+    rich_help_panel="Core Building Blocks",
+)(secure.secure_cmd)
+app.command(
+    "conflict",
+    help="Inspect one part of the gate in isolation: trigger overlap against existing skills.",
+    rich_help_panel="Core Building Blocks",
+)(conflict.conflict_cmd)
+app.command(
+    "test",
+    help="Optional live eval workflow against an endpoint. Not required for the default static gate.",
+    rich_help_panel="Core Building Blocks",
+)(test.test_cmd)
+app.command(
+    "monitor",
+    help="Advanced lifecycle workflow for scheduled health checks and stage transitions.",
+    rich_help_panel="Advanced / Secondary",
+)(monitor_cmd)
+app.add_typer(
+    catalog_app,
+    name="catalog",
+    help="Advanced catalog management commands for YAML skill registries.",
+    rich_help_panel="Advanced / Secondary",
+)
+app.command(
+    "fix",
+    help="Advanced helper to apply safe automatic fixes where available.",
+    rich_help_panel="Advanced / Secondary",
+)(fix.fix_cmd)
+app.command(
+    "suppress",
+    help="Advanced helper to record suppressions for intentional findings.",
+    rich_help_panel="Advanced / Secondary",
+)(suppress_cmd)
 
 
 if __name__ == "__main__":
