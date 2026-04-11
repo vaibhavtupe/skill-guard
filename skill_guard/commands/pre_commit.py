@@ -9,14 +9,16 @@ from pathlib import Path
 import typer
 
 from skill_guard.config import ConfigError, load_config
-from skill_guard.engine.repo_targets import collect_skill_roots
 from skill_guard.engine.quality import run_validation
+from skill_guard.engine.repo_targets import collect_skill_roots
 from skill_guard.engine.security import run_security_scan
 from skill_guard.engine.similarity import compute_similarity
 from skill_guard.models import SkillParseError
 from skill_guard.parser import parse_skill
 
 VALID_COMMANDS = {"validate", "secure", "check"}
+
+
 def _run_command(command: str, skill_root: Path) -> int:
     try:
         config = load_config()
