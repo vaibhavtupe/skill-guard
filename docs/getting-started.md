@@ -18,17 +18,20 @@ pip install skill-guard[embeddings]
 # Initialize config
 skill-guard init
 
-# Validate a skill
-skill-guard validate ./skills/my-skill/
-
-# Scan for security issues
-skill-guard secure ./skills/my-skill/
-
-# Check conflicts
-skill-guard conflict ./skills/my-skill/ --against ./skills/
-
-# Run the full gate (validate + secure + conflict)
+# Run the default pre-merge gate
 skill-guard check ./skills/my-skill/ --against ./skills/
+```
+
+If you only remember one command, use `check`. It is the default workflow and the fastest way to get value from the tool.
+
+## Inspect Individual Checks
+
+Use these when you need to debug part of the gate:
+
+```bash
+skill-guard validate ./skills/my-skill/
+skill-guard secure ./skills/my-skill/
+skill-guard conflict ./skills/my-skill/ --against ./skills/
 ```
 
 ## Example Output

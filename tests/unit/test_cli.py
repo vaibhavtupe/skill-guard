@@ -37,3 +37,12 @@ def test_cli_conflict():
         ],
     )
     assert result.exit_code in (0, 1)
+
+
+def test_cli_help_positions_check_as_default():
+    result = runner.invoke(app, ["--help"])
+
+    assert result.exit_code == 0
+    assert "Start with `skill-guard check" in result.stdout
+    assert "pre-merge workflow" in result.stdout
+    assert "Advanced / Secondary" in result.stdout

@@ -162,26 +162,22 @@ Any OpenAI-compatible agent (OpenAI Assistants, custom FastAPI wrapper, LangChai
 export AGENT_API_ENDPOINT=http://localhost:8000
 export AGENT_API_KEY=your-key   # omit if no auth
 
-# 1. Validate skill format
-skill-guard validate skills/my-skill/
+# 1. Run the default gate
+skill-guard check skills/my-skill/ --against skills/
 
-# 2. Scan for security issues
-skill-guard secure skills/my-skill/
-
-# 3. Check for conflicts with other skills
-skill-guard conflict skills/my-skill/ --against skills/
-
-# 4. Run evals against your agent
+# 2. Optional: run evals against your agent
 skill-guard test skills/my-skill/ \
   --endpoint $AGENT_API_ENDPOINT \
   --api-key $AGENT_API_KEY \
   --model gpt-4.1
 
-# 5. Run everything in one command
+# 3. Optional: run the gate plus live evals in one command
 skill-guard check skills/my-skill/ \
   --against skills/ \
   --endpoint $AGENT_API_ENDPOINT
 ```
+
+`skill-guard check` is the default pre-merge workflow. Reach for `validate`, `secure`, or `conflict` directly only when you want to inspect one stage in isolation.
 
 `skill-guard test` runs evals against an OpenAI-compatible endpoint. Use `pre_test_hook`/`post_test_hook` for your own deploy/teardown flow.
 
@@ -191,7 +187,7 @@ All commands are scriptable in CI; see the README for exit codes.
 
 ---
 
-## Step 5: Register skills in the catalog
+## Step 5: Advanced / Optional Catalog Workflow
 
 After a skill passes all checks, register it:
 

@@ -42,23 +42,29 @@ pip install skill-guard
 # Initialize in your skills repo
 skill-guard init
 
-# Validate a skill
-skill-guard validate ./skills/my-skill/
-
-# Check for security issues
-skill-guard secure ./skills/my-skill/
-
-# Skip scanning references/ for injection patterns
-skill-guard secure ./skills/my-skill/ --skip-references
-
-# Check for conflicts with existing skills
-skill-guard conflict ./skills/my-skill/ --against ./skills/
-
-# Run the full gate (validate + secure + conflict; test runs if --endpoint is configured)
+# Run the default gate
 skill-guard check ./skills/my-skill/ --against ./skills/
 ```
 
-### Test injection methods
+If you only learn one command, learn `check`. It is the default pre-merge workflow and the command the GitHub Actions path is built around.
+
+### Advanced / Secondary Commands
+
+Use these when you need to inspect one part of the gate in isolation or run non-default workflows:
+
+```bash
+# Format and metadata quality only
+skill-guard validate ./skills/my-skill/
+
+# Security only
+skill-guard secure ./skills/my-skill/
+skill-guard secure ./skills/my-skill/ --skip-references
+
+# Conflict detection only
+skill-guard conflict ./skills/my-skill/ --against ./skills/
+```
+
+### Optional Live Eval Setup
 
 ```yaml
 # skill-guard.yaml
