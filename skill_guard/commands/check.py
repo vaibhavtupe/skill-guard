@@ -102,8 +102,7 @@ def _format_markdown(report: CheckRunReport) -> str:
         f"- status: {report.status}\n"
         f"- summary: {report.summary}\n\n"
         "| Skill | Change | Validation | Security | Conflict | Test | Status |\n"
-        "|---|---|---|---|---|---|---|\n"
-        + "\n".join(rows)
+        "|---|---|---|---|---|---|---|\n" + "\n".join(rows)
     )
 
 
