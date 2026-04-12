@@ -122,5 +122,7 @@ def test_text_formatters_include_status_labels(capsys) -> None:
 
     output = capsys.readouterr().out
     assert "non-blocking by default" in output
+    assert "Trust state: warning" in output
     assert "Status: no blocking findings" in output
+    assert "Trust state: clean" in output
     assert "Status: warnings only" in output

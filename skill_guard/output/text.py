@@ -6,6 +6,12 @@ from rich.console import Console
 from rich.table import Table
 
 from skill_guard.models import ConflictResult, SecurityResult, ValidationResult
+from skill_guard.output.semantics import (
+    conflict_trust_state,
+    security_trust_state,
+    trust_state_label,
+    validation_trust_state,
+)
 
 console = Console()
 
@@ -35,7 +41,8 @@ def format_validation_result(
     console.print(
         f"Score: {result.score}/100 | Grade: {result.grade} | "
         f"Blockers: {result.blockers} | Warnings: {result.warnings} | "
-        f"Status: {_validation_status_label(result)}"
+        f"Status: {_validation_status_label(result)} | "
+        f"Trust state: {trust_state_label(validation_trust_state(result))}"
     )
 
 
@@ -79,7 +86,8 @@ def format_security_result(result: SecurityResult, quiet: bool = False) -> None:
     console.print(
         f"Critical: {result.critical_count} | High: {result.high_count} | "
         f"Medium: {result.medium_count} | Low: {result.low_count} | "
-        f"Status: {_security_status_label(result)}"
+        f"Status: {_security_status_label(result)} | "
+        f"Trust state: {trust_state_label(security_trust_state(result))}"
     )
 
 
@@ -106,7 +114,8 @@ def format_conflict_result(result: ConflictResult, quiet: bool = False) -> None:
     console.print(table)
     console.print(
         f"High conflicts: {result.high_conflicts} | Medium conflicts: {result.medium_conflicts} | "
-        f"Status: {_conflict_status_label(result)}"
+        f"Status: {_conflict_status_label(result)} | "
+        f"Trust state: {trust_state_label(conflict_trust_state(result))}"
     )
 
 
@@ -120,6 +129,8 @@ def _validation_status_label(result: ValidationResult) -> str:
 
 def _security_status_label(result: SecurityResult) -> str:
     if result.passed:
+        if any(finding.suppressed for finding in result.findings):
+            return "intentional exceptions present"
         return "no blocking findings"
     return "blocking findings present"
 

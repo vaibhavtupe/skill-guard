@@ -236,6 +236,17 @@ The JSON contract is:
 - top-level `command` and `timestamp`
 - aggregate `result` payload with run counts, final status, summary, and full per-skill detail
 
+The trust-state contract is:
+- `clean`: no action required
+- `warning`: non-blocking issue
+- `exception`: intentional exception or suppression is present
+- `needs_review`: human review required even though no blocking failure occurred
+- `blocking`: merge-stopping problem
+
+For `check`, keep distinguishing CI-facing `status` from semantic `trust_state`:
+- `status` drives pass/warning/fail behavior in CI
+- `trust_state` explains what kind of attention the finding needs
+
 If you want PR comments, post `skill-guard-summary.md` from the canonical workflow as-is.
 The primary path should not depend on shell glue like `git diff | head -1`; let `check --changed`
 resolve the skill set directly from the PR commit range.
