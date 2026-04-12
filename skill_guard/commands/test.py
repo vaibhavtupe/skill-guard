@@ -16,6 +16,7 @@ from skill_guard.engine.agent_runner import (
 )
 from skill_guard.models import HealthCheckTimeoutError, HookError, SkillParseError
 from skill_guard.output.json_out import format_as_json
+from skill_guard.output.semantics import test_trust_state, trust_state_label
 from skill_guard.output.workspace import write_workspace_setup_failure
 from skill_guard.parser import parse_skill
 
@@ -52,6 +53,7 @@ def _emit(payload: dict[str, Any], output_format: str) -> None:
             f"- pass_rate: {payload['pass_rate']:.2%}",
             f"- avg_latency_ms: {payload['avg_latency_ms']:.1f}",
             f"- status: {'passed' if payload['passed'] else 'failed'}",
+            f"- trust_state: {payload['trust_state']}",
         ]
         typer.echo("\n".join(lines))
         return
@@ -60,7 +62,8 @@ def _emit(payload: dict[str, Any], output_format: str) -> None:
         f"skill={payload['skill_name']} endpoint={payload['endpoint']} "
         f"passed={payload['passed_tests']}/{payload['total_tests']} "
         f"pass_rate={payload['pass_rate']:.2%} avg_latency_ms={payload['avg_latency_ms']:.1f} "
-        f"status={'passed' if payload['passed'] else 'failed'}"
+        f"status={'passed' if payload['passed'] else 'failed'} "
+        f"trust_state={payload['trust_state']}"
     )
     for test_result in payload["results"]:
         status = "PASS" if test_result["passed"] else "FAIL"
@@ -92,6 +95,7 @@ def _emit_baseline(payload: dict[str, Any], output_format: str) -> None:
             f"- pass_rate_delta: {payload['pass_rate_delta']:.2%}",
             f"- improved/regressed/unchanged: {payload['improved_tests']}/{payload['regressed_tests']}/{payload['unchanged_tests']}",
             f"- status: {'passed' if payload['passed'] else 'failed'}",
+            f"- trust_state: {payload['trust_state']}",
         ]
         typer.echo("\n".join(lines))
         return
@@ -101,7 +105,8 @@ def _emit_baseline(payload: dict[str, Any], output_format: str) -> None:
         f"with_skill={payload['with_skill']['passed_tests']}/{payload['with_skill']['total_tests']} "
         f"baseline={payload['baseline']['passed_tests']}/{payload['baseline']['total_tests']} "
         f"pass_rate_delta={payload['pass_rate_delta']:.2%} "
-        f"status={'passed' if payload['passed'] else 'failed'}"
+        f"status={'passed' if payload['passed'] else 'failed'} "
+        f"trust_state={payload['trust_state']}"
     )
     for comparison in payload["comparisons"]:
         with_status = "PASS" if comparison["with_skill_passed"] else "FAIL"
@@ -178,8 +183,10 @@ def test_cmd(
 
     payload = result.model_dump(mode="json")
     if run_baseline:
+        payload["trust_state"] = trust_state_label(test_trust_state(result))
         _emit_baseline(payload, format)
     else:
+        payload["trust_state"] = trust_state_label(test_trust_state(result))
         _emit(payload, format)
 
     if run_baseline:

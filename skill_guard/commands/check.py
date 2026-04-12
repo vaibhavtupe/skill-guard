@@ -25,6 +25,11 @@ from skill_guard.models import (
 )
 from skill_guard.output.json_out import format_as_json
 from skill_guard.output.markdown import format_as_markdown
+from skill_guard.output.semantics import (
+    check_run_trust_state,
+    check_skill_trust_state,
+    trust_state_label,
+)
 from skill_guard.parser import parse_skill
 
 TARGET_PATH_ARG = typer.Argument(
@@ -57,6 +62,7 @@ def _emit_single(payload: dict[str, Any], output_format: str) -> None:
             f"- conflict: {payload['conflict']}\n"
             f"- test: {payload['test']}\n"
             f"- status: {payload['status']}\n"
+            f"- trust_state: {payload['trust_state']}\n"
             f"- summary: {payload['summary']}\n"
         )
         return
@@ -64,7 +70,8 @@ def _emit_single(payload: dict[str, Any], output_format: str) -> None:
     typer.echo(
         f"skill={payload['skill_name']} validation={payload['validation']} "
         f"security={payload['security']} conflict={payload['conflict']} "
-        f"test={payload['test']} status={payload['status']}\n{payload['summary']}"
+        f"test={payload['test']} status={payload['status']} "
+        f"trust_state={payload['trust_state']}\n{payload['summary']}"
     )
 
 
@@ -81,14 +88,16 @@ def _emit_run(report: CheckRunReport, output_format: str) -> None:
 def _format_text(report: CheckRunReport) -> str:
     lines = [
         f"mode={report.mode} status={report.status} total={report.total_skills} "
-        f"checked={report.checked_skills} skipped={report.skipped_skills}",
+        f"checked={report.checked_skills} skipped={report.skipped_skills} "
+        f"trust_state={trust_state_label(check_run_trust_state(report))}",
         report.summary,
     ]
     for skill in report.skills:
         lines.append(
             f"- {skill.skill_name} [{skill.target_status}] "
             f"validation={skill.validation} security={skill.security} "
-            f"conflict={skill.conflict} test={skill.test} status={skill.status}"
+            f"conflict={skill.conflict} test={skill.test} "
+            f"trust_state={trust_state_label(check_skill_trust_state(skill))} status={skill.status}"
         )
     return "\n".join(lines)
 
@@ -101,6 +110,7 @@ def _single_payload(report: CheckSkillReport) -> dict[str, Any]:
         "conflict": report.conflict,
         "test": report.test,
         "status": report.status,
+        "trust_state": trust_state_label(check_skill_trust_state(report)),
         "summary": report.summary,
         "result": report.result,
     }

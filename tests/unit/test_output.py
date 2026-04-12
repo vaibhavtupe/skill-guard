@@ -27,7 +27,9 @@ def test_json_output_roundtrip():
         blockers=0,
     )
     out = format_as_json(val, command="validate")
-    assert '"command": "validate"' in out
+    payload = json.loads(out)
+    assert payload["command"] == "validate"
+    assert payload["result"]["trust_state"] == "clean"
 
 
 def test_markdown_output():
@@ -121,7 +123,8 @@ def test_markdown_output_supports_aggregate_check_report():
     md = format_as_markdown(report, command="check")
 
     assert "## skill-guard check" in md
-    assert "| alpha | modified | passed | passed | passed | skipped | passed |" in md
+    assert "trust_state: clean" in md
+    assert "| alpha | modified | passed | passed | passed | skipped | clean | passed |" in md
 
 
 def test_markdown_output_includes_remediation_and_status_summaries():
@@ -187,8 +190,41 @@ def test_markdown_output_includes_remediation_and_status_summaries():
     conflict_md = format_as_markdown(conflict, command="conflict")
 
     assert "→ Create evals/evals.json." in validation_md
-    assert "Status: warnings only (non-blocking by default)" in validation_md
+    assert "Status: warnings only (non-blocking by default) | Trust state: warning" in validation_md
     assert "secure.allow_external_urls_in_scripts: true when intentional" in security_md
-    assert "Status:** no blocking findings" in security_md
+    assert "**Trust state:** warning" in security_md
     assert "Add conflict_ignore in SKILL.md if this overlap is intentional" in conflict_md
-    assert "Status:** warnings only" in conflict_md
+    assert "**Trust state:** warning" in conflict_md
+
+
+def test_json_output_adds_check_trust_states():
+    report = CheckRunReport(
+        mode="changed",
+        target_root=Path("/tmp/skills"),
+        against=Path("/tmp/skills"),
+        total_skills=1,
+        checked_skills=1,
+        skipped_skills=0,
+        passed=0,
+        warnings=1,
+        failed=0,
+        status="warning",
+        summary="1 skill checked: warnings only.",
+        skills=[
+            CheckSkillReport(
+                skill_name="alpha",
+                skill_path=Path("/tmp/skills/alpha"),
+                target_status="modified",
+                validation="warning",
+                security="passed",
+                conflict="passed",
+                test="skipped",
+                status="warning",
+                summary="Warnings only.",
+            )
+        ],
+    )
+
+    payload = json.loads(format_as_json(report, command="check"))
+    assert payload["result"]["trust_state"] == "warning"
+    assert payload["result"]["skills"][0]["trust_state"] == "warning"
