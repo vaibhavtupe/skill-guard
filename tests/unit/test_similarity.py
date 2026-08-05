@@ -169,11 +169,8 @@ def test_levenshtein_ratio_matches_rapidfuzz_semantics():
     assert 0.85 < _levenshtein_ratio("earnings-preview", "earnings-previw") < 1.0
 
 
-def test_tfidf_similarity_is_pure_python(monkeypatch):
+def test_tfidf_similarity_is_pure_python():
     """Guards against silently reintroducing the sklearn dependency."""
-    import sys
-
-    assert "sklearn" not in sys.modules or True  # noqa: SIM222 -- sklearn may still be importable elsewhere in the suite
     from skill_guard.engine.similarity import _tfidf_similarity
 
     assert _tfidf_similarity("network diagnostics tool", "network diagnostics tool") == 1.0
