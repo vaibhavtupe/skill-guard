@@ -98,18 +98,6 @@ def _plan_frontmatter_fixes(
             )
         )
 
-    metadata = frontmatter.get("metadata")
-    if not isinstance(metadata, dict):
-        metadata = {}
-    if not str(metadata.get("author", "")).strip():
-        updates.append(
-            ("Insert missing frontmatter key 'metadata.author'", ("metadata", "author"), "TODO")
-        )
-    if not str(metadata.get("version", "")).strip():
-        updates.append(
-            ("Insert missing frontmatter key 'metadata.version'", ("metadata", "version"), "TODO")
-        )
-
     def make_apply(path_parts: tuple[str, ...], value: str) -> Callable[[str], str]:
         def _apply(content: str) -> str:
             current_frontmatter, current_body = _load_frontmatter_and_body(content, yaml)
@@ -127,10 +115,36 @@ def _plan_frontmatter_fixes(
 
         return _apply
 
-    return [
+    plans = [
         FixPlan(description=description, apply_change=make_apply(path_parts, value))
         for description, path_parts, value in updates
     ]
+
+    metadata = frontmatter.get("metadata")
+    if not isinstance(metadata, dict):
+        metadata = {}
+    if not str(metadata.get("author", "")).strip():
+        plans.append(
+            FixPlan(
+                description="Add 'metadata.author'",
+                reason_if_not=(
+                    "Manual fix required: skill-guard does not know who owns this skill. "
+                    "Add metadata.author, e.g.:\n  metadata:\n    author: your-team-name"
+                ),
+            )
+        )
+    if not str(metadata.get("version", "")).strip():
+        plans.append(
+            FixPlan(
+                description="Add 'metadata.version'",
+                reason_if_not=(
+                    "Manual fix required: skill-guard does not know a real version. "
+                    'Add metadata.version, e.g.:\n  metadata:\n    version: "1.0"'
+                ),
+            )
+        )
+
+    return plans
 
 
 def _plan_body_fixes(frontmatter: dict, yaml: YAML, body: str, raw_content: str) -> list[FixPlan]:

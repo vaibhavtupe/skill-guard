@@ -22,15 +22,34 @@ def test_fix_command_repairs_fixable_skill_and_clears_repaired_findings(tmp_path
 
     assert result.exit_code == 0
     skill = parse_skill(skill_dir)
-    validation = run_validation(
-        skill,
-        ValidateConfig(require_author_in_metadata=False),
-    )
+    validation = run_validation(skill, ValidateConfig())
     repaired_checks = {check.check_name: check.passed for check in validation.checks}
     assert repaired_checks["name_field_present"] is True
     assert repaired_checks["description_field_present"] is True
-    assert repaired_checks["metadata_has_version"] is True
     assert repaired_checks["no_broken_body_paths"] is True
+    # version is not auto-fixed — fixer.py leaves it as a manual fix, it does
+    # not fabricate a placeholder value.
+    assert repaired_checks["metadata_has_version"] is False
+    assert "metadata.version" in result.stdout
+
+
+def test_fix_does_not_synthesize_placeholder_author_or_version(tmp_path: Path) -> None:
+    skill_dir = tmp_path / "needs-metadata"
+    skill_dir.mkdir(parents=True)
+    skill_md = skill_dir / "SKILL.md"
+    skill_md.write_text(
+        "---\nname: needs-metadata\n"
+        'description: "Use when testing that fix does not fabricate metadata."\n---\n\n'
+        "Body text.\n",
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["fix", str(skill_dir)])
+
+    assert result.exit_code == 0
+    assert "manual fix" in result.stdout
+    updated = skill_md.read_text(encoding="utf-8")
+    assert "TODO" not in updated
 
 
 def test_fix_command_skips_ambiguous_link_and_warns(tmp_path: Path) -> None:
