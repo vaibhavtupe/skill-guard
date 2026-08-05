@@ -62,11 +62,11 @@ class AllowListEntry(BaseModel):
 
 class ValidateConfig(BaseModel):
     min_description_length: int = 20
-    max_description_length: int = 500
+    max_description_length: int = 1024
     max_body_lines: int = 500
     require_trigger_hint: bool = True
-    require_author_in_metadata: bool = True
-    require_version_in_metadata: bool = True
+    require_author_in_metadata: bool = False
+    require_version_in_metadata: bool = False
     require_evals: bool = False
     anthropic_spec: bool = True
     vague_phrases: list[str] = Field(default_factory=list)
@@ -290,11 +290,11 @@ catalog_path: ./skill-catalog.yaml
 # ─────────────────────────────────────────────
 validate:
   min_description_length: 20       # Minimum chars in description
-  max_description_length: 500      # Maximum chars in description
+  max_description_length: 1024     # Maximum chars in description (matches the Anthropic spec limit)
   max_body_lines: 500              # Max lines in SKILL.md body
   require_trigger_hint: true       # Description must contain "Use when"
-  require_author_in_metadata: true
-  require_version_in_metadata: true
+  require_author_in_metadata: false  # Informational by default; not a spec requirement
+  require_version_in_metadata: false # Informational by default; not a spec requirement
   require_evals: false             # Set true to block PRs with no evals/
   anthropic_spec: true             # Apply Anthropic AgentSkills compliance checks
   # vague_phrases:                 # Additional phrases to flag as generic

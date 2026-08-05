@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from skill_guard.config import load_config
+from skill_guard.config import ValidateConfig, load_config
 from skill_guard.models import ConfigError
 
 
@@ -28,6 +28,13 @@ def test_load_config_missing_file(tmp_path: Path):
     missing = tmp_path / "missing.yaml"
     with pytest.raises(ConfigError):
         load_config(missing)
+
+
+def test_default_validate_config_does_not_block_on_missing_author_or_version():
+    config = ValidateConfig()
+    assert config.require_author_in_metadata is False
+    assert config.require_version_in_metadata is False
+    assert config.max_description_length == 1024
 
 
 def test_env_var_expansion(tmp_path: Path, monkeypatch):
