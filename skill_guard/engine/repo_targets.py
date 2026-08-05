@@ -166,10 +166,14 @@ def _resolve_candidate_root(
     except ValueError:
         return None
     abs_path = (repo_root / rel_path).resolve()
-    if _is_relative_to(abs_path, target_root):
-        resolved_root = find_skill_root(abs_path)
-        if resolved_root is not None:
-            return resolved_root
+    if abs_path.exists():
+        # The path is present in the current checkout. If it isn't inside a
+        # real skill directory (no SKILL.md anywhere above it), it simply
+        # isn't a skill file — do not fall back to deleted-root inference,
+        # which is only valid for paths that no longer exist on disk.
+        if _is_relative_to(abs_path, target_root):
+            return find_skill_root(abs_path)
+        return None
     return _infer_deleted_root(repo_root, target_root_rel, rel_path)
 
 
