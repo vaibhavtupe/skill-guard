@@ -167,8 +167,13 @@ def _parse_frontmatter(content: str, skill_md_path: Path) -> tuple[SkillMetadata
     return metadata, body.strip()
 
 
-def _parse_evals_config(evals_dir: Path) -> EvalConfig:
-    """Parse evals/config.yaml or evals/evals.json into EvalConfig."""
+def _parse_evals_config(evals_dir: Path) -> EvalConfig | None:
+    """Parse evals/config.yaml or evals/evals.json into EvalConfig.
+
+    Returns None if the evals/ directory exists but contains neither file —
+    that's a validate-time warning (see quality.py's evals_directory_exists
+    check), not a reason to fail parsing.
+    """
     config_path = evals_dir / "config.yaml"
     evals_json_path = evals_dir / "evals.json"
 
@@ -178,11 +183,7 @@ def _parse_evals_config(evals_dir: Path) -> EvalConfig:
     if config_path.exists():
         return _parse_evals_yaml(config_path, evals_dir)
 
-    raise SkillParseError(
-        f"evals/config.yaml not found in '{evals_dir.parent}'\n"
-        f"  → Create evals/evals.json (preferred) or evals/config.yaml with test case definitions\n"
-        f"  → See docs/eval-authoring-guide.md for the supported formats"
-    )
+    return None
 
 
 def _parse_evals_yaml(config_path: Path, evals_dir: Path) -> EvalConfig:

@@ -87,3 +87,19 @@ def test_parse_invalid_evals_json(tmp_path: Path):
 
     with pytest.raises(SkillParseError):
         parse_skill(skill_dir)
+
+
+def test_parse_skill_with_evals_dir_missing_config_does_not_crash(tmp_path: Path) -> None:
+    skill_dir = tmp_path / "no-evals-config-skill"
+    (skill_dir / "evals").mkdir(parents=True)
+    (skill_dir / "evals" / "README.md").write_text("notes", encoding="utf-8")
+    (skill_dir / "SKILL.md").write_text(
+        '---\nname: no-evals-config-skill\n'
+        'description: "Use when an evals/ directory exists without a config file."\n---\n',
+        encoding="utf-8",
+    )
+
+    skill = parse_skill(skill_dir)
+
+    assert skill.has_evals is True
+    assert skill.evals_config is None
