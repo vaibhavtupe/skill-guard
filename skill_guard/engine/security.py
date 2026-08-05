@@ -5,7 +5,6 @@ Security scanner — regex-based pattern matching with suppression support.
 from __future__ import annotations
 
 import re
-import warnings
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -107,9 +106,6 @@ _SUPPRESSION_RE = re.compile(r"skill-guard:\s*ignore\s+([A-Z]+-\d+)")
 
 def run_security_scan(skill: ParsedSkill, config: SecureConfig) -> SecurityResult:
     """Scan skill files for dangerous patterns and return SecurityResult."""
-    if config.use_snyk_scan:
-        warnings.warn("use_snyk_scan is not yet implemented.", stacklevel=2)
-
     findings: list[SecurityFinding] = []
 
     files_to_scan = _gather_files(skill, skip_references=config.skip_references)

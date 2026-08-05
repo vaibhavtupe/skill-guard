@@ -2,16 +2,13 @@
 
 from __future__ import annotations
 
-import asyncio
 import subprocess
-import warnings
 from pathlib import Path
 from typing import Any
 
 import typer
 
 from skill_guard.config import ConfigError, SkillGateConfig, load_config
-from skill_guard.engine.agent_runner import run_agent_tests
 from skill_guard.engine.quality import run_validation
 from skill_guard.engine.repo_targets import resolve_changed_skill_selection
 from skill_guard.engine.security import run_security_scan
@@ -19,17 +16,10 @@ from skill_guard.engine.similarity import compute_similarity
 from skill_guard.models import (
     CheckRunReport,
     CheckSkillReport,
-    HealthCheckTimeoutError,
-    HookError,
     SkillParseError,
 )
 from skill_guard.output.json_out import format_as_json
 from skill_guard.output.markdown import format_as_markdown
-from skill_guard.output.semantics import (
-    check_run_trust_state,
-    check_skill_trust_state,
-    trust_state_label,
-)
 from skill_guard.parser import parse_skill
 
 TARGET_PATH_ARG = typer.Argument(
@@ -41,7 +31,6 @@ AGAINST_OPT = typer.Option(
     "--against",
     help="Skills dir or catalog YAML. Defaults to the target parent, or the target root for --changed",
 )
-ENDPOINT_OPT = typer.Option(None, "--endpoint", help="Agent endpoint URL")
 CONFIG_OPT = typer.Option(None, "--config", help="Path to skill-guard.yaml")
 FORMAT_OPT = typer.Option(None, "--format", help="Output format: text|json|md")
 CHANGED_OPT = typer.Option(False, "--changed", help="Check all changed skills under TARGET_PATH")
@@ -62,7 +51,6 @@ def _emit_single(payload: dict[str, Any], output_format: str) -> None:
             f"- conflict: {payload['conflict']}\n"
             f"- test: {payload['test']}\n"
             f"- status: {payload['status']}\n"
-            f"- trust_state: {payload['trust_state']}\n"
             f"- summary: {payload['summary']}\n"
         )
         return
@@ -70,8 +58,7 @@ def _emit_single(payload: dict[str, Any], output_format: str) -> None:
     typer.echo(
         f"skill={payload['skill_name']} validation={payload['validation']} "
         f"security={payload['security']} conflict={payload['conflict']} "
-        f"test={payload['test']} status={payload['status']} "
-        f"trust_state={payload['trust_state']}\n{payload['summary']}"
+        f"test={payload['test']} status={payload['status']}\n{payload['summary']}"
     )
 
 
@@ -88,16 +75,14 @@ def _emit_run(report: CheckRunReport, output_format: str) -> None:
 def _format_text(report: CheckRunReport) -> str:
     lines = [
         f"mode={report.mode} status={report.status} total={report.total_skills} "
-        f"checked={report.checked_skills} skipped={report.skipped_skills} "
-        f"trust_state={trust_state_label(check_run_trust_state(report))}",
+        f"checked={report.checked_skills} skipped={report.skipped_skills}",
         report.summary,
     ]
     for skill in report.skills:
         lines.append(
             f"- {skill.skill_name} [{skill.target_status}] "
             f"validation={skill.validation} security={skill.security} "
-            f"conflict={skill.conflict} test={skill.test} "
-            f"trust_state={trust_state_label(check_skill_trust_state(skill))} status={skill.status}"
+            f"conflict={skill.conflict} test={skill.test} status={skill.status}"
         )
     return "\n".join(lines)
 
@@ -110,7 +95,6 @@ def _single_payload(report: CheckSkillReport) -> dict[str, Any]:
         "conflict": report.conflict,
         "test": report.test,
         "status": report.status,
-        "trust_state": trust_state_label(check_skill_trust_state(report)),
         "summary": report.summary,
         "result": report.result,
     }
@@ -171,7 +155,6 @@ def _run_skill_check(
     skill_path: Path,
     *,
     against_source: Path,
-    endpoint: str | None,
     config: SkillGateConfig,
     target_status: str,
     previous_skill_path: Path | None = None,
@@ -286,75 +269,7 @@ def _run_skill_check(
             1,
         )
 
-    test_status = "skipped"
-    test_result = None
-    if endpoint:
-        config.test.endpoint = endpoint
-        try:
-            test_result = asyncio.run(run_agent_tests(skill, config.test))
-        except HealthCheckTimeoutError as exc:
-            return (
-                CheckSkillReport(
-                    skill_name=skill.metadata.name,
-                    skill_path=skill.path,
-                    target_status=target_status,  # type: ignore[arg-type]
-                    previous_skill_path=previous_skill_path,
-                    validation=validation_status,
-                    security="passed",
-                    conflict="passed",
-                    test="failed",
-                    status="failed",
-                    summary=f"Test setup error: {exc}",
-                    result={},
-                ),
-                6,
-            )
-        except HookError as exc:
-            return (
-                CheckSkillReport(
-                    skill_name=skill.metadata.name,
-                    skill_path=skill.path,
-                    target_status=target_status,  # type: ignore[arg-type]
-                    previous_skill_path=previous_skill_path,
-                    validation=validation_status,
-                    security="passed",
-                    conflict="passed",
-                    test="failed",
-                    status="failed",
-                    summary=f"Test setup error: {exc}",
-                    result={},
-                ),
-                5,
-            )
-
-        if test_result.passed:
-            test_status = "passed"
-        elif test_result.failed_tests > 0:
-            return (
-                CheckSkillReport(
-                    skill_name=skill.metadata.name,
-                    skill_path=skill.path,
-                    target_status=target_status,  # type: ignore[arg-type]
-                    previous_skill_path=previous_skill_path,
-                    validation=validation_status,
-                    security="passed",
-                    conflict="passed",
-                    test="failed",
-                    status="failed",
-                    summary="Agent evals failed with blocking failures.",
-                    result={
-                        "validation": validation.model_dump(mode="json"),
-                        "security": security.model_dump(mode="json"),
-                        "conflict": conflict.model_dump(mode="json"),
-                        "test": test_result.model_dump(mode="json"),
-                    },
-                ),
-                1,
-            )
-        else:
-            test_status = "warning"
-
-    has_warning = validation_status == "warning" or test_status == "warning"
+    has_warning = validation_status == "warning"
     fail_on_warning = config.ci.fail_on_warning and has_warning
     final_status = "failed" if fail_on_warning else ("warning" if has_warning else "passed")
 
@@ -367,7 +282,7 @@ def _run_skill_check(
             validation=validation_status,
             security="passed",
             conflict="passed",
-            test=test_status,
+            test="skipped",
             status=final_status,  # type: ignore[arg-type]
             summary=(
                 "All blocking checks passed."
@@ -382,9 +297,6 @@ def _run_skill_check(
                 "validation": validation.model_dump(mode="json"),
                 "security": security.model_dump(mode="json"),
                 "conflict": conflict.model_dump(mode="json"),
-                **(
-                    {"test": test_result.model_dump(mode="json")} if test_result is not None else {}
-                ),
             },
         ),
         1 if fail_on_warning else (2 if has_warning else 0),
@@ -444,14 +356,13 @@ def _build_run_report(
 def check_cmd(
     target_path: Path = TARGET_PATH_ARG,
     against: Path | None = AGAINST_OPT,
-    endpoint: str | None = ENDPOINT_OPT,
     config_path: Path | None = CONFIG_OPT,
     output_format: str | None = FORMAT_OPT,
     changed: bool = CHANGED_OPT,
     base_ref: str | None = BASE_REF_OPT,
     head_ref: str | None = HEAD_REF_OPT,
 ) -> None:
-    """Run validate + secure + conflict + test pipeline for one or more skills."""
+    """Run validate + secure + conflict for one or more skills."""
     try:
         config = load_config(config_path)
     except ConfigError as exc:
@@ -459,13 +370,6 @@ def check_cmd(
         raise typer.Exit(code=3) from exc
 
     resolved_output_format = output_format or config.ci.output_format
-    if config.ci.post_pr_comment:
-        warnings.warn(
-            "ci.post_pr_comment is not yet implemented and has no effect.",
-            stacklevel=2,
-        )
-
-    resolved_endpoint = endpoint or config.test.endpoint
 
     if changed:
         try:
@@ -486,7 +390,6 @@ def check_cmd(
             report, skill_exit = _run_skill_check(
                 target.root,
                 against_source=against_source,
-                endpoint=resolved_endpoint,
                 config=config,
                 target_status=target.status,
                 previous_skill_path=target.previous_root,
@@ -530,7 +433,6 @@ def check_cmd(
     single_report, exit_code = _run_skill_check(
         target_path,
         against_source=against_source,
-        endpoint=resolved_endpoint,
         config=config,
         target_status="single",
     )
