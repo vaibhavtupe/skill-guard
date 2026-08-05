@@ -19,7 +19,7 @@ from skill_guard.models import CheckResult, Grade, ParsedSkill, ValidationResult
 
 _TRIGGER_HINT_RE = re.compile(r"use when", re.IGNORECASE)
 _NAME_FORMAT_RE = re.compile(r"^[a-z0-9][a-z0-9\-]*[a-z0-9]$|^[a-z0-9]$")
-_RELATIVE_PATH_RE = re.compile(r"\]\(([^http][^)]+)\)|`([^`]+\.[a-z]{2,5})`")
+_RELATIVE_PATH_RE = re.compile(r"\]\((?!http)([^)]+)\)|`([^`]+\.[a-z]{2,5})`")
 
 _DEFAULT_VAGUE_PHRASES = [
     "a useful skill",
