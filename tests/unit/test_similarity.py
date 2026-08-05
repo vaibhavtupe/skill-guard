@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import skill_guard.engine.similarity as similarity
 from skill_guard.config import ConflictConfig
 from skill_guard.engine.similarity import compute_similarity
 from skill_guard.models import ConfigError
@@ -158,3 +159,18 @@ def test_conflict_llm_not_implemented() -> None:
         ),
     ):
         compute_similarity(new_skill, FIXTURES, ConflictConfig(method="llm"))
+
+
+def test_conflict_medium_threshold_config_is_respected(monkeypatch):
+    monkeypatch.setattr(similarity, "_tfidf_similarity", lambda a, b: 0.75)
+    new_skill = parse_skill(FIXTURES / "valid-skill")
+    config = ConflictConfig(
+        similarity_threshold=0.70,
+        medium_overlap_threshold=0.8,
+        high_overlap_threshold=0.95,
+    )
+
+    result = compute_similarity(new_skill, FIXTURES, config)
+
+    assert result.medium_conflicts == 0
+    assert result.high_conflicts == 0

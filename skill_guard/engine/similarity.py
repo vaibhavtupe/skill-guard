@@ -39,7 +39,6 @@ def compute_similarity(
 ) -> ConflictResult:
     """Compute similarity between new_skill and existing skills."""
     method = method or config.method
-    threshold = threshold or config.similarity_threshold
 
     if method == "embeddings":
         return _compute_embeddings_similarity(
