@@ -4,15 +4,14 @@ Conflict detection — TF-IDF similarity engine (Phase 1).
 
 from __future__ import annotations
 
-import difflib
+import math
 import re
 import sys
 from pathlib import Path
 from typing import Literal
 
+from rapidfuzz import fuzz
 from ruamel.yaml import YAML
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 from skill_guard.config import ConflictConfig
 from skill_guard.models import (
@@ -25,6 +24,22 @@ from skill_guard.models import (
 from skill_guard.parser import parse_skill
 
 _TRIGGER_RE = re.compile(r"use when[^.]+\.?", re.IGNORECASE)
+
+_STOPWORDS = frozenset(
+    """
+    a an and are as at be by for from has have he in is it its of on
+    that the to was were will with this these those you your i we our
+    or if can do does not no but so such than then there their them
+    they what when where which who why how all any both each few more
+    most other some own same too very s t just should now
+    """.split()  # noqa: SIM905 -- readable word-list literal over a giant inline list
+)
+
+
+def _tfidf_tokens(text: str) -> list[str]:
+    words = [w for w in re.findall(r"[a-zA-Z0-9]+", text.lower()) if w not in _STOPWORDS]
+    bigrams = [f"{a} {b}" for a, b in zip(words, words[1:], strict=False)]
+    return words + bigrams
 
 
 def compute_similarity(
@@ -266,9 +281,33 @@ def _emit_model_download_message(model_name: str, cache_dir: Path) -> None:
 
 
 def _tfidf_similarity(text_a: str, text_b: str) -> float:
-    vectorizer = TfidfVectorizer(ngram_range=(1, 2), stop_words="english")
-    tfidf = vectorizer.fit_transform([text_a, text_b])
-    return cosine_similarity(tfidf[0:1], tfidf[1:2])[0][0]
+    """Cosine similarity over a 2-document TF-IDF space (unigrams+bigrams,
+    English stopwords removed). Pure-Python stopgap pending a future
+    trigger-phrase-based conflict engine rebuild."""
+    tokens_a = _tfidf_tokens(text_a)
+    tokens_b = _tfidf_tokens(text_b)
+    if not tokens_a or not tokens_b:
+        return 0.0
+
+    docs = [tokens_a, tokens_b]
+    vocab = set(tokens_a) | set(tokens_b)
+
+    def _tf(tokens: list[str], term: str) -> float:
+        return tokens.count(term) / len(tokens)
+
+    def _idf(term: str) -> float:
+        df = sum(1 for doc in docs if term in doc)
+        return math.log((1 + len(docs)) / (1 + df)) + 1
+
+    vec_a = [_tf(tokens_a, term) * _idf(term) for term in vocab]
+    vec_b = [_tf(tokens_b, term) * _idf(term) for term in vocab]
+
+    dot = sum(a * b for a, b in zip(vec_a, vec_b, strict=True))
+    norm_a = math.sqrt(sum(a * a for a in vec_a))
+    norm_b = math.sqrt(sum(b * b for b in vec_b))
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return dot / (norm_a * norm_b)
 
 
 def _extract_overlap_phrases(text_a: str, text_b: str) -> list[str]:
@@ -293,7 +332,7 @@ def _tokenize(text: str) -> list[str]:
 
 
 def _levenshtein_ratio(a: str, b: str) -> float:
-    return difflib.SequenceMatcher(None, a, b).ratio()
+    return fuzz.ratio(a, b) / 100.0
 
 
 def _load_existing_skills(source: Path) -> list[ParsedSkill]:

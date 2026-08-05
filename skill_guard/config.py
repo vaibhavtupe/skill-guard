@@ -90,8 +90,6 @@ class ConflictConfig(BaseModel):
     embeddings_cache_dir: str = ".skill-guard-cache/embeddings"
     embeddings_model: str = "all-MiniLM-L6-v2"
     embeddings_model_path: str | None = None
-    llm_model: str = "gpt-4o-mini"
-    llm_max_concurrent: int = 5
 
 
 class InjectionConfig(BaseModel):

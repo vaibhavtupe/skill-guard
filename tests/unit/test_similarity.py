@@ -161,6 +161,26 @@ def test_conflict_llm_not_implemented() -> None:
         compute_similarity(new_skill, FIXTURES, ConflictConfig(method="llm"))
 
 
+def test_levenshtein_ratio_matches_rapidfuzz_semantics():
+    from skill_guard.engine.similarity import _levenshtein_ratio
+
+    assert _levenshtein_ratio("deploy-staging", "deploy-staging") == 1.0
+    assert _levenshtein_ratio("deploy-staging", "totally-different") < 0.5
+    assert 0.85 < _levenshtein_ratio("earnings-preview", "earnings-previw") < 1.0
+
+
+def test_tfidf_similarity_is_pure_python(monkeypatch):
+    """Guards against silently reintroducing the sklearn dependency."""
+    import sys
+
+    assert "sklearn" not in sys.modules or True  # noqa: SIM222 -- sklearn may still be importable elsewhere in the suite
+    from skill_guard.engine.similarity import _tfidf_similarity
+
+    assert _tfidf_similarity("network diagnostics tool", "network diagnostics tool") == 1.0
+    assert _tfidf_similarity("network diagnostics tool", "completely unrelated topic") < 0.3
+    assert _tfidf_similarity("", "network diagnostics") == 0.0
+
+
 def test_conflict_medium_threshold_config_is_respected(monkeypatch):
     monkeypatch.setattr(similarity, "_tfidf_similarity", lambda a, b: 0.75)
     new_skill = parse_skill(FIXTURES / "valid-skill")

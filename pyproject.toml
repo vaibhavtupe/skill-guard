@@ -23,15 +23,14 @@ classifiers = [
 dependencies = [
     "typer>=0.13.0",
     "ruamel.yaml>=0.18",
-    "scikit-learn>=1.4",
     "httpx>=0.27",
     "pydantic>=2.0",
     "rich>=13.0",
-    "python-levenshtein>=0.25",
+    "rapidfuzz>=3.0",
 ]
 
 [project.optional-dependencies]
-embeddings = ["sentence-transformers"]
+embeddings = ["sentence-transformers", "scikit-learn>=1.4"]
 llm = ["openai>=1.0"]
 dev = [
     "pytest>=8.0",
