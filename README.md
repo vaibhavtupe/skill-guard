@@ -24,14 +24,9 @@ skill-guard is the quality gate that catches these problems before they reach pr
 ```
 ONBOARDING (pre-merge, in CI):
   skill-guard validate   → format compliance + quality scoring
-  skill-guard secure     → scan for dangerous patterns  
+  skill-guard secure     → scan for dangerous patterns
   skill-guard conflict   → detect trigger overlap with existing skills
-  skill-guard test       → optional live evals against an OpenAI-compatible endpoint. For CI, prefer custom_hook + --workspace; directory_copy and git_push are secondary workflows.
-  skill-guard check      → runs validate + secure + conflict as a single gate. Agent evals run if --endpoint is configured.
-
-OPTIONAL / NON-DEFAULT:
-  skill-guard monitor    → re-run evals and lifecycle checks on a schedule. Run via cron or CI. No built-in scheduler.
-  skill-guard catalog    → maintain a YAML skill catalog. Approval workflow is not implemented in the CLI.
+  skill-guard check      → runs validate + secure + conflict as a single gate
 ```
 
 ## Quick Start
@@ -64,35 +59,6 @@ skill-guard secure ./skills/my-skill/ --skip-references
 skill-guard conflict ./skills/my-skill/ --against ./skills/
 ```
 
-### Optional Live Eval Setup
-
-```yaml
-# skill-guard.yaml
-
-test:
-  endpoint: http://localhost:8000
-  model: gpt-4.1
-  workspace_dir: ./eval-workspace
-  injection:
-    method: custom_hook
-    pre_test_hook: hooks/pre-test.sh
-    post_test_hook: hooks/post-test.sh
-  reload_health_check_path: /health
-
-# Secondary workflows remain available for specialized setups:
-# - directory_copy into a mounted skills directory
-# - git_push into a repo your agent syncs from
-# test:
-#   endpoint: http://localhost:8000
-#   model: gpt-4.1
-#   injection:
-#     method: git_push
-#     git_repo_path: /path/to/agent-repo
-#     git_remote: origin
-#     git_branch: main
-#     git_skills_dir: skills
-```
-
 ### Example Output
 
 ```
@@ -117,8 +83,6 @@ $ skill-guard validate ./skills/my-skill/
 Score: 97/100 | Grade: A | Blockers: 0 | Warnings: 1
 ```
 
-## Installation
-
 ## Prerequisites
 
 | Requirement | Version | Notes |
@@ -126,9 +90,8 @@ Score: 97/100 | Grade: A | Blockers: 0 | Warnings: 1
 | Python | 3.11+ | Required. 3.12 and 3.13 tested. |
 | pip | any recent | Bundled with Python |
 | typer | ≥0.13.0 | Installed automatically |
-| Agent endpoint | — | Required only for `skill-guard test` (OpenAI-compatible API) |
 
-> **Note:** `skill-guard validate`, `secure`, `conflict`, `init`, `catalog`, and `check` work fully offline — no agent or API key needed.
+> **Note:** every skill-guard command works fully offline — no agent or API key needed.
 
 The default offline path is already useful on its own: `validate` catches structure and metadata problems, `secure` catches risky patterns with remediation hints, `conflict` flags overlapping triggers, and `check` combines those static gates into one pre-merge decision.
 
@@ -185,9 +148,6 @@ conflict_ignore:
 ## Documentation
 
 - [Getting Started](docs/getting-started.md)
-- [End-to-End Integration Guide](docs/integration-guide.md) ← start here for real agent setup
-- [Writing Evals](docs/eval-authoring-guide.md)
-- [Hook Scripts](docs/hooks-guide.md)
 - [CI/CD Integration](docs/ci-integration.md)
 - [Configuration Reference](docs/configuration-reference.md)
 - [Automation Policy](docs/automation-policy.md)
@@ -225,7 +185,7 @@ Use `pre-commit` to enforce checks before skill changes land:
 ```yaml
 repos:
   - repo: https://github.com/vaibhavtupe/skill-guard
-    rev: v0.6.0
+    rev: v0.9.0
     hooks:
       - id: skill-guard-validate
       - id: skill-guard-secure
@@ -272,7 +232,7 @@ See [docs/ci-integration.md](docs/ci-integration.md) for the canonical workflow,
 - Does **not** replace [Anthropic's skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md) for writing skills
 - Does **not** host or serve skills — skills live in your repo
 - Does **not** modify skills — it reports issues, authors fix them
-- Does **not** require a database or server — the catalog is a YAML file in your repo
+- Does **not** require a database or server — everything runs from files in your repo
 
 ## Contributing
 
