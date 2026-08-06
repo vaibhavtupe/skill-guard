@@ -64,4 +64,4 @@ Suggestions: merge, narrow, exclude hints
 ## Next
 
 - See [Configuration Reference](configuration-reference.md)
-- Add evals in `evals/` if you want optional live eval coverage with `skill-guard test`
+- Add evals in `evals/evals.json` (or `evals/config.yaml`) to document test cases for your skill — `validate` checks that the directory exists and that its structure is well-formed, contributing to your score
