@@ -423,7 +423,7 @@ def check_cmd(
         )
         _emit_run(run_report, resolved_output_format)
 
-        if exit_code in (3, 4, 5, 6):
+        if exit_code in (3, 4):
             raise typer.Exit(code=exit_code)
         if run_report.failed > 0:
             raise typer.Exit(code=1)
