@@ -82,9 +82,7 @@ def test_resolve_changed_skill_selection_ignores_non_skill_file_under_root(
         repo_targets,
         "_git_diff_name_status",
         lambda repo, base, head: [
-            repo_targets.ChangedPath(
-                status="M", old_path=None, new_path=Path("skills/README.md")
-            ),
+            repo_targets.ChangedPath(status="M", old_path=None, new_path=Path("skills/README.md")),
         ],
     )
 

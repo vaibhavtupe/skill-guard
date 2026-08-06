@@ -94,7 +94,7 @@ def test_parse_skill_with_evals_dir_missing_config_does_not_crash(tmp_path: Path
     (skill_dir / "evals").mkdir(parents=True)
     (skill_dir / "evals" / "README.md").write_text("notes", encoding="utf-8")
     (skill_dir / "SKILL.md").write_text(
-        '---\nname: no-evals-config-skill\n'
+        "---\nname: no-evals-config-skill\n"
         'description: "Use when an evals/ directory exists without a config file."\n---\n',
         encoding="utf-8",
     )

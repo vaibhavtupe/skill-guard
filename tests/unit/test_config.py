@@ -53,12 +53,7 @@ def test_missing_env_var(tmp_path: Path):
 def test_documented_config_fields_load(tmp_path: Path) -> None:
     config_file = tmp_path / "skill-guard.yaml"
     config_file.write_text(
-        (
-            "validate:\n"
-            "  anthropic_spec: false\n"
-            "conflict:\n"
-            "  similarity_threshold: 0.82\n"
-        ),
+        ("validate:\n  anthropic_spec: false\nconflict:\n  similarity_threshold: 0.82\n"),
         encoding="utf-8",
     )
 
