@@ -29,7 +29,7 @@ secure:
       file: scripts/setup.sh
 
 conflict:
-  similarity_threshold: 0.70
+  similarity_threshold: 0.70  # legacy; unused — see conflict.* below
   method: tfidf
   high_overlap_threshold: 0.75
   medium_overlap_threshold: 0.55
@@ -66,7 +66,7 @@ Root directory containing skills. Default: `./skills/`
 - `allow_list` (list) suppress specific findings
 
 ### `conflict.*`
-- `similarity_threshold` (float, default `0.70`) legacy overall threshold used when a command asks for one threshold value
+- `similarity_threshold` (float, default `0.70`) legacy field retained for schema compatibility; not read by the conflict engine — `medium_overlap_threshold`/`high_overlap_threshold` and the CLI `--threshold` flag drive actual scoring
 - `method` (`tfidf`|`embeddings`|`llm`)
 - `high_overlap_threshold` (float)
 - `medium_overlap_threshold` (float)
