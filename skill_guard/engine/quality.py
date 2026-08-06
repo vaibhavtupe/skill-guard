@@ -19,7 +19,7 @@ from skill_guard.models import CheckResult, Grade, ParsedSkill, ValidationResult
 
 _TRIGGER_HINT_RE = re.compile(r"use when", re.IGNORECASE)
 _NAME_FORMAT_RE = re.compile(r"^[a-z0-9][a-z0-9\-]*[a-z0-9]$|^[a-z0-9]$")
-_RELATIVE_PATH_RE = re.compile(r"\]\(([^http][^)]+)\)|`([^`]+\.[a-z]{2,5})`")
+_RELATIVE_PATH_RE = re.compile(r"\]\((?!http)([^)]+)\)|`([^`]+\.[a-z]{2,5})`")
 
 _DEFAULT_VAGUE_PHRASES = [
     "a useful skill",
@@ -334,9 +334,7 @@ def run_validation(skill: ParsedSkill, config: ValidateConfig) -> ValidationResu
                 severity=evals_severity,
                 message="No evals/ directory found",
                 suggestion=(
-                    "Create evals/evals.json (preferred) or evals/config.yaml with test cases. "
-                    "Required for integration testing (skill-guard test). "
-                    "See docs/eval-authoring-guide.md"
+                    "Create evals/evals.json (preferred) or evals/config.yaml with test cases."
                 ),
             )
         )

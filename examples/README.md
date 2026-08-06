@@ -28,7 +28,7 @@ $ skill-guard validate examples/skill-creator/
 │                           │ name                                             │
 │ name_format_valid         │ ✅ Name 'skill-creator' uses valid characters    │
 │ description_min_length    │ ✅ Description length 320 chars >= 20            │
-│ description_max_length    │ ✅ Description length 320 chars <= 500           │
+│ description_max_length    │ ✅ Description length 320 chars <= 1024          │
 │ description_trigger_hint  │ ✅ Description contains trigger hint ('Use       │
 │                           │ when')                                           │
 │ description_not_generic   │ ✅ Description is specific and informative       │
@@ -38,15 +38,15 @@ $ skill-guard validate examples/skill-creator/
 │ references_exist          │ ✅ No references directory                       │
 │ no_broken_body_paths      │ ✅ No broken relative paths in SKILL.md body     │
 │ evals_directory_exists    │ ⚠️ No evals/ directory found                     │
-│                           │ → Create evals/config.yaml with test cases.      │
-│                           │ Required for integration testing (skill-guard     │
-│                           │ test). See docs/eval-authoring-guide.md          │
-│ metadata_has_author       │ ❌ Missing 'author' in metadata                  │
+│                           │ → Create evals/evals.json (preferred) or         │
+│                           │ evals/config.yaml with test cases.               │
+│ metadata_has_author       │ ⚠️ Missing 'author' in metadata                  │
 │                           │ → Add metadata:\n  author: your-team-name        │
-│ metadata_has_version      │ ❌ Missing 'version' in metadata                 │
+│ metadata_has_version      │ ⚠️ Missing 'version' in metadata                 │
 │                           │ → Add metadata:\n  version: "1.0"                │
 └───────────────────────────┴──────────────────────────────────────────────────┘
-Score: 90/100 | Grade: A | Blockers: 2 | Warnings: 1
+Score: 90/100 | Grade: A | Blockers: 0 | Warnings: 3 | Status: warnings only
+(non-blocking by default)
 
 $ skill-guard validate examples/pdf/
                            skill-guard validate — pdf
@@ -60,7 +60,7 @@ $ skill-guard validate examples/pdf/
 │ directory_name_matches    │ ✅ Directory name 'pdf' matches skill name       │
 │ name_format_valid         │ ✅ Name 'pdf' uses valid characters              │
 │ description_min_length    │ ✅ Description length 437 chars >= 20            │
-│ description_max_length    │ ✅ Description length 437 chars <= 500           │
+│ description_max_length    │ ✅ Description length 437 chars <= 1024          │
 │ description_trigger_hint  │ ⚠️ Description missing trigger hint              │
 │                           │ → Add a 'Use when...' phrase to help the agent   │
 │                           │ know when to activate this skill                 │
@@ -73,48 +73,35 @@ $ skill-guard validate examples/pdf/
 │ scripts_executable        │ ✅ No scripts                                    │
 │ references_exist          │ ✅ No references directory                       │
 │ no_broken_body_paths      │ ❌ Broken relative paths in body: REFERENCE.md,  │
-│                           │ FORMS.md, reader.pages, page.extra, writer.add,  │
-│                           │ writer.write, reader.metad, page.rotat,          │
-│                           │ pdfplumber.open, pdf.pages, pd.DataF,            │
-│                           │ all_tables.appen, pd.conca, combined_df.to,      │
-│                           │ reportlab.lib.pages, reportlab.pdfge,            │
-│                           │ canvas.Canva, c.drawS, c.line, c.save,           │
-│                           │ reportlab.platy, reportlab.lib.style,            │
-│                           │ story.appen, doc.build, input.pdf, output.txt,   │
-│                           │ file1.pdf, file2.pdf, merged.pdf, pages1-5.pdf,  │
-│                           │ pages6-10.pdf, output.pdf, encrypted.pdf,        │
-│                           │ decrypted.pdf, rotated.pdf, pytesseract.image,   │
-│                           │ page.merge, output_prefix-000.jpg,               │
-│                           │ output_prefix-001.jpg, writer.encry              │
+│                           │ FORMS.md                                         │
 │                           │ → Fix the paths or remove the references         │
 │ evals_directory_exists    │ ⚠️ No evals/ directory found                     │
-│                           │ → Create evals/config.yaml with test cases.      │
-│                           │ Required for integration testing (skill-guard     │
-│                           │ test). See docs/eval-authoring-guide.md          │
-│ metadata_has_author       │ ❌ Missing 'author' in metadata                  │
+│                           │ → Create evals/evals.json (preferred) or         │
+│                           │ evals/config.yaml with test cases.               │
+│ metadata_has_author       │ ⚠️ Missing 'author' in metadata                  │
 │                           │ → Add metadata:\n  author: your-team-name        │
-│ metadata_has_version      │ ❌ Missing 'version' in metadata                 │
+│ metadata_has_version      │ ⚠️ Missing 'version' in metadata                 │
 │                           │ → Add metadata:\n  version: "1.0"                │
 └───────────────────────────┴──────────────────────────────────────────────────┘
-Score: 74/100 | Grade: C | Blockers: 3 | Warnings: 3
+Score: 74/100 | Grade: C | Blockers: 1 | Warnings: 5 | Status: blocking failures
 
 $ skill-guard secure examples/skill-creator/
- skill-guard secure —
-    skill-creator
-┏━━━━━━━━━━┳━━━━━━━━━┓
-┃ Severity ┃ Finding ┃
-┡━━━━━━━━━━╇━━━━━━━━━┩
-└──────────┴─────────┘
-Critical: 0 | High: 0 | Medium: 0 | Low: 0
+     skill-guard secure — skill-creator
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Severity ┃ Finding                       ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ ✅ none  │ No security findings detected │
+└──────────┴───────────────────────────────┘
+Critical: 0 | High: 0 | Medium: 0 | Low: 0 | Status: no blocking findings
 
 $ skill-guard conflict examples/skill-creator/ --against examples/
-skill-guard conflict
-  — skill-creator
-┏━━━━━━━┳━━━━━━━━━┓
-┃ Match ┃ Details ┃
-┡━━━━━━━╇━━━━━━━━━┩
-└───────┴─────────┘
-High conflicts: 0 | Medium conflicts: 0
+    skill-guard conflict — skill-creator
+┏━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Match   ┃ Details                        ┃
+┡━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ ✅ none │ No conflicting skills detected │
+└─────────┴────────────────────────────────┘
+High conflicts: 0 | Medium conflicts: 0 | Status: clean
 ```
 
 ## Skills in This Directory

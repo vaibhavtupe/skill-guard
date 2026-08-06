@@ -1,5 +1,39 @@
 # Changelog
 
+## v0.9.0 — 2026-08-06
+
+### Bug Fixes
+
+- **fix: `repo_targets.py` crash on unrelated file edits** — `check --changed` no longer crashes the whole PR gate when a modified file under the skills root (e.g. `skills/README.md`) isn't part of any skill directory; the deleted-root fallback now only applies to paths that no longer exist in the current checkout.
+- **fix: `parser.py` crash on an empty `evals/` directory** — an `evals/` folder with neither `config.yaml` nor `evals.json` made the whole skill unparseable for every command instead of just producing a validate warning.
+- **fix: `quality.py` broken-link regex** — `no_broken_body_paths` used a `[^http]` character class, which matches any single character that isn't `h`, `t`, or `p` rather than "doesn't start with http"; it silently let blocker-severity broken links through (`tools/setup.md`, `path/to/file.md`, ...). Replaced with a proper negative lookahead.
+- **fix: `similarity.py` dead `medium_overlap_threshold`** — `compute_similarity` coalesced the `--threshold` override onto `config.similarity_threshold` before the medium-threshold branch ran, so `conflict.medium_overlap_threshold` could never be selected on the default `tfidf` path.
+- **fix: dead exit codes removed** — `check --changed` no longer references exit codes 5/6, which were only ever produced by the now-deleted live-eval endpoint integration.
+
+### Default Gate Behavior
+
+- **fix: author/version metadata no longer blocks by default** — `require_author_in_metadata` and `require_version_in_metadata` are not part of the Anthropic Agent Skills spec, and Anthropic's own skills routinely omit them. Both checks now default to `warning` instead of `blocker`, and `max_description_length` is raised from an invented 500 to the spec's actual 1024-character limit.
+- **fix: `fix` no longer fabricates placeholder metadata** — `skill-guard fix` used to insert a literal `TODO` for missing author/version, which let a skill silently pass its own presence-only check with no real information. Missing author/version are now always reported as a manual fix, never auto-filled.
+
+### Dependencies
+
+- **perf: replace scikit-learn with pure-Python TF-IDF + rapidfuzz** — scikit-learn (~184MB with numpy/scipy) was a mandatory dependency used only to cosine-compare two short strings, adding ~1.7s to every CLI invocation including `--help`. The default (`tfidf`) conflict path now uses a small stdlib TF-IDF + cosine implementation and `rapidfuzz` for name-similarity; scikit-learn moves to the optional `[embeddings]` extra where it's still needed for the embeddings method. Also drops `python-levenshtein` (declared but never imported).
+
+### Breaking Changes
+
+- **Breaking: removed `skill-guard test`, `skill-guard monitor`, `skill-guard catalog`** — the OpenAI-Responses-API live-eval harness, the scheduled monitor/lifecycle/notifier subsystem, and the YAML catalog commands are all deleted, along with their config sections (`test:`, `monitor:`, `catalog_path`) and the five-state trust-state output vocabulary. None of this shipped ahead of the core static gate being trustworthy, and none of it was part of the repo-aware PR-gate this release focuses on. `check`'s `--endpoint`/live-eval integration is removed; `CheckSkillReport.test` stays in the output contract but is now always reported as `skipped`.
+
+### Docs
+
+- Cleaned up README, `configuration-reference.md`, and `examples/README.md` to match the v0.9 CLI surface and defaults, removed docs and CI workflow content for the deleted live-eval/monitor/catalog features, and refreshed `ROADMAP.md` to point at the v1 relaunch design doc.
+
+### Release Notes
+
+- v0.9.0 is a "stop the bleeding" release: it fixes four real crash/correctness bugs, makes the default gate spec-honest instead of blocking on non-spec requirements, and cuts the package down to what the repo-aware PR gate actually needs — removing ~184MB of unused dependency weight and three command surfaces (`test`, `monitor`, `catalog`) that shipped ahead of being trustworthy.
+- If you depend on `skill-guard test`, `skill-guard monitor`, or `skill-guard catalog`, or on `test:`/`monitor:`/`catalog_path` config, pin to `<0.9.0` — there is no replacement in this release.
+
+---
+
 ## v0.8.0 — 2026-04-11
 
 ### Default PR Gate

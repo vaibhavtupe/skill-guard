@@ -76,3 +76,57 @@ Read REFERENCE.md before proceeding.
 
     assert broken_paths_check.passed is False
     assert "REFERENCE.md" in broken_paths_check.message
+
+
+def test_quality_flags_broken_markdown_link_starting_with_h_t_or_p(tmp_path: Path):
+    skill_dir = tmp_path / "broken-link-skill"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        """---
+name: broken-link-skill
+description: "Use when validating that markdown links to missing files are caught \
+regardless of their first letter."
+metadata:
+  author: test-author
+  version: "1.0"
+---
+
+See [the setup guide](tools/setup.md) before continuing.
+""",
+        encoding="utf-8",
+    )
+
+    skill = parse_skill(skill_dir)
+    result = run_validation(skill, ValidateConfig())
+    broken_paths_check = next(
+        check for check in result.checks if check.check_name == "no_broken_body_paths"
+    )
+
+    assert broken_paths_check.passed is False
+    assert "tools/setup.md" in broken_paths_check.message
+
+
+def test_quality_missing_author_and_version_are_warnings_not_blockers(tmp_path: Path):
+    skill_dir = tmp_path / "no-metadata-skill"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        """---
+name: no-metadata-skill
+description: "Use when validating that missing author and version metadata are \
+warnings, not blockers, by default."
+---
+
+Do the thing.
+""",
+        encoding="utf-8",
+    )
+
+    skill = parse_skill(skill_dir)
+    result = run_validation(skill, ValidateConfig())
+
+    author_check = next(c for c in result.checks if c.check_name == "metadata_has_author")
+    version_check = next(c for c in result.checks if c.check_name == "metadata_has_version")
+
+    assert author_check.severity == "warning"
+    assert version_check.severity == "warning"
+    assert result.passed is True

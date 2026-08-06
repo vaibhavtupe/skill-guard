@@ -66,3 +66,27 @@ def test_resolve_changed_skill_selection_collects_modified_renamed_and_deleted(
     assert selection.targets[1].root == renamed.resolve()
     assert selection.targets[1].previous_root == (skills_root / "beta").resolve()
     assert selection.deleted_roots == ((skills_root / "gamma").resolve(),)
+
+
+def test_resolve_changed_skill_selection_ignores_non_skill_file_under_root(
+    tmp_path: Path, monkeypatch
+) -> None:
+    repo_root = tmp_path / "repo"
+    skills_root = repo_root / "skills"
+    skills_root.mkdir(parents=True)
+    (skills_root / "README.md").write_text("skills index", encoding="utf-8")
+
+    monkeypatch.setattr(repo_targets, "_git_repo_root", lambda path: repo_root)
+    monkeypatch.setattr(repo_targets, "_default_base_ref", lambda repo, head: "base-sha")
+    monkeypatch.setattr(
+        repo_targets,
+        "_git_diff_name_status",
+        lambda repo, base, head: [
+            repo_targets.ChangedPath(status="M", old_path=None, new_path=Path("skills/README.md")),
+        ],
+    )
+
+    selection = repo_targets.resolve_changed_skill_selection(skills_root)
+
+    assert selection.targets == ()
+    assert selection.deleted_roots == ()

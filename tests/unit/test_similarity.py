@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import skill_guard.engine.similarity as similarity
 from skill_guard.config import ConflictConfig
 from skill_guard.engine.similarity import compute_similarity
 from skill_guard.models import ConfigError
@@ -158,3 +159,35 @@ def test_conflict_llm_not_implemented() -> None:
         ),
     ):
         compute_similarity(new_skill, FIXTURES, ConflictConfig(method="llm"))
+
+
+def test_levenshtein_ratio_matches_rapidfuzz_semantics():
+    from skill_guard.engine.similarity import _levenshtein_ratio
+
+    assert _levenshtein_ratio("deploy-staging", "deploy-staging") == 1.0
+    assert _levenshtein_ratio("deploy-staging", "totally-different") < 0.5
+    assert 0.85 < _levenshtein_ratio("earnings-preview", "earnings-previw") < 1.0
+
+
+def test_tfidf_similarity_is_pure_python():
+    """Guards against silently reintroducing the sklearn dependency."""
+    from skill_guard.engine.similarity import _tfidf_similarity
+
+    assert _tfidf_similarity("network diagnostics tool", "network diagnostics tool") == 1.0
+    assert _tfidf_similarity("network diagnostics tool", "completely unrelated topic") < 0.3
+    assert _tfidf_similarity("", "network diagnostics") == 0.0
+
+
+def test_conflict_medium_threshold_config_is_respected(monkeypatch):
+    monkeypatch.setattr(similarity, "_tfidf_similarity", lambda a, b: 0.75)
+    new_skill = parse_skill(FIXTURES / "valid-skill")
+    config = ConflictConfig(
+        similarity_threshold=0.70,
+        medium_overlap_threshold=0.8,
+        high_overlap_threshold=0.95,
+    )
+
+    result = compute_similarity(new_skill, FIXTURES, config)
+
+    assert result.medium_conflicts == 0
+    assert result.high_conflicts == 0

@@ -5,7 +5,6 @@ All core types used across the CLI and engine modules.
 
 from __future__ import annotations
 
-from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
@@ -220,86 +219,6 @@ class ConflictResult(BaseModel):
     medium_conflicts: int
 
 
-# ---------------------------------------------------------------------------
-# Agent test result models (Phase 2 — stubs in Phase 1)
-# ---------------------------------------------------------------------------
-
-
-class EvalTestResult(BaseModel):
-    """Result of a single eval test execution against a real agent."""
-
-    test_name: str
-    passed: bool
-    needs_review: bool = False
-    prompt: str
-    expected_output: str | None = None
-    response_text: str
-    latency_ms: int
-    checks_passed: list[str] = Field(default_factory=list)
-    checks_failed: list[str] = Field(default_factory=list)
-    skill_triggered: str | None = None
-    tool_calls: list[str] = Field(default_factory=list)
-
-
-class AgentTestResult(BaseModel):
-    """Aggregate output of skill-guard test."""
-
-    skill_name: str
-    endpoint: str
-    total_tests: int
-    passed_tests: int
-    failed_tests: int
-    pass_rate: float
-    results: list[EvalTestResult]
-    total_time_seconds: float
-    avg_latency_ms: float
-    passed: bool
-
-
-class EvalTestComparison(BaseModel):
-    """Comparison between with-skill and baseline eval results for a test."""
-
-    test_name: str
-    with_skill_passed: bool
-    baseline_passed: bool
-    outcome: str
-    with_skill_latency_ms: int
-    baseline_latency_ms: int
-
-
-class AgentTestComparisonResult(BaseModel):
-    """Aggregate output for with-skill vs baseline eval runs."""
-
-    skill_name: str
-    endpoint: str
-    with_skill: AgentTestResult
-    baseline: AgentTestResult
-    pass_rate_delta: float
-    passed_tests_delta: int
-    improved_tests: int
-    regressed_tests: int
-    unchanged_tests: int
-    comparisons: list[EvalTestComparison]
-    passed: bool
-
-
-# ---------------------------------------------------------------------------
-# Unified pipeline result
-# ---------------------------------------------------------------------------
-
-
-class CheckPipelineResult(BaseModel):
-    """Result of the unified skill-guard check command."""
-
-    skill_name: str
-    validation: ValidationResult
-    security: SecurityResult
-    conflict: ConflictResult
-    agent_test: AgentTestResult | None = None
-    passed: bool
-    summary: str
-
-
 CheckStatus = Literal["passed", "warning", "failed", "skipped"]
 
 
@@ -343,66 +262,6 @@ class CheckRunReport(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Catalog models
-# ---------------------------------------------------------------------------
-
-SkillStage = Literal["staging", "production", "degraded", "deprecated"]
-
-
-class CatalogEntry(BaseModel):
-    """A single skill entry in the catalog."""
-
-    name: str
-    description: str
-    author: str
-    version: str
-    stage: SkillStage
-    registered: datetime
-    last_updated: datetime
-    last_eval_passed: datetime | None = None
-    last_eval_run: datetime | None = None
-    quality_score: int = Field(ge=0, le=100)
-    path: str
-    tags: list[str] = Field(default_factory=list)
-    eval_count: int = 0
-    consecutive_eval_failures: int = 0
-
-
-class Catalog(BaseModel):
-    """Full skill catalog."""
-
-    version: str = "1.0"
-    updated: datetime
-    skills: list[CatalogEntry] = Field(default_factory=list)
-
-
-class SkillHealthStatus(BaseModel):
-    """Per-skill health status emitted by monitor runs."""
-
-    skill_name: str
-    stage: str
-    healthy: bool
-    findings: list[str]
-    transitioned: bool
-    old_stage: str | None = None
-    new_stage: str | None = None
-
-
-class MonitorReport(BaseModel):
-    """Aggregate monitor report."""
-
-    generated_at: datetime
-    total_skills: int
-    healthy: int
-    degraded: int
-    failing: int
-    deprecated_skipped: int
-    run_time_seconds: float
-    skills: list[SkillHealthStatus]
-    endpoint: str | None = None
-
-
-# ---------------------------------------------------------------------------
 # Errors
 # ---------------------------------------------------------------------------
 
@@ -417,11 +276,3 @@ class SkillParseError(SkillGateError):
 
 class ConfigError(SkillGateError):
     """Raised when skill-guard.yaml is invalid or missing."""
-
-
-class HookError(SkillGateError):
-    """Raised when a pre/post test hook fails."""
-
-
-class HealthCheckTimeoutError(HookError):
-    """Raised when the agent health check does not become ready in time."""

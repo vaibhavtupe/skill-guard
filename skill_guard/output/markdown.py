@@ -5,14 +5,6 @@ from __future__ import annotations
 from typing import Any
 
 from skill_guard.models import CheckRunReport, ConflictResult, SecurityResult, ValidationResult
-from skill_guard.output.semantics import (
-    check_run_trust_state,
-    check_skill_trust_state,
-    conflict_trust_state,
-    security_trust_state,
-    trust_state_label,
-    validation_trust_state,
-)
 
 
 def format_as_markdown(result: Any, command: str = "") -> str:
@@ -47,8 +39,7 @@ def _validation_md(result: ValidationResult) -> str:
         + "\n".join(base_rows)
         + f"\n\n**Score:** {result.score}/100 (Grade {result.grade}) | "
         f"Blockers: {result.blockers} | Warnings: {result.warnings} | "
-        f"Status: {_validation_status_label(result)} | "
-        f"Trust state: {trust_state_label(validation_trust_state(result))}\n"
+        f"Status: {_validation_status_label(result)}\n"
     )
     if spec_rows:
         rendered += (
@@ -76,8 +67,7 @@ def _security_md(result: SecurityResult) -> str:
         + (
             f"\n\n**Critical:** {result.critical_count} | **High:** {result.high_count} | "
             f"**Medium:** {result.medium_count} | **Low:** {result.low_count} | "
-            f"**Status:** {_security_status_label(result)} | "
-            f"**Trust state:** {trust_state_label(security_trust_state(result))}"
+            f"**Status:** {_security_status_label(result)}"
         )
     )
 
@@ -106,8 +96,7 @@ def _conflict_md(result: ConflictResult) -> str:
         + (
             f"\n\n**High conflicts:** {result.high_conflicts} | "
             f"**Medium conflicts:** {result.medium_conflicts} | "
-            f"**Status:** {_conflict_status_label(result)} | "
-            f"**Trust state:** {trust_state_label(conflict_trust_state(result))}"
+            f"**Status:** {_conflict_status_label(result)}"
         )
     )
 
@@ -117,8 +106,7 @@ def _check_run_md(result: CheckRunReport) -> str:
     for skill in result.skills:
         rows.append(
             f"| {skill.skill_name} | {skill.target_status} | {skill.validation} | "
-            f"{skill.security} | {skill.conflict} | {skill.test} | "
-            f"{trust_state_label(check_skill_trust_state(skill))} | {skill.status} |"
+            f"{skill.security} | {skill.conflict} | {skill.test} | {skill.status} |"
         )
 
     if not rows:
@@ -136,10 +124,9 @@ def _check_run_md(result: CheckRunReport) -> str:
         f"- warnings: {result.warnings}\n"
         f"- failed: {result.failed}\n"
         f"- status: {result.status}\n"
-        f"- trust_state: {trust_state_label(check_run_trust_state(result))}\n"
         f"- summary: {result.summary}\n\n"
-        "| Skill | Change | Validation | Security | Conflict | Test | Trust state | Status |\n"
-        "|---|---|---|---|---|---|---|---|\n" + "\n".join(rows)
+        "| Skill | Change | Validation | Security | Conflict | Test | Status |\n"
+        "|---|---|---|---|---|---|---|\n" + "\n".join(rows)
     )
 
 

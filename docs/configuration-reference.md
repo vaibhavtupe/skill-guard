@@ -6,15 +6,14 @@
 
 ```yaml
 skills_dir: ./skills/
-catalog_path: ./skill-catalog.yaml
 
 validate:
   min_description_length: 20
-  max_description_length: 500
+  max_description_length: 1024
   max_body_lines: 500
   require_trigger_hint: true
-  require_author_in_metadata: true
-  require_version_in_metadata: true
+  require_author_in_metadata: false
+  require_version_in_metadata: false
   require_evals: false
   anthropic_spec: true
   vague_phrases:
@@ -24,14 +23,13 @@ secure:
   block_on: [critical, high]
   allow_external_urls_in_scripts: false
   skip_references: false
-  use_snyk_scan: false  # reserved for future integration
   allow_list:
     - id: EXEC-001
       reason: "Standard install pattern"
       file: scripts/setup.sh
 
 conflict:
-  similarity_threshold: 0.70
+  similarity_threshold: 0.70  # legacy; unused — see conflict.* below
   method: tfidf
   high_overlap_threshold: 0.75
   medium_overlap_threshold: 0.55
@@ -39,26 +37,9 @@ conflict:
   embeddings_cache_dir: .skill-guard-cache/embeddings
   embeddings_model: all-MiniLM-L6-v2
   embeddings_model_path: /path/to/local/model
-  llm_model: gpt-4o-mini
-  llm_max_concurrent: 5
-
-test:
-  baseline: false
-  workspace_dir: ./eval-workspace
-
-monitor:
-  stale_threshold_days: 180
-  degrade_after_failures: 7
-  deprecate_after_failures: 30
-  notify:
-    slack_webhook: ${SLACK_WEBHOOK_URL}
-    github_issues: false
-    github_token: ${GITHUB_TOKEN}
-    github_repo: owner/repo
 
 ci:
   fail_on_warning: false
-  post_pr_comment: false  # experimental placeholder; no PR comment posting yet
   output_format: markdown
 ```
 
@@ -67,16 +48,13 @@ ci:
 ### `skills_dir` (string)
 Root directory containing skills. Default: `./skills/`
 
-### `catalog_path` (string)
-Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
-
 ### `validate.*`
 - `min_description_length` (int, default 20)
-- `max_description_length` (int, default 500)
+- `max_description_length` (int, default 1024)
 - `max_body_lines` (int, default 500)
 - `require_trigger_hint` (bool, default true)
-- `require_author_in_metadata` (bool, default true)
-- `require_version_in_metadata` (bool, default true)
+- `require_author_in_metadata` (bool, default false) informational (warning-severity) by default; set to true to make missing author metadata a blocker
+- `require_version_in_metadata` (bool, default false) informational (warning-severity) by default; set to true to make missing version metadata a blocker
 - `require_evals` (bool, default false)
 - `anthropic_spec` (bool, default true)
 - `vague_phrases` (list[str]) additional phrases to flag
@@ -85,11 +63,10 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 - `block_on` (list[str]) severities that cause failure (critical/high/medium/low)
 - `allow_external_urls_in_scripts` (bool)
 - `skip_references` (bool) skip scanning references/ files for injection patterns
-- `use_snyk_scan` (bool, experimental placeholder; no snyk CLI integration yet)
 - `allow_list` (list) suppress specific findings
 
 ### `conflict.*`
-- `similarity_threshold` (float, default `0.70`) legacy overall threshold used when a command asks for one threshold value
+- `similarity_threshold` (float, default `0.70`) legacy field retained for schema compatibility; not read by the conflict engine — `medium_overlap_threshold`/`high_overlap_threshold` and the CLI `--threshold` flag drive actual scoring
 - `method` (`tfidf`|`embeddings`|`llm`)
 - `high_overlap_threshold` (float)
 - `medium_overlap_threshold` (float)
@@ -97,44 +74,11 @@ Path to `skill-catalog.yaml`. Default: `./skill-catalog.yaml`
 - `embeddings_cache_dir` (string, default `.skill-guard-cache/embeddings`)
 - `embeddings_model` (string, default `all-MiniLM-L6-v2`)
 - `embeddings_model_path` (string, optional) local model path for offline/air-gapped runs
-- `llm_model` (string, default `gpt-4o-mini`)
-- `llm_max_concurrent` (int, default `5`)
 
 **Tuning tip:** Calibrate thresholds by running `skill-guard conflict` against known similar and dissimilar skills, then adjust `medium_overlap_threshold`/`high_overlap_threshold` (or use `--threshold` for a one-off run).
 
-### `test.*`
-- `endpoint` (string) agent endpoint URL
-- `api_key` (string, optional)
-- `model` (string, optional)
-- `timeout_seconds` (int, default 30)
-- `baseline` (bool, default false) run a second no-injection eval pass for comparison
-- `workspace_dir` (string, optional) write AgentSkills eval artifacts
-- `reload_command` (string, optional)
-- `reload_wait_seconds` (int)
-- `reload_health_check_path` (string)
-- `reload_timeout_seconds` (int)
-- `injection.method` (`custom_hook`|`directory_copy`|`git_push`)
-- `injection.pre_test_hook` / `injection.post_test_hook` (string, custom hooks)
-- `injection.directory_copy_dir` (string, for `directory_copy`)
-- `injection.git_repo_path` (string, for `git_push`)
-- `injection.git_remote` (string, default `origin`)
-- `injection.git_branch` (string, optional)
-- `injection.git_skills_dir` (string, default `skills`)
-- `injection.git_commit_message` (string, optional)
-
-### `monitor.*`
-- `stale_threshold_days` (int)
-- `degrade_after_failures` (int; `degrade_after_days` still loads as a deprecated alias)
-- `deprecate_after_failures` (int; `deprecate_after_days` still loads as a deprecated alias)
-- `notify.slack_webhook` (string, optional)
-- `notify.github_issues` (bool, default false)
-- `notify.github_token` (string, optional)
-- `notify.github_repo` (string, optional)
-- Run via cron or CI for continuous drift detection. No built-in scheduler.
-
 ### `ci.*`
 - `fail_on_warning` (bool)
-- `post_pr_comment` (bool, experimental placeholder; no GitHub PR comment support in the CLI yet)
 - `output_format` (text|json|markdown)
 
 ## Environment Variables

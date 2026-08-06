@@ -1,9 +1,6 @@
-from datetime import UTC, datetime
 from pathlib import Path
 
 from skill_guard.models import (
-    Catalog,
-    CatalogEntry,
     CheckResult,
     ConflictMatch,
     ConflictResult,
@@ -87,26 +84,8 @@ def test_models_round_trip():
         medium_conflicts=0,
     )
 
-    catalog = Catalog(
-        updated=datetime.now(UTC),
-        skills=[
-            CatalogEntry(
-                name="test-skill",
-                description="desc",
-                author="me",
-                version="1.0",
-                stage="staging",
-                registered=datetime.now(UTC),
-                last_updated=datetime.now(UTC),
-                quality_score=90,
-                path="./skills/test",
-            )
-        ],
-    )
-
     # Round trip
     assert ParsedSkill.model_validate(skill.model_dump()).metadata.name == "test-skill"
     assert ValidationResult.model_validate(val.model_dump()).score == 100
     assert SecurityResult.model_validate(sec.model_dump()).critical_count == 1
     assert ConflictResult.model_validate(conflict.model_dump()).high_conflicts == 1
-    assert Catalog.model_validate(catalog.model_dump()).skills[0].name == "test-skill"

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from skill_guard.config import load_config
+from skill_guard.config import ValidateConfig, load_config
 from skill_guard.models import ConfigError
 
 
@@ -18,8 +18,6 @@ def test_load_config_defaults(tmp_path: Path):
         assert cfg.conflict.embeddings_cache_dir == ".skill-guard-cache/embeddings"
         assert cfg.conflict.embeddings_model == "all-MiniLM-L6-v2"
         assert cfg.conflict.embeddings_model_path is None
-        assert cfg.conflict.llm_model == "gpt-4o-mini"
-        assert cfg.conflict.llm_max_concurrent == 5
     finally:
         os.chdir(cwd)
 
@@ -28,6 +26,13 @@ def test_load_config_missing_file(tmp_path: Path):
     missing = tmp_path / "missing.yaml"
     with pytest.raises(ConfigError):
         load_config(missing)
+
+
+def test_default_validate_config_does_not_block_on_missing_author_or_version():
+    config = ValidateConfig()
+    assert config.require_author_in_metadata is False
+    assert config.require_version_in_metadata is False
+    assert config.max_description_length == 1024
 
 
 def test_env_var_expansion(tmp_path: Path, monkeypatch):
@@ -45,51 +50,14 @@ def test_missing_env_var(tmp_path: Path):
         load_config(config_file)
 
 
-def test_monitor_failure_aliases_load_from_legacy_keys(tmp_path: Path) -> None:
-    config_file = tmp_path / "skill-guard.yaml"
-    config_file.write_text(
-        ("monitor:\n  degrade_after_days: 3\n  deprecate_after_days: 9\n"),
-        encoding="utf-8",
-    )
-
-    cfg = load_config(config_file)
-
-    assert cfg.monitor.degrade_after_failures == 3
-    assert cfg.monitor.deprecate_after_failures == 9
-
-
 def test_documented_config_fields_load(tmp_path: Path) -> None:
     config_file = tmp_path / "skill-guard.yaml"
     config_file.write_text(
-        (
-            "validate:\n"
-            "  anthropic_spec: false\n"
-            "secure:\n"
-            "  use_snyk_scan: true\n"
-            "conflict:\n"
-            "  similarity_threshold: 0.82\n"
-            "test:\n"
-            "  baseline: true\n"
-            "  workspace: ./eval-artifacts\n"
-            "monitor:\n"
-            "  notify:\n"
-            "    github_issues: true\n"
-            "    github_token: token\n"
-            "    github_repo: owner/repo\n"
-            "ci:\n"
-            "  post_pr_comment: true\n"
-        ),
+        ("validate:\n  anthropic_spec: false\nconflict:\n  similarity_threshold: 0.82\n"),
         encoding="utf-8",
     )
 
     cfg = load_config(config_file)
 
     assert cfg.validate.anthropic_spec is False
-    assert cfg.secure.use_snyk_scan is True
     assert cfg.conflict.similarity_threshold == 0.82
-    assert cfg.test.baseline is True
-    assert cfg.test.workspace_dir == "./eval-artifacts"
-    assert cfg.monitor.notify.github_issues is True
-    assert cfg.monitor.notify.github_token == "token"
-    assert cfg.monitor.notify.github_repo == "owner/repo"
-    assert cfg.ci.post_pr_comment is True
