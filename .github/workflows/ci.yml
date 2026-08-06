@@ -24,6 +24,12 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
 
+  # scikit-learn lives in the optional [embeddings] extra as of v0.9 (it's no
+  # longer needed for the default tfidf conflict method), so this matrix job
+  # only installs [dev] and deselects the embeddings-marked tests. The full
+  # suite (including embeddings) runs with real coverage enforcement in the
+  # embeddings-tests job below, which is the only job with every optional
+  # dependency installed.
   unit-tests:
     runs-on: ubuntu-latest
     needs: lint
@@ -36,7 +42,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -e ".[dev]"
-      - run: pytest tests/unit/ -v --cov=skill_guard --cov-report=xml
+      - name: Run core (offline) unit tests
+        run: pytest tests/unit/ -v -k "not embeddings" --no-cov
 
   integration-tests:
     runs-on: ubuntu-latest
@@ -73,8 +80,8 @@ jobs:
           assert tensor.device.type == "cpu"
           print(f"torch {torch.__version__} on {tensor.device.type}")
           PY
-      - name: Run embeddings tests
-        run: pytest tests/unit/test_similarity.py -k embeddings -v --no-cov
+      - name: Run full unit test suite with coverage
+        run: pytest tests/unit/ -v --cov=skill_guard --cov-report=xml
 
   release-smoke:
     runs-on: ubuntu-latest
