@@ -165,18 +165,6 @@ conflict_ignore:
 - `2`: warnings only (when `fail_on_warning` is false)
 - `3`: config error
 - `4`: parse error
-- `5`: hook script failure
-- `6`: health check timeout
-
-## Trust States
-
-Command output now uses one shared trust-state vocabulary alongside CI-oriented status fields:
-
-- `clean`: no action required
-- `warning`: non-blocking issue; review or tighten before merge if needed
-- `exception`: intentional exception or suppression is present; reviewable, not silent
-- `needs_review`: no blocking failure, but a human still needs to inspect the result
-- `blocking`: the command found a merge-stopping problem
 
 ## Pre-commit
 
